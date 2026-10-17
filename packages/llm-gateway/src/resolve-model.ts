@@ -3,8 +3,10 @@ import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
 import { providerIsConfigured } from './credentials-from-env';
 import { EMBEDDING_PROVIDER_FACTORIES } from './embedding-providers';
 import { PROVIDER_FACTORIES } from './providers';
+import { probeModels, type ModelProbe, type ProbeOptions } from './probe';
 import { findRoute } from './route-table';
 import type {
+  DescribedModel,
   CredentialScope,
   CredentialSource,
   EmbeddingProviderFactory,
@@ -123,11 +125,46 @@ export class LlmGateway {
     return findRoute(this.routes, modelId);
   }
 
+  /**
+   * Whether the upstreams behind these model ids answer and list them — a free
+   * `GET /models`, for `openai-compatible` routes only. See `probeModels`.
+   */
+  probe(
+    modelIds: readonly string[],
+    options?: ProbeOptions,
+  ): Promise<ModelProbe[]> {
+    return probeModels(this.routes, this.credentials, modelIds, options);
+  }
+
   /** Every model this deployment can actually answer with. */
   availableModels(): string[] {
     return Object.keys(this.routes)
       .filter((modelId) => this.serves(modelId))
       .sort();
+  }
+
+  /**
+   * The served routes that describe themselves with `display`.
+   *
+   * Served, not merely routed, for the same reason as `availableModels`: a
+   * described route whose upstream is not configured would put a model in the
+   * picker that fails on the first click. A route with no `capabilities` has
+   * none, so it is never offered as a chat model by accident.
+   */
+  describedModels(): DescribedModel[] {
+    return this.availableModels().flatMap((id) => {
+      const route = this.routes[id];
+      if (!route?.display) {
+        return [];
+      }
+      return [
+        {
+          id,
+          displayName: route.display,
+          capabilities: route.capabilities ?? [],
+        },
+      ];
+    });
   }
 
   async resolveModel(

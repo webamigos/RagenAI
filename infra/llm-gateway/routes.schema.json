@@ -42,6 +42,17 @@
           },
           "structuredOutputs": {
             "type": "boolean"
+          },
+          "display": {
+            "type": "string",
+            "minLength": 1
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["chat", "vision"]
+            }
           }
         },
         "required": ["provider", "model"],

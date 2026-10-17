@@ -122,11 +122,18 @@ routes:
     provider: openai-compatible
     connection: ollama
     model: llama3.3:70b
+    # Without these two lines the model is routable but not in the picker,
+    # which lists only models the compiled catalogue knows.
+    display: Llama 3.3 70B
+    capabilities: [chat]
 ```
 
 ```bash
 LLM_OLLAMA_BASE_URL=http://localhost:11434/v1
 ```
+
+`display` and `capabilities` are described in
+[`infra/llm-gateway/README.md`](../infra/llm-gateway/README.md).
 
 ## Mixing
 
