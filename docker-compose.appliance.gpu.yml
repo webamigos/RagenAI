@@ -1,0 +1,16 @@
+# Gives the appliance's Ollama the machine's NVIDIA GPUs. Used on top of
+# docker-compose.appliance.yml, on a host with the NVIDIA Container Toolkit
+# installed; see docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md.
+#
+# A separate file rather than a default, because Compose refuses to start a
+# service whose GPU reservation the host cannot satisfy — and a CPU-only box,
+# or a Mac running Docker Desktop, is a supported way to try the appliance.
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${OLLAMA_GPU_COUNT:-all}
+              capabilities: [gpu]
