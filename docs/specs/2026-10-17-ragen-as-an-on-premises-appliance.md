@@ -1,6 +1,6 @@
 ---
 title: Ragen as an on-premises appliance
-status: draft
+status: in-progress
 areas: [llm-gateway, rag, auth, admin, install, worker, guardrails]
 adrs: [21, 27, 31, 35, 37, 38, 49, 50]
 ---
@@ -296,7 +296,7 @@ Each phase leaves the application working. Behind a feature key defaulting to
 There is no new product code in this phase. It turns what exists into a
 repeatable demo, and records the gaps as tests.
 
-- [ ] **0.1.** `infra/llm-gateway/routes.appliance.yaml` maps the catalogue
+- [x] **0.1.** `infra/llm-gateway/routes.appliance.yaml` maps the catalogue
   ids the application already asks for onto a local Ollama, so nothing
   hardcoded falls through to the cloud:
   - `DEFAULT_MODEL`, `REPHRASE_MODEL` and `SUMMARY_MODEL`
@@ -305,7 +305,7 @@ repeatable demo, and records the gaps as tests.
   - a local embedding route
 
   The display names are still wrong here; A2 fixes them.
-- [ ] **0.2.** `.env.appliance.example` with every setting the install needs:
+- [x] **0.2.** `infra/appliance/appliance.env.example` with every setting the install needs:
   - `DOCLING_STRICT=1`, `ENCRYPTION_PROVIDER=local` and SMTP
   - no moderation key and no PostHog, Langfuse or OTel endpoint
   - `VECTOR_SIZE` for the local embedding model
