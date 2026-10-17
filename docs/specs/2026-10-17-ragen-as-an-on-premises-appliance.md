@@ -338,13 +338,17 @@ repeatable demo, and records the gaps as tests.
     through (`run-input-guardrails.service.ts`). With no key there is no
     call, so it needed no change.
   - The hardcoded model ids are covered by routing them (0.1) and naming
-    them (A2), with a guard that fails when one is added or renamed. Making
+    them (A2), with a guard that fails when one is added or renamed — once
+    those land. Until 0.1's table is in use, those ids still resolve against
+    the shipped cloud table. Making
     each one an env var would add settings without removing a path.
   - `apps/web`'s `openAIInstance`, an axios client to `api.openai.com`, had
     no callers. It was deleted.
   - `tests/architecture/model-providers-are-reached-through-the-gateway.test.ts`
-    fails when a provider SDK is imported outside `packages/llm-gateway`. The
-    two moderation modules are the listed exceptions, each with its reason.
+    fails when a provider SDK is imported, or a provider endpoint is written
+    into a string, outside `packages/llm-gateway`. Exceptions name the file
+    and exactly the import or host they may use, with a reason; the rest of
+    each excepted file is still checked.
 - [ ] **A5.** Benchmark harness on the target hardware. For each tier:
   - tokens/s and time-to-first-token at 1, 5, 10 and 25 concurrent users
   - ingest throughput
