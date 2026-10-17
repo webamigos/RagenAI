@@ -42,12 +42,15 @@ export { PROVIDER_FACTORIES } from './providers';
 export { EMBEDDING_PROVIDER_FACTORIES } from './embedding-providers';
 export {
   PROVIDER_IDS,
+  ROUTE_CAPABILITIES,
   type CredentialScope,
   type CredentialSource,
+  type DescribedModel,
   type EmbeddingProviderFactory,
   type ProviderCredentials,
   type ProviderFactory,
   type ProviderId,
   type Route,
+  type RouteCapability,
   type RouteTable,
 } from './types';

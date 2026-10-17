@@ -148,14 +148,16 @@ provider.
 - *Editing `model-catalog.ts` per install* was rejected: it needs a build.
 
 The proposal: add `origin: 'local'` to `ModelOrigin`, and let a route in
-`routes.yaml` carry `display`, `contextWindow` and `capabilities` (chat,
-structured, vision). The chat picker then offers a served route that has
+`routes.yaml` carry `display` and `capabilities` (`chat`, `vision`). The
+chat picker then offers a served route that has
 `display` **and** the `chat` capability, even when the compiled catalogue does
 not know it. A route without `chat` (an embedding or reranker route) is never
 offered, whatever else it declares, and a route with no `capabilities` is
-treated as having none. The capabilities map onto the existing contract:
-`structured` sets `structuredOutputs`, and `vision` decides whether the route
-is excluded through `MULTIMODAL_TEXT_ONLY_MODELS`. Pricing for a
+treated as having none. A described route also replaces a catalogue entry
+with the same id, which is what gives the Phase 0 aliases their real names.
+`structuredOutputs` stays its own route field rather than a capability, since
+it already exists and means exactly that; `contextWindow` was dropped because
+nothing reads one yet. Pricing for a
 `local` origin is zero tokens-cost. Hardware cost is not a per-token number,
 and pretending it is would mislead the usage page.
 
@@ -322,8 +324,12 @@ repeatable demo, and records the gaps as tests.
   reservations. The reranker is reached through the existing
   `RERANK_PROVIDER=cohere` + `RERANK_COHERE_BASE_URL` path. A test proves
   that the request shape matches the local server.
-- [ ] **A2.** `origin: 'local'` and route-described models in the picker, with
-  zero token-cost in usage reports. Remove the 0.1 id mapping.
+- [x] **A2.** `origin: 'local'` and route-described models (`display`,
+  `capabilities`) in the web picker and `GET /v1/models`. A described route
+  replaces a catalogue entry of the same id, so the Phase 0 aliases keep
+  their ids and get the right name. Zero token cost in usage reports, and
+  the admin allowlist, are left for A2b: apps/admin does not read the route
+  table today.
 - [ ] **A3.** `scripts/appliance-egress-check --profile local|hybrid`: an
   internal-only network and a scripted ingest, chat, Brain and guardrail
   pass. It fails on any outbound attempt outside the profile's allowance and
@@ -416,8 +422,9 @@ repeatable demo, and records the gaps as tests.
 ## Rollout and rollback
 
 - Phase 0 and A1/A3 are additive files, so rollback is deleting them.
-- A2 changes the picker. It ships behind `localModelsInPicker` (default
-  `false`) until A5 has a measured tier.
+- A2 changes the picker only for a route that carries `display`, and no
+  shipped route does, so it needs no feature key: an install opts in by
+  writing the field. Rollback is removing it.
 - B1 is inert without OIDC env vars. Rollback means removing the vars, and
   the local admin password still works.
 - B2 needs a migration that adds one table, and no existing table changes.

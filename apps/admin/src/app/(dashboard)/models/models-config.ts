@@ -38,6 +38,7 @@ export const originDisplayNames: Record<ModelOrigin, string> = {
   google: 'Google',
   anthropic: 'Anthropic',
   mistral: 'Mistral',
+  local: 'Local',
 };
 
 export const originOrder: ModelOrigin[] = [

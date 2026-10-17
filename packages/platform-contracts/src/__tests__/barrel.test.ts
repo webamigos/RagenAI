@@ -15,6 +15,7 @@ describe('the public entry point', () => {
     ['isReasoningModel', 'function'],
     ['supportsReasoningEffort', 'function'],
     ['normalizeModelId', 'function'],
+    ['withDescribedRoutes', 'function'],
     ['FEATURE_KEYS', 'object'],
     ['DEFAULT_FEATURES', 'object'],
     ['FEATURE_LABELS', 'object'],

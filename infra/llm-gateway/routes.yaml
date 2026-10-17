@@ -6,9 +6,11 @@
 # LLM_ROUTES_PATH at your own file to serve a different set — see README.md,
 # which has a minimal OpenAI-only example.
 #
-# A route carries no credentials and no display name. Credentials come from the
-# environment; display names, visibility and capability flags are MODEL_REGISTRY
-# in @ragenai/platform-contracts, which answers a different question.
+# A route carries no credentials. Credentials come from the environment;
+# display names, visibility and capability flags are MODEL_REGISTRY in
+# @ragenai/platform-contracts, which answers a different question — except for
+# a model the catalogue cannot know about, which a route describes itself with
+# `display` and `capabilities` (see README.md).
 version: 1
 
 routes:
