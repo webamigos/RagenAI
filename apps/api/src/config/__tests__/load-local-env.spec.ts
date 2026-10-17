@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import {
   findRepositoryRoot,
+  isWorkspaceRoot,
   loadLocalEnv,
   localEnvCandidates,
 } from '../load-local-env.js';
@@ -18,6 +19,10 @@ beforeEach(() => {
   root = mkdtempSync(path.join(os.tmpdir(), 'lle-'));
   app = path.join(root, 'apps', 'api');
   mkdirSync(app, { recursive: true });
+  writeFileSync(
+    path.join(root, 'package.json'),
+    JSON.stringify({ name: 'ragen', workspaces: ['apps/*', 'packages/*'] }),
+  );
   writeFileSync(path.join(root, 'turbo.json'), '{}');
   // The stale lockfile apps/api really has, which must not count as a root.
   writeFileSync(path.join(app, 'package-lock.json'), '{}');
@@ -39,14 +44,43 @@ afterEach(() => {
 });
 
 describe('findRepositoryRoot', () => {
-  it('walks up to the directory holding turbo.json, past the app lockfile', () => {
+  it('walks up to the package.json declaring workspaces, past the app lockfile', () => {
     expect(findRepositoryRoot(app)).toBe(root);
   });
 
+  it('walks past a package-level turbo.json to the real root', () => {
+    // The tree as it has been since #1574: every app carries a Turborepo
+    // package config that extends the root one. A walk that stops at the
+    // first turbo.json stops at apps/api, and the root .env.local is never
+    // read — `npm run api:dev` then fails on a validation error.
+    writeFileSync(path.join(root, '.env.local'), 'LLE_ROOT=from-root\n');
+    writeFileSync(
+      path.join(app, 'package.json'),
+      JSON.stringify({ name: '@ragenai/api' }),
+    );
+    writeFileSync(
+      path.join(app, 'turbo.json'),
+      JSON.stringify({ extends: ['//'], tasks: {} }),
+    );
+
+    expect(findRepositoryRoot(app)).toBe(root);
+    expect(loadLocalEnv({ cwd: app })).toEqual([path.join(root, '.env.local')]);
+    expect(process.env.LLE_ROOT).toBe('from-root');
+  });
+
   it('returns null when nothing above looks like the repository', () => {
-    // A different marker nobody wrote, so the walk reaches the filesystem
+    // A predicate nothing satisfies, so the walk reaches the filesystem
     // root and has to stop rather than loop.
-    expect(findRepositoryRoot(app, 'no-such-marker.txt')).toBeNull();
+    expect(findRepositoryRoot(app, () => false)).toBeNull();
+  });
+
+  it('does not take a package.json without workspaces, or an unreadable one, as the root', () => {
+    expect(isWorkspaceRoot(app)).toBe(false);
+    writeFileSync(path.join(app, 'package.json'), '{"name": "@ragenai/api"}');
+    expect(isWorkspaceRoot(app)).toBe(false);
+    writeFileSync(path.join(app, 'package.json'), '{ not json');
+    expect(isWorkspaceRoot(app)).toBe(false);
+    expect(isWorkspaceRoot(root)).toBe(true);
   });
 });
 
