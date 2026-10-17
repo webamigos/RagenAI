@@ -3,7 +3,12 @@ import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
 import { providerIsConfigured } from './credentials-from-env';
 import { EMBEDDING_PROVIDER_FACTORIES } from './embedding-providers';
 import { PROVIDER_FACTORIES } from './providers';
-import { probeModels, type ModelProbe, type ProbeOptions } from './probe';
+import {
+  probeModels,
+  type ModelProbe,
+  type ModelProbeState,
+  type ProbeOptions,
+} from './probe';
 import { findRoute } from './route-table';
 import type {
   DescribedModel,
@@ -134,6 +139,46 @@ export class LlmGateway {
     options?: ProbeOptions,
   ): Promise<ModelProbe[]> {
     return probeModels(this.routes, this.credentials, modelIds, options);
+  }
+
+  private readonly probeCache = new Map<
+    string,
+    { at: number; state: ModelProbeState }
+  >();
+
+  /**
+   * The model ids whose server answered and does not have them — on Ollama, a
+   * model nobody pulled. For the picker, which should not offer a model whose
+   * first call is certain to fail.
+   *
+   * Only `missing`, never `unreachable`: a server that is briefly down would
+   * otherwise empty the picker, and the setup checklist already says it is
+   * down. Results are cached per id for `ttlMs` (30 s), because the picker
+   * asks on every page load and a server's set of models changes when an
+   * operator pulls one, not between two requests.
+   */
+  async missingModels(
+    modelIds: readonly string[],
+    options: ProbeOptions & { ttlMs?: number; now?: () => number } = {},
+  ): Promise<Set<string>> {
+    const now = options.now?.() ?? Date.now();
+    const ttlMs = options.ttlMs ?? 30_000;
+    const stale = modelIds.filter((id) => {
+      const cached = this.probeCache.get(id);
+      return !cached || now - cached.at >= ttlMs;
+    });
+    if (stale.length > 0) {
+      const probes = await this.probe(stale, {
+        fetch: options.fetch,
+        timeoutMs: options.timeoutMs ?? 1500,
+      });
+      for (const probe of probes) {
+        this.probeCache.set(probe.modelId, { at: now, state: probe.state });
+      }
+    }
+    return new Set(
+      modelIds.filter((id) => this.probeCache.get(id)?.state === 'missing'),
+    );
   }
 
   /** Every model this deployment can actually answer with. */
