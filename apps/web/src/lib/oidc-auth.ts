@@ -64,9 +64,14 @@ export function oidcPlugins() {
                   typeof profile.emailVerified === 'boolean'
                     ? profile.emailVerified
                     : null,
+                hostedDomain:
+                  typeof profile.hd === 'string' ? profile.hd : null,
               },
               config.allowedDomains,
-              { trustEmail: config.trustEmail },
+              {
+                trustEmail: config.trustEmail,
+                requireHostedDomain: config.requireHostedDomain,
+              },
             ),
         },
       ],
