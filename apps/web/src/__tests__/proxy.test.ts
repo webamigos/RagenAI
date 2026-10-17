@@ -84,6 +84,35 @@ describe('proxy Accept-Language parsing on the root path', () => {
   });
 });
 
+describe('the root path for a signed-in user', () => {
+  const signedIn = { cookie: 'better-auth.session_token=abc.def' };
+
+  it('lets next-intl serve the default locale at / instead of redirecting to /en', async () => {
+    // next-intl (`as-needed`) redirects /en back to /, so a redirect to /en
+    // here looped until ERR_TOO_MANY_REDIRECTS.
+    const res = await proxy(
+      makeRequest('/', { ...signedIn, 'accept-language': 'en-GB,en;q=0.9' }),
+    );
+
+    expect(res.headers.get('location')).toBeNull();
+    expect(res.headers.get('x-marker')).toBe(i18nMiddlewareMarker);
+  });
+
+  it('still redirects to a non-default locale, which keeps its prefix', async () => {
+    const res = await proxy(
+      makeRequest('/', { ...signedIn, 'accept-language': 'pl' }),
+    );
+
+    expect(res.headers.get('location')).toMatch(/\/pl$/);
+  });
+
+  it('still redirects a signed-out visitor, who goes on to sign-in', async () => {
+    const res = await proxy(makeRequest('/', { 'accept-language': 'en' }));
+
+    expect(res.headers.get('location')).toMatch(/\/en$/);
+  });
+});
+
 describe('OAuth discovery bypasses locale and session routing', () => {
   it.each([
     '/.well-known/oauth-authorization-server',
