@@ -1,6 +1,6 @@
 ---
 title: APP_URL replaces BETTER_AUTH_URL as the name for the installation's public origin
-status: draft
+status: in-progress
 areas: [auth, config, admin, mcp, self-hosting]
 adrs: [37]
 ---
@@ -18,28 +18,20 @@ a new variable but making the existing good name canonical and demoting
 names have **opposite precedence** in two files, and Better Auth reads
 `BETTER_AUTH_URL` *by itself* wherever `baseURL` is not passed (apps/admin).
 
-## Open Questions
+## Decisions
 
-- **Q1. Hard rename, or `APP_URL` first with `BETTER_AUTH_URL` as a deprecated
-  fallback?** Recommendation: **fallback.** Every self-hosted install, the Helm
-  chart and the Railway template set `BETTER_AUTH_URL`; a hard rename breaks
-  sign-in and silently stops email (`getBaseUrl()` throws inside a mailer that
-  catches). The fallback is read in exactly one function, so removing it later
-  is a one-line change plus an architecture test flip.
-- **Q2. In apps/admin, does `APP_URL` mean the admin panel's own origin?**
-  Recommendation: **yes** — that is what `BETTER_AUTH_URL` means there today
-  (`admin-e2e.yml` sets it to `:3200`), and `NEXT_PUBLIC_APP_URL` is already
-  per-app the same way. `auth-origins.ts` keeps trusting `localhost:3200`, so a
-  shared root `.env.local` naming `:3000` still works.
-- **Q3. In apps/mcp, `APP_URL` (web's public origin = OAuth issuer) or a
-  dedicated `RAGEN_AUTH_ISSUER_URL`?** Recommendation: **`APP_URL`** — the
-  issuer *is* apps/web, the shared root `.env.local` already gives mcp the
-  right value, and a third name for the same origin is the problem this spec
-  removes. `RAGEN_MCP_PUBLIC_URL` (mcp's own URL) is unchanged.
-- **Q4. The published docs live in the `ragen-docs` repository.** Update them
-  in a follow-up PR there after this merges (needs that repo attached to the
-  session), or leave them to you? Recommendation: follow-up PR, same day — the
-  docs must not tell people to set a name the code does not read yet.
+The owner left the choice of name to implementation, offering `RAGEN_APP_URL`
+as an alternative. It was declined because the name is taken (see *Proposed
+solution*, "Rejected"). Q1–Q3 took the recommended answers, for the owner to
+overturn in review.
+
+- **Q1. Hard rename or fallback?** Fallback. `APP_URL` first, then the
+  deprecated `BETTER_AUTH_URL`, read in one function.
+- **Q2. apps/admin:** `APP_URL` is the panel's own origin, as
+  `BETTER_AUTH_URL` was.
+- **Q3. apps/mcp:** `APP_URL` (web's public origin, which is the OAuth issuer).
+  No dedicated issuer variable.
+- **Q4. `ragen-docs`:** a follow-up PR in that repository (Phase B).
 
 ## Problem
 
@@ -104,7 +96,10 @@ names have **opposite precedence** in two files, and Better Auth reads
    setup checklist lists `APP_URL` first. apps/web must not exit over it.
 
 **Rejected:** a hard rename (Q1 — breaks every existing install silently on the
-email path); `PUBLIC_URL`/`RAGEN_PUBLIC_URL` (a fourth name, while `APP_URL` is
+email path); `RAGEN_APP_URL` (already taken: apps/admin uses it for apps/web's
+*internal* address, e.g. `http://web:3000` in compose, which is a different
+value from the public origin, and merging the two would send admin's
+server-to-server calls through the public ingress); `PUBLIC_URL`/`RAGEN_PUBLIC_URL` (a fourth name, while `APP_URL` is
 already shipped and documented in the Railway template and Dockerfile);
 keeping `BETTER_AUTH_URL` and only fixing precedence (does not solve the
 naming, which is the ask).
@@ -192,11 +187,11 @@ No Prisma, tenancy or RBAC change.
 
 ### Phase A — resolver and readers (one PR)
 
-- [ ] **A1.** `packages/env`: `appOrigin` fragment, `resolveAppUrl()`, tests.
-- [ ] **A2.** web, admin, mcp readers switched; their tests updated.
-- [ ] **A3.** Architecture test.
-- [ ] **A4.** Config, CI, Docker, Helm, compose, devcontainer, examples.
-- [ ] **A5.** Docs in this repo, lesson, changelog note.
+- [x] **A1.** `packages/env`: `appOrigin` fragment, `resolveAppUrl()`, tests.
+- [x] **A2.** web, admin, mcp readers switched; their tests updated.
+- [x] **A3.** Architecture test.
+- [x] **A4.** Config, CI, Docker, Helm, compose, devcontainer, examples.
+- [x] **A5.** Docs in this repo, lesson, changelog note.
 - [ ] **A6.** `npm run verify` green (known cloud-session reds aside).
 
 ### Phase B — published docs

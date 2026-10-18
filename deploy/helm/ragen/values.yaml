@@ -292,8 +292,9 @@ config:
   WORKER_RUNTIME: ''
   TEMPORAL_SERVER_ADDRESS: ''
   # Public URLs. Set these — sign-in links and OAuth callbacks are built from
-  # them, and there is no sensible default.
-  BETTER_AUTH_URL: ''
+  # them, and there is no sensible default. APP_URL was BETTER_AUTH_URL, which
+  # is still read when APP_URL is unset (deprecated).
+  APP_URL: ''
   NEXT_PUBLIC_APP_URL: ''
 
 # Rendered into a Secret. Every value here is optional at install time so the

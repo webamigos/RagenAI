@@ -16,7 +16,7 @@ COPY . .
 RUN npx prisma generate
 
 ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
-    BETTER_AUTH_URL="http://localhost:3200" \
+    APP_URL="http://localhost:3200" \
     DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     GOOGLE_CLIENT_ID="dummy" \
     GOOGLE_CLIENT_SECRET="dummy" \

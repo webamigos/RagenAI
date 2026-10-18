@@ -59,6 +59,7 @@ import {
 } from './auth-email-log';
 import { isTestTargetEnv } from '@/libs/utils/env';
 import { resolveDefaultVectorStore } from '@ragenai/rag-core';
+import { resolveAppUrl } from '@ragenai/env';
 
 const stripeClient =
   process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET
@@ -213,13 +214,14 @@ async function handleSendMagicLink({
   }
 }
 
+const appUrl = resolveAppUrl();
+
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-  trustedOrigins: [
-    'http://localhost:3000',
-    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
-  ],
+  // `APP_URL` (or its deprecated name) — the origin Better Auth signs its
+  // magic-link, reset and verification links with.
+  baseURL: appUrl || 'http://localhost:3000',
+  trustedOrigins: ['http://localhost:3000', ...(appUrl ? [appUrl] : [])],
 
   advanced: {
     cookiePrefix: 'better-auth',

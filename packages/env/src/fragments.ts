@@ -494,8 +494,13 @@ export const mcpService = z.object({
   MCP_SERVICE_SECRET: blankAsUndefined(z.string().min(32).optional()),
 });
 
-/** Public origin of the Better Auth authorization server. */
-export const authOrigin = z.object({
+/**
+ * Public origin of this installation — read it through `resolveAppUrl()`,
+ * never field by field. `BETTER_AUTH_URL` is the deprecated name for the same
+ * value, declared so a legacy install still validates (see `app-url.ts`).
+ */
+export const appOrigin = z.object({
+  APP_URL: blankAsUndefined(httpUrl().optional()),
   BETTER_AUTH_URL: blankAsUndefined(httpUrl().optional()),
 });
 

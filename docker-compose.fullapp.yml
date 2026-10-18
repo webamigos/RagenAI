@@ -87,7 +87,7 @@ services:
       PRESIDIO_ANALYZER_URL: ${PRESIDIO_ANALYZER_URL:-}
       PRESIDIO_ANONYMIZER_URL: ${PRESIDIO_ANONYMIZER_URL:-}
       FEATURE_FLAG_PII_MASKING: ${FEATURE_FLAG_PII_MASKING:-}
-      BETTER_AUTH_URL: http://localhost:${WEB_PORT:-3000}
+      APP_URL: http://localhost:${WEB_PORT:-3000}
       TARGET_ENV: ${TARGET_ENV:-local}
       # The same volume the worker writes to. Without this the app cannot read
       # the documents the worker ingests — the exact failure ADR-27 describes.

@@ -32,7 +32,7 @@ env:
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   BETTER_AUTH_SECRET: 'e2e-test-secret-key-min-32-chars-long'
-  BETTER_AUTH_URL: 'http://localhost:3200'
+  APP_URL: 'http://localhost:3200'
   NEXT_PUBLIC_APP_URL: 'http://localhost:3200'
   TARGET_ENV: 'test'
   # Only used to decide whether the Revoke control is offered. Left unset on

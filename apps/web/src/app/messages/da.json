@@ -2505,7 +2505,7 @@
       "temporal": "Uploadede dokumenter bliver aldrig analyseret eller embedded — ingestionsworkflowet har ingen steder at køre.",
       "redis": "Baggrundsjobs kører på Redis. Uden Redis bliver uploadede dokumenter aldrig behandlet, og API'et vil ikke starte.",
       "mail": "Ingen e-mailtransport er konfigureret, så bekræftelseslinks, magiske links og invitationer skrives kun til loggen. Konfigurer Resend eller en SMTP-server for at levere dem.",
-      "app-url": "Links i e-mails og i den indlejrbare chatwidget kræver en absolut oprindelse. Begge variabler fungerer; BETTER_AUTH_URL læses ved kørsel, NEXT_PUBLIC_APP_URL indlejres ved kompilering.",
+      "app-url": "Links i e-mails og i den indlejrbare chatwidget kræver en absolut oprindelse. Begge variabler fungerer; APP_URL læses ved kørsel, NEXT_PUBLIC_APP_URL indlejres ved kompilering.",
       "target-env": "Navngiver udrulningen. Hvis den ikke er angivet, rapporterer spor og målinger intet miljø, og e-maillinks har ingen lokal standardværdi.",
       "moderation": "Indholdsmoderering har ingen udbyder, så moderations-guardrailen logger »ikke konfigureret« og lader alle beskeder passere. Angiv en OpenAI-nøgle kun til moderering, hvis du vil slå den til.",
       "message-encryption": "Beskeder i samtaler gemmes som klartekst. Det er fint lokalt; angiv en af disse værdier, før rigtige samtaler kommer ind der.",

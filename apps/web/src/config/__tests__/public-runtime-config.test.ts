@@ -52,13 +52,24 @@ describe('readPublicRuntimeConfig', () => {
     ).toBe('https://fallback.example');
   });
 
-  it('falls back to BETTER_AUTH_URL for the app url, which already means this', () => {
-    // `app/emails/utils/base-url.ts` has preferred it for the same reason:
-    // it is the one origin a deployment must already have set correctly.
+  it('falls back to the deprecated BETTER_AUTH_URL for the app url, ahead of the build-time name', () => {
+    // Same order as `resolveAppUrl()` everywhere else: `APP_URL`, its old
+    // name, then the `NEXT_PUBLIC_` spelling.
     expect(
-      readPublicRuntimeConfig({ BETTER_AUTH_URL: 'https://auth.example' })
-        .appUrl,
+      readPublicRuntimeConfig({
+        BETTER_AUTH_URL: 'https://auth.example',
+        NEXT_PUBLIC_APP_URL: 'https://baked-at-build.example',
+      }).appUrl,
     ).toBe('https://auth.example');
+  });
+
+  it('prefers APP_URL over the deprecated BETTER_AUTH_URL', () => {
+    expect(
+      readPublicRuntimeConfig({
+        APP_URL: 'https://ragen.example',
+        BETTER_AUTH_URL: 'https://auth.example',
+      }).appUrl,
+    ).toBe('https://ragen.example');
   });
 
   it('answers with empty strings rather than undefined for an empty environment', () => {

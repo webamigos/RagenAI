@@ -37,7 +37,7 @@ env:
   DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   BETTER_AUTH_SECRET: 'dummy'
-  BETTER_AUTH_URL: 'http://example.com'
+  APP_URL: 'http://example.com'
   NEXT_PUBLIC_APP_URL: 'http://example.com'
   SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
