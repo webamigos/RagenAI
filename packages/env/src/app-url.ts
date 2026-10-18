@@ -19,9 +19,9 @@
  */
 
 /** Read only as {@link resolveAppUrl}'s fallback. Remove in Phase C. */
-export const LEGACY_APP_URL_VARIABLE = 'BETTER_AUTH_URL';
+export const LEGACY_APP_URL_VARIABLE = 'BETTER_AUTH_URL' as const;
 
-export const APP_URL_VARIABLE = 'APP_URL';
+export const APP_URL_VARIABLE = 'APP_URL' as const;
 
 let warned = false;
 
@@ -33,7 +33,13 @@ let warned = false;
  * because every caller appends an absolute path.
  */
 export function resolveAppUrl(
-  env: Record<string, string | undefined> = process.env,
+  // The index signature lets a parsed env (numbers included) and
+  // `process.env` both pass; only the two names below are read.
+  env: {
+    readonly APP_URL?: string;
+    readonly BETTER_AUTH_URL?: string;
+    readonly [name: string]: unknown;
+  } = process.env,
 ): string | undefined {
   const current = env[APP_URL_VARIABLE]?.trim();
   if (current) {
