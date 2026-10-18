@@ -3,6 +3,11 @@
 # The lockfile lives at the root and npm resolves the workspace tree from there.
 
 FROM node:24-slim AS base
+# Prisma's version check calls checkpoint.prisma.io from `prisma generate`,
+# `migrate deploy` and the client at runtime. Set on the base stage so every
+# stage inherits it, including a deploy that runs this image outside the
+# compose files (Railway). tests/architecture/third-party-telemetry-stays-off.test.ts
+ENV CHECKPOINT_DISABLE=1
 
 # npm validates the whole workspace tree against the root lockfile, so every
 # workspace manifest the lockfile knows about has to be present — even the ones

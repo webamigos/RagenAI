@@ -93,7 +93,7 @@ inherits:
 | Service | Host | Switch |
 | --- | --- | --- |
 | qdrant | `telemetry.qdrant.io` | `QDRANT__TELEMETRY_DISABLED` |
-| api, worker, web, migrate | `checkpoint.prisma.io` | `CHECKPOINT_DISABLE` |
+| api, worker, web, admin, migrate | `checkpoint.prisma.io` | `CHECKPOINT_DISABLE` (also set in each app image) |
 | ollama | `ollama.com` | `OLLAMA_NO_CLOUD` |
 | docling | `api.gradio.app`, `raw.githubusercontent.com` | `DOCLING_SERVE_ENABLE_UI=false`, `GRADIO_ANALYTICS_ENABLED=False` |
 | docling | `huggingface.co` | `HF_HUB_OFFLINE` |

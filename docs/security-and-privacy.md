@@ -79,9 +79,9 @@ Hugging Face downloads, and onnxruntime's telemetry inside Docling. The
 standard `docker-compose.yml`, `docker-compose.fullapp.yml` and the Helm chart
 now switch them off, each with a comment naming the host it stops; Ollama's
 switch lives in `docker-compose.appliance.yml`, the only stack that runs it.
-One gap remains: the app images themselves do not set `CHECKPOINT_DISABLE`,
-so a deployment that runs them outside these files (Railway, for one) still
-makes Prisma's check unless you set it. The table is in
+Prisma's is also baked into the app images (`CHECKPOINT_DISABLE=1`), so a
+deployment that runs them outside these files (Railway, for one) does not
+make the check either. The table is in
 [`infra/appliance/README.md`](../infra/appliance/README.md#proving-nothing-leaves-the-machine).
 
 With them off, a deployment on local models needs only two things from
