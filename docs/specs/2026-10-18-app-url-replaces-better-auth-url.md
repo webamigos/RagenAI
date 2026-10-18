@@ -22,8 +22,7 @@ names have **opposite precedence** in two files, and Better Auth reads
 
 The owner left the choice of name to implementation, offering `RAGEN_APP_URL`
 as an alternative. It was declined because the name is taken (see *Proposed
-solution*, "Rejected"). Q1–Q3 took the recommended answers, for the owner to
-overturn in review.
+solution*, "Rejected"). The owner confirmed the recommended answers to Q1–Q4.
 
 - **Q1. Hard rename or fallback?** Fallback. `APP_URL` first, then the
   deprecated `BETTER_AUTH_URL`, read in one function.
