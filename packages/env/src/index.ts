@@ -73,6 +73,13 @@ export {
 export { guardrailsDisabled, isOnPremise } from './deployment';
 
 export {
+  APP_URL_VARIABLE,
+  LEGACY_APP_URL_VARIABLE,
+  resetAppUrlWarningForTests,
+  resolveAppUrl,
+} from './app-url';
+
+export {
   isPiiMaskingConfigured,
   isPiiMaskingEnabled,
   isPiiMaskingMisconfigured,

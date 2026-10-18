@@ -75,7 +75,7 @@ RUN npx prisma generate
 
 # Dummy env vars for next build page data collection (not used at runtime)
 ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
-    BETTER_AUTH_URL="http://localhost:3000" \
+    APP_URL="http://localhost:3000" \
     STRIPE_SECRET_KEY="sk_placeholder_for_build" \
     STRIPE_WEBHOOK_SECRET="whsec_placeholder" \
     RESEND_API_KEY="re_placeholder" \

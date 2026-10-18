@@ -2,6 +2,7 @@ import { mcpGrantRevocationPlugin } from './mcp-grant-revocation-plugin';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './db';
+import { resolveAppUrl } from '@ragenai/env';
 import { adminTrustedOrigins } from './auth-origins';
 import { getGoogleCredentials } from './social-providers';
 
@@ -28,7 +29,14 @@ export const auth = betterAuth({
     transaction: true,
   }),
   /**
-   * This app's own origin, in addition to whatever `BETTER_AUTH_URL` names.
+   * Passed explicitly so Better Auth never reads its own env var: left unset,
+   * the library falls back to `BETTER_AUTH_URL` by itself, which would keep
+   * the deprecated name load-bearing here after `APP_URL` replaced it.
+   * `undefined` when neither is set — the request origin, as before.
+   */
+  baseURL: resolveAppUrl(),
+  /**
+   * This app's own origin, in addition to whatever `APP_URL` names.
    * Without it a shared root `.env.local` — which AGENTS.md prescribes — points
    * the check at apps/web on `:3000` and the panel refuses its own sign-in form
    * with "Invalid origin". See `auth-origins.ts`.

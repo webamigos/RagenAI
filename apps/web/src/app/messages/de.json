@@ -2505,7 +2505,7 @@
       "temporal": "Hochgeladene Dokumente werden nie analysiert oder eingebettet — der Aufnahme-Workflow hat keinen Ausführungsort.",
       "redis": "Hintergrundjobs laufen auf Redis. Ohne Redis werden hochgeladene Dokumente nie verarbeitet und die API startet nicht.",
       "mail": "Es ist kein E-Mail-Transport konfiguriert, daher werden Bestätigungslinks, Magic Links und Einladungen nur ins Protokoll geschrieben. Richte Resend oder einen SMTP-Server ein, um sie zuzustellen.",
-      "app-url": "Links in E-Mails und im einbettbaren Chat-Widget benötigen einen absoluten Ursprung. Beide Variablen funktionieren; BETTER_AUTH_URL wird zur Laufzeit gelesen, NEXT_PUBLIC_APP_URL wird zur Build-Zeit eingebettet.",
+      "app-url": "Links in E-Mails und im einbettbaren Chat-Widget benötigen einen absoluten Ursprung. Beide Variablen funktionieren; APP_URL wird zur Laufzeit gelesen, NEXT_PUBLIC_APP_URL wird zur Build-Zeit eingebettet.",
       "target-env": "Benennt die Bereitstellung. Ohne Festlegung melden Traces und Metriken keine Umgebung, und E-Mail-Links haben keinen lokalen Fallback.",
       "moderation": "Die Inhaltsmoderation hat keinen Anbieter, daher protokolliert der Moderations-Guardrail „nicht konfiguriert“ und lässt jede Nachricht durch. Setze einen OpenAI-Schlüssel nur für die Moderation, wenn du ihn aktivieren willst.",
       "message-encryption": "Nachrichten in Threads werden als Klartext gespeichert. Lokal in Ordnung; lege einen dieser Werte fest, bevor echte Unterhaltungen stattfinden.",

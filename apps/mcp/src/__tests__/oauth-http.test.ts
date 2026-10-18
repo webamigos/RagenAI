@@ -48,7 +48,11 @@ it('verifies OAuth over HTTP and sends service assertions for the current token'
     const responses: Record<string, unknown> = {
       '/v1/chat': { text: 'Hello' },
       '/v1/search': { context: 'Known', file_ids: ['file-a'] },
-      '/v1/assistants': { data: [{ id: '11111111-1111-4111-8111-111111111111', name: 'Assistant' }] },
+      '/v1/assistants': {
+        data: [
+          { id: '11111111-1111-4111-8111-111111111111', name: 'Assistant' },
+        ],
+      },
     };
     const body = responses[request.url ?? ''];
     response.statusCode = body ? 200 : 404;
@@ -71,7 +75,7 @@ it('verifies OAuth over HTTP and sends service assertions for the current token'
   const secret = 'test-mcp-service-secret'.repeat(2);
   vi.stubEnv('MCP_OAUTH_ENABLED', 'true');
   vi.stubEnv('MCP_SERVICE_SECRET', secret);
-  vi.stubEnv('BETTER_AUTH_URL', `http://127.0.0.1:${authPort}`);
+  vi.stubEnv('APP_URL', `http://127.0.0.1:${authPort}`);
   vi.stubEnv('RAGEN_MCP_PUBLIC_URL', resource);
   const sign = (user: string, scope = 'mcp:read') =>
     new SignJWT({ org: 'org', client_id: 'client', scope })

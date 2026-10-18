@@ -6,6 +6,7 @@ import {
   parseEnv,
   TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
+  resolveAppUrl,
   speechRules,
   storageRules,
   workerRuntimeProducerRules,
@@ -80,13 +81,13 @@ export const webEnvSchema = fragments.targetEnv
     BETTER_AUTH_SECRET: z.string().optional(),
 
     /**
-     * Either of these two satisfies `getBaseUrl()`, so neither is required on
-     * its own; the refinement below requires one of them on a deployment.
+     * Any of these satisfies `getBaseUrl()`, so none is required on its own;
+     * the refinement below requires one of them on a deployment. `APP_URL` is
+     * the name — `BETTER_AUTH_URL` is its deprecated spelling, and
      * `NEXT_PUBLIC_APP_URL` is inlined at build time and cannot be set by an
-     * operator running a prebuilt image, which is why `BETTER_AUTH_URL` is
-     * the one to prefer.
+     * operator running a prebuilt image.
      */
-    ...fragments.authOrigin.shape,
+    ...fragments.appOrigin.shape,
     NEXT_PUBLIC_APP_URL: fragments.blankAsUndefined(
       fragments.httpUrl().optional(),
     ),
@@ -136,19 +137,19 @@ export const webEnvSchema = fragments.targetEnv
       'apps/api rejects every internal call without a token signed by it',
     );
 
-    // `getBaseUrl()` throws when neither is set, and every caller is inside a
+    // `getBaseUrl()` throws when none is set, and every caller is inside a
     // mailer that catches — so an invitation silently fails to arrive rather
     // than the deployment refusing to start. Catch it here instead.
     if (
       isDeployment(env.TARGET_ENV) &&
-      !isSet(env.BETTER_AUTH_URL) &&
+      resolveAppUrl(env) === undefined &&
       !isSet(env.NEXT_PUBLIC_APP_URL)
     ) {
       ctx.addIssue({
         code: 'custom',
         message:
-          'BETTER_AUTH_URL (or NEXT_PUBLIC_APP_URL) is required on a deployment — every link in every outgoing email resolves from it, and without one they are never sent',
-        path: ['BETTER_AUTH_URL'],
+          'APP_URL is required on a deployment — every link in every outgoing email resolves from it, and without one they are never sent',
+        path: ['APP_URL'],
       });
     }
 

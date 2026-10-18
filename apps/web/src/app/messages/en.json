@@ -2505,7 +2505,7 @@
       "temporal": "Uploaded documents are never parsed or embedded — the ingest workflow has nowhere to run.",
       "redis": "Background jobs run on Redis. Without it uploaded documents are never processed and the API refuses to start.",
       "mail": "No mail transport is configured, so verification links, magic links and invitations are only written to the log. Set up Resend or an SMTP server to deliver them.",
-      "app-url": "Links in emails and in the embeddable chat widget need an absolute origin. Either variable works; BETTER_AUTH_URL is read at runtime, NEXT_PUBLIC_APP_URL is baked in at build time.",
+      "app-url": "Links in emails and in the embeddable chat widget need an absolute origin. Either variable works; APP_URL is read at runtime, NEXT_PUBLIC_APP_URL is baked in at build time.",
       "target-env": "Names the deployment. Left unset, traces and metrics report no environment, and email links have no local fallback to fall back to.",
       "moderation": "Content moderation has no provider, so the content-moderation guardrail logs \"not configured\" and lets every message through. Set an OpenAI key used only for moderation if you plan to enable it.",
       "message-encryption": "Thread messages are stored as plaintext. Fine locally; set one of these before real conversations go in.",

@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import { adminTrustedOrigins, LOCAL_ADMIN_ORIGIN } from '../auth-origins';
 
 describe('adminTrustedOrigins', () => {
-  it('trusts this app on localhost even when BETTER_AUTH_URL names another app', () => {
-    // The defect: one root `.env.local` serves every app, `BETTER_AUTH_URL`
+  it('trusts this app on localhost even when APP_URL names another app', () => {
+    // The defect: one root `.env.local` serves every app, `APP_URL`
     // holds a single origin, and it is apps/web's. Signing in on :3200 then
     // failed with "Invalid origin" and nothing named the port or the variable.
     const origins = adminTrustedOrigins({
-      BETTER_AUTH_URL: 'http://localhost:3000',
+      APP_URL: 'http://localhost:3000',
       NODE_ENV: 'development',
     });
 
@@ -18,7 +18,7 @@ describe('adminTrustedOrigins', () => {
 
   it('leaves localhost off the list in production', () => {
     const origins = adminTrustedOrigins({
-      BETTER_AUTH_URL: 'https://admin.example.com',
+      APP_URL: 'https://admin.example.com',
       NODE_ENV: 'production',
     });
 
@@ -41,7 +41,7 @@ describe('adminTrustedOrigins', () => {
   it('reduces a url to its origin, so a path in the variable still matches', () => {
     expect(
       adminTrustedOrigins({
-        BETTER_AUTH_URL: 'https://admin.example.com/api/auth',
+        APP_URL: 'https://admin.example.com/api/auth',
         NODE_ENV: 'production',
       }),
     ).toEqual(['https://admin.example.com']);
@@ -52,7 +52,7 @@ describe('adminTrustedOrigins', () => {
     // stray character — a worse failure than the one being fixed.
     expect(
       adminTrustedOrigins({
-        BETTER_AUTH_URL: 'not a url',
+        APP_URL: 'not a url',
         NODE_ENV: 'production',
       }),
     ).toEqual([]);
@@ -62,6 +62,17 @@ describe('adminTrustedOrigins', () => {
     expect(
       adminTrustedOrigins({
         ADMIN_TRUSTED_ORIGINS: 'https://admin.example.com',
+        APP_URL: 'https://admin.example.com',
+        NODE_ENV: 'production',
+      }),
+    ).toEqual(['https://admin.example.com']);
+  });
+
+  it('still reads the deprecated BETTER_AUTH_URL when APP_URL is unset', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    expect(
+      adminTrustedOrigins({
         BETTER_AUTH_URL: 'https://admin.example.com',
         NODE_ENV: 'production',
       }),

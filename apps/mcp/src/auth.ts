@@ -64,7 +64,7 @@ export async function authenticate(
   if (value.startsWith('Bearer sk-')) return { kind: 'api_key', apiKey: value };
   if (env.MCP_OAUTH_ENABLED !== 'true')
     throw new Response(null, { status: 401 });
-  const issuer = oauthIssuer(env.BETTER_AUTH_URL!);
+  const issuer = oauthIssuer(env.APP_URL!);
   const config = `${issuer}|${env.RAGEN_MCP_PUBLIC_URL}`;
   if (!verifier || verifierConfig !== config) {
     verifier = createOAuthTokenVerifier(issuer, env.RAGEN_MCP_PUBLIC_URL!);

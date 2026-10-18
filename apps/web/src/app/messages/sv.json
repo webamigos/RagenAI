@@ -2505,7 +2505,7 @@
       "temporal": "Uppladdade dokument analyseras eller embeddas aldrig — inmatningsarbetsflödet har ingenstans att köras.",
       "redis": "Bakgrundsjobb körs på Redis. Utan Redis bearbetas uppladdade dokument aldrig och API:t vägrar starta.",
       "mail": "Ingen e-posttransport är konfigurerad, så bekräftelselänkar, magiska länkar och inbjudningar skrivs endast till loggen. Konfigurera Resend eller en SMTP-server för att leverera dem.",
-      "app-url": "Länkar i e-post och i den inbäddningsbara chattwidgeten behöver ett absolut ursprung. Båda variablerna fungerar; BETTER_AUTH_URL läses vid körning, NEXT_PUBLIC_APP_URL bäddas in vid kompilering.",
+      "app-url": "Länkar i e-post och i den inbäddningsbara chattwidgeten behöver ett absolut ursprung. Båda variablerna fungerar; APP_URL läses vid körning, NEXT_PUBLIC_APP_URL bäddas in vid kompilering.",
       "target-env": "Namnger driftsättningen. Om den inte är angiven rapporterar spårningar och mätvärden ingen miljö, och e-postlänkar har inget lokalt standardvärde.",
       "moderation": "Innehållsmoderering har ingen leverantör, så modererings-guardrailen loggar ”inte konfigurerad” och släpper igenom varje meddelande. Ange en OpenAI-nyckel endast för moderering om du tänker aktivera den.",
       "message-encryption": "Meddelanden i konversationer lagras som vanlig text. Det är okej lokalt; ange ett av dessa värden innan riktiga konversationer hamnar där.",

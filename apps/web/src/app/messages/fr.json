@@ -2505,7 +2505,7 @@
       "temporal": "Les documents téléversés ne sont jamais analysés ni embarqués (embedding) — le workflow d'ingestion n'a nulle part où s'exécuter.",
       "redis": "Les tâches en arrière-plan s'exécutent sur Redis. Sans lui, les documents importés ne sont jamais traités et l'API refuse de démarrer.",
       "mail": "Aucun transport de courrier n'est configuré, donc les liens de vérification, liens magiques et invitations sont uniquement écrits dans le journal. Configure Resend ou un serveur SMTP pour les livrer.",
-      "app-url": "Les liens dans les e-mails et dans le widget de chat intégrable ont besoin d'une origine absolue. Les deux variables fonctionnent ; BETTER_AUTH_URL est lue au moment de l'exécution, NEXT_PUBLIC_APP_URL est intégrée au moment de la compilation.",
+      "app-url": "Les liens dans les e-mails et dans le widget de chat intégrable ont besoin d'une origine absolue. Les deux variables fonctionnent ; APP_URL est lue au moment de l'exécution, NEXT_PUBLIC_APP_URL est intégrée au moment de la compilation.",
       "target-env": "Nomme le déploiement. Si elle n'est pas définie, les traces et métriques ne rapportent aucun environnement, et les liens e-mail n'ont pas de repli local.",
       "moderation": "La modération de contenu n'a pas de fournisseur : le garde-fou de modération journalise « non configuré » et laisse passer chaque message. Définis une clé OpenAI dédiée à la modération si tu comptes l'activer.",
       "message-encryption": "Les messages des fils sont stockés en texte clair. C'est correct en local ; définis l'une de ces valeurs avant que de vraies conversations n'y entrent.",

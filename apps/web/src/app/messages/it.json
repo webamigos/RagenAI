@@ -2505,7 +2505,7 @@
       "temporal": "I documenti caricati non vengono mai analizzati né sottoposti a embedding — il workflow di acquisizione non ha dove essere eseguito.",
       "redis": "I job in background girano su Redis. Senza Redis i documenti caricati non vengono mai elaborati e l'API non si avvia.",
       "mail": "Nessun trasporto email è configurato, quindi i link di verifica, i link magici e gli inviti vengono solo scritti nel log. Configura Resend o un server SMTP per consegnarli.",
-      "app-url": "I link nelle email e nel widget di chat incorporabile necessitano di un'origine assoluta. Entrambe le variabili funzionano; BETTER_AUTH_URL viene letta in fase di esecuzione, NEXT_PUBLIC_APP_URL viene incorporata in fase di compilazione.",
+      "app-url": "I link nelle email e nel widget di chat incorporabile necessitano di un'origine assoluta. Entrambe le variabili funzionano; APP_URL viene letta in fase di esecuzione, NEXT_PUBLIC_APP_URL viene incorporata in fase di compilazione.",
       "target-env": "Assegna un nome all'implementazione. Se non è impostata, le tracce e le metriche non riportano alcun ambiente e i link email non hanno un valore predefinito locale.",
       "moderation": "La moderazione dei contenuti non ha un fornitore, quindi il guardrail di moderazione registra «non configurato» e lascia passare ogni messaggio. Imposta una chiave OpenAI dedicata alla moderazione se intendi attivarlo.",
       "message-encryption": "I messaggi delle conversazioni vengono archiviati in testo semplice. Questo va bene in locale; imposta uno di questi valori prima che vi entrino conversazioni reali.",

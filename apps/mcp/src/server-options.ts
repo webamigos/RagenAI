@@ -18,14 +18,14 @@ export function serverOptions(
     name: 'Ragen',
     icons: serverIcons,
     ...(env.MCP_OAUTH_ENABLED === 'true' &&
-    env.BETTER_AUTH_URL &&
+    env.APP_URL &&
     env.RAGEN_MCP_PUBLIC_URL
       ? {
           oauth: {
             enabled: true,
             protectedResource: {
               resource: env.RAGEN_MCP_PUBLIC_URL,
-              authorizationServers: [oauthIssuer(env.BETTER_AUTH_URL)],
+              authorizationServers: [oauthIssuer(env.APP_URL)],
               scopesSupported: ['mcp:read'],
               bearerMethodsSupported: ['header'],
             },
