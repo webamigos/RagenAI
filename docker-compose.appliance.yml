@@ -35,8 +35,6 @@ x-appliance-app-env: &appliance-app-env
   LLM_OLLAMA_BASE_URL: http://ollama:11434/v1
   LLM_OLLAMA_API_KEY: ollama
   DOCLING_STRICT: '1'
-  # Prisma's version check (checkpoint.prisma.io). Found by the egress check.
-  CHECKPOINT_DISABLE: '1'
 
 services:
   ollama:
@@ -90,29 +88,16 @@ services:
     networks:
       - ragen-network
 
-  # Each switch below was found by `npm run appliance:egress-check`: the
-  # service looked up a third-party host on a network with no way out.
+  # The other third-party switches the egress check found — Qdrant's
+  # telemetry, Prisma's checkpoint, Docling's Hub and onnxruntime calls,
+  # Gradio's analytics — are in docker-compose.yml and
+  # docker-compose.fullapp.yml, so this file inherits them. Only the UI is
+  # pinned here: the base file lets an operator turn it back on with
+  # DOCLING_SERVE_ENABLE_UI, and the appliance must not.
   docling:
     environment:
-      # The Gradio UI is a developer convenience, and Gradio sends analytics
-      # (api.gradio.app) and fetches assets (raw.githubusercontent.com).
+      # Gradio fetches assets from raw.githubusercontent.com.
       DOCLING_SERVE_ENABLE_UI: 'false'
-      # The models are in the image; never ask the Hub (huggingface.co).
-      HF_HUB_OFFLINE: '1'
-      HF_HUB_DISABLE_TELEMETRY: '1'
-      # onnxruntime's own telemetry (mobile.events.data.microsoft.com).
-      ORT_DISABLE_TELEMETRY: '1'
-
-  qdrant:
-    environment:
-      # telemetry.qdrant.io
-      QDRANT__TELEMETRY_DISABLED: 'true'
-
-  migrate:
-    environment:
-      # The Prisma CLI's version check (checkpoint.prisma.io), which
-      # `prisma migrate deploy` makes before it touches the database.
-      CHECKPOINT_DISABLE: '1'
 
   web:
     environment:

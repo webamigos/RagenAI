@@ -235,7 +235,7 @@ next deploy, and a misspelt key fails the deploy with its name (#1620).
 |---|---|
 | `RAILWAY_DOCKERFILE_PATH` | `infra/docling/Dockerfile` |
 | `PORT` | `5001` — the forwarder listens here, Docling itself on `PORT + 1` |
-| `DOCLING_SERVE_ENABLE_UI` | `false` — the image defaults it to `true`, and this is not a public service |
+| `DOCLING_SERVE_ENABLE_UI` | `false` — the image's default too, since Gradio reaches third-party hosts; and this is not a public service |
 
 ### Datastores
 

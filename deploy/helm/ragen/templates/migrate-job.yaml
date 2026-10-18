@@ -64,6 +64,10 @@ spec:
             */}}
             - name: DATABASE_DIRECT_URL
               value: {{ .Values.config.DATABASE_DIRECT_URL | default (include "ragen.databaseUrl" .) | quote }}
+            # Off: the Prisma CLI's version check (checkpoint.prisma.io),
+            # made before `migrate deploy` touches the database.
+            - name: CHECKPOINT_DISABLE
+              value: '1'
           resources:
             {{- toYaml .Values.migrations.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

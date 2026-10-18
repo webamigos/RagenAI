@@ -99,6 +99,13 @@ archive is the blog.
 
 ### Self-hosting
 
+- `[brief]` **The standard install stops calling home too.** Qdrant's
+  telemetry, Prisma's version check, Docling's Hugging Face and onnxruntime
+  calls and Gradio's analytics are now off in the standard Compose stack,
+  the Helm chart and the Railway Docling image — not only in the local-model
+  one. Docling's web UI is off by default; `DOCLING_SERVE_ENABLE_UI=true`
+  brings it back. ([#1657](https://github.com/webamigos/RagenAI/pull/1657))
+
 - `[brief]` **`APP_URL` is the name for your installation's address.** It
   replaces `BETTER_AUTH_URL`, which named the auth library rather than what
   the value is. Web, admin and the MCP server all read `APP_URL` first, then

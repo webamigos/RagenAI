@@ -276,6 +276,9 @@ config:
   DOCLING_MAX_CONCURRENCY: '4'
   STORAGE_PROVIDER: local
   STORAGE_LOCAL_PATH: /data/storage
+  # Off: Prisma's version check (checkpoint.prisma.io), made by every app's
+  # Prisma client. The migrate job sets it on its own, as it reads no config.
+  CHECKPOINT_DISABLE: '1'
 
   # Left empty on purpose — the chart points these at the bundled services.
   DATABASE_URL: ''

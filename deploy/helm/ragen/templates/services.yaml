@@ -61,6 +61,20 @@ spec:
             # shared config under the same name. One value for both sides.
             - name: DOCLING_SERVE_MAX_SYNC_WAIT
               value: {{ $.Values.config.DOCLING_SERVE_MAX_SYNC_WAIT | default "300" | quote }}
+            # The Gradio UI fetches assets (raw.githubusercontent.com) and
+            # sends analytics (api.gradio.app); a cluster service needs neither.
+            - name: DOCLING_SERVE_ENABLE_UI
+              value: 'false'
+            - name: GRADIO_ANALYTICS_ENABLED
+              value: 'False'
+            # The models are in the image; never ask the Hub (huggingface.co).
+            - name: HF_HUB_OFFLINE
+              value: '1'
+            - name: HF_HUB_DISABLE_TELEMETRY
+              value: '1'
+            # onnxruntime's own telemetry (mobile.events.data.microsoft.com).
+            - name: ORT_DISABLE_TELEMETRY
+              value: '1'
           {{- end }}
           {{- if eq $name "presidio-analyzer" }}
           env:
