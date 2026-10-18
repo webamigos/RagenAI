@@ -70,19 +70,26 @@ provider.
    much less depends on your documents and your questions. Measure it on your own
    material before committing to the trade-off; `evals/` exists for exactly that.
 
-Ragen's own code calls nothing else. **The third-party components in the stack
-did**, and nobody knew until the egress check watched the traffic: Qdrant's
-telemetry, Prisma's update check, Ollama, Docling's web UI and its Hugging Face
-downloads, and onnxruntime's telemetry inside Docling. `docker-compose.appliance.yml`
-switches each one off, with a comment naming the host it asked for; the default
-`docker-compose.yml` does not yet. A deployment built on the default stack that
-must not talk to anyone should copy those switches — the table is in
+Ragen's own code makes no call nobody asked for: no telemetry, no update
+check. The model calls you configure are a different matter, and the table
+above says where each one goes. **The third-party components in the stack
+did call home**, and nobody knew until the egress check watched the traffic:
+Qdrant's telemetry, Prisma's update check, Ollama, Docling's web UI and its
+Hugging Face downloads, and onnxruntime's telemetry inside Docling. The
+standard `docker-compose.yml`, `docker-compose.fullapp.yml` and the Helm chart
+now switch them off, each with a comment naming the host it stops; Ollama's
+switch lives in `docker-compose.appliance.yml`, the only stack that runs it.
+One gap remains: the app images themselves do not set `CHECKPOINT_DISABLE`,
+so a deployment that runs them outside these files (Railway, for one) still
+makes Prisma's check unless you set it. The table is in
 [`infra/appliance/README.md`](../infra/appliance/README.md#proving-nothing-leaves-the-machine).
 
-With them off, the only outbound needs after installation are an SMTP
-server for notifications (your own internal one works) and pulling container
-images and model weights, which can be done once and then served from your
-internal registry.
+With them off, a deployment on local models needs only two things from
+outside after installation: an SMTP server for notifications (your own
+internal one works), and pulling container images and model weights, which
+can be done once and then served from your internal registry. A deployment
+on a model provider also sends prompts and retrieved passages to that
+provider, as the table above says.
 
 **That sentence used to be untrue, and the reason is worth keeping.** The
 application shell hardcoded our own Google Tag Manager container and gated it on

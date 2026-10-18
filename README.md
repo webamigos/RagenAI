@@ -9,8 +9,8 @@ data — on your own servers, with your own models.**
 
 Private AI in the literal sense: the whole stack can run on one machine of
 yours — the model that answers, embeddings and document parsing included —
-with a check that proves nothing leaves it. A cloud model provider is an
-option you choose, not a requirement.
+with a check that watches ingest and chat and fails if anything leaves it. A
+cloud model provider is an option you choose, not a requirement.
 
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![CI status on main](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml)
@@ -227,7 +227,7 @@ surface and has no public instance — the page above is what it looks like.
 | ------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------------------- |
 | Where your documents live | Vendor's cloud               | Yours                       | **Yours**                                                       |
 | Where the model runs      | Vendor's choice of cloud     | Wherever you wire it        | **Local models on your hardware, or any provider**              |
-| Proof nothing leaves      | Their word                   | Whatever you build          | **An egress check you run yourself, for the local install**     |
+| Proof nothing leaves      | Their word                   | Whatever you build          | **An egress check you run yourself: ingest and chat, local install** |
 | Access control            | Usually per workspace        | Whatever you build          | **Per file and folder, enforced at retrieval**                  |
 | Multi-tenant              | Per seat, per workspace      | Whatever you build          | **Built in — org-scoped data and index**                        |
 | Retrieval quality         | Opaque                       | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision**             |
