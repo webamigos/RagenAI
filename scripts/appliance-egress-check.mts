@@ -971,7 +971,9 @@ async function main(): Promise<void> {
           TOOLS_IMAGE,
           'sh',
           '-c',
-          `sleep 2; nslookup ${CANARY_HOST} >/dev/null 2>&1; curl -s -m 3 http://${CANARY_ADDRESS}/ >/dev/null; sleep 2`,
+          // Kept alive until cleanup, so no container started later can be
+          // handed its address while the capture runs.
+          `sleep 2; nslookup ${CANARY_HOST} >/dev/null 2>&1; curl -s -m 3 http://${CANARY_ADDRESS}/ >/dev/null; exec sleep infinity`,
         ],
         { quiet: true },
       );
