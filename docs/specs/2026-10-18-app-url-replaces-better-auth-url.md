@@ -178,7 +178,8 @@ No Prisma, tenancy or RBAC change.
   install — it was already inconsistent (browser vs. emails); changelog says so.
 - **Neither set on a deployment**: web validation reports `APP_URL`; email
   sending throws with `APP_URL` in the message, as today.
-- **admin without `APP_URL`**: Better Auth gets `baseURL: undefined` and falls
+- **admin with neither `APP_URL` nor `BETTER_AUTH_URL`**: Better Auth gets
+  `baseURL: undefined` and falls
   back to request origin exactly as now; `localhost:3200` still trusted
   outside production.
 

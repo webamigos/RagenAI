@@ -103,10 +103,12 @@ archive is the blog.
   replaces `BETTER_AUTH_URL`, which named the auth library rather than what
   the value is. Web, admin and the MCP server all read `APP_URL` first, then
   `BETTER_AUTH_URL`, and log a deprecation warning for the old one, so nothing
-  breaks today. Rename it when convenient, and keep both set until you are sure
-  you will not roll back to an older image. Email links, the browser and Better
-  Auth now always agree on the address. Before, an install that set the two
-  names to different values got emails and pages pointing at different hosts.
+  breaks today. Rename it when convenient, in every env file at once: a root
+  `APP_URL` beside an app's own leftover `BETTER_AUTH_URL` wins over it. Keep
+  both set until you are sure you will not roll back to an older image. With
+  `APP_URL` (or the old name) set, email links, the browser and Better Auth
+  now agree on the address. Before, an install that set the two names to
+  different values got emails and pages pointing at different hosts.
 
 - `[brief]` **An offline install that is checked to be offline.**
   `npm run appliance:egress-check` runs the local-model stack on a network

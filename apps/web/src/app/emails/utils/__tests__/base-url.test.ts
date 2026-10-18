@@ -12,6 +12,7 @@ describe('getBaseUrl', () => {
     // Both names unset unless a case says otherwise, so a developer's own
     // environment cannot decide a case.
     vi.stubEnv('APP_URL', '');
+    vi.stubEnv('BETTER_AUTH_URL', '');
   });
 
   afterEach(() => {
