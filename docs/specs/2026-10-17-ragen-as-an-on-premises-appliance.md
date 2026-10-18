@@ -183,7 +183,8 @@ sentence what leaves the building, and two named profiles allow that.
 
 A script brings the stack up on an internal-only Docker network
 (`internal: true`), runs ingest, chat, Brain and the guardrail first pass,
-and fails if any container attempted an outbound connection.
+and fails if any container attempted an outbound connection. A3 shipped the
+ingest and chat pass; Brain and the guardrail pass are A3b.
 
 Hybrid mode needs exactly one way out, and the gateway is in-process
 (ADR-49), so model calls leave from web, api and worker. They cannot be
@@ -590,7 +591,8 @@ repeatable demo, and records the gaps as tests.
 - **Architecture:** a guard that fails when a model id reaches a provider
   without the route table, so the moderation case cannot recur.
 - **Integration:** A3's egress check in CI (CPU, small model) on every change
-  to compose, the route files or the worker's ingest.
+  to compose, the route files or the worker's ingest. Not yet: the CI job is
+  A3b, and until then the check is run by hand.
 - **E2E:** `p0-*` for OIDC sign-in against a mock issuer, because sign-in must
   gate the merge. `smoke-*` for the panel rendering with custom branding.
 - **Measurement:** A5 numbers are committed with the hardware model, driver

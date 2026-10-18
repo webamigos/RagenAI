@@ -106,7 +106,7 @@ archive is the blog.
   telemetry and update checks in Qdrant, Prisma, Ollama and Docling. The
   local-model compose file now switches all of them off. Its environment
   template also lists the secrets that the API and the worker need in order
-  to start.
+  to start. ([#1655](https://github.com/webamigos/RagenAI/pull/1655))
 
 - `[brief]` **The knowledge base from a terminal.** `ragen kb upload docs/*.pdf
   --wait` uploads files with an API key and waits until each is indexed,

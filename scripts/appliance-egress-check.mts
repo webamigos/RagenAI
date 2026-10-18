@@ -1032,26 +1032,37 @@ async function main(): Promise<void> {
       () => undefined,
     );
     if (!options.keep) {
-      await stack.compose(['down'], true, true).catch(() => undefined);
-      // Every volume but the models, so the next run does not pull gigabytes.
-      const { stdout } = await run(
-        'docker',
-        [
-          'volume',
-          'ls',
-          '-q',
-          '--filter',
-          `label=com.docker.compose.project=${options.project}`,
-        ],
-        { quiet: true },
-      );
-      const volumes = stdout
-        .split('\n')
-        .filter((name) => name && !name.endsWith('_ollama_models'));
-      if (volumes.length > 0) {
-        await run('docker', ['volume', 'rm', ...volumes], { quiet: true });
+      // Best effort throughout: a cleanup step that throws here would hide
+      // the result or the error the run is reporting. The directory goes
+      // last, because `compose down` reads it as the project directory.
+      try {
+        await stack.compose(['down'], true, true).catch(() => undefined);
+        // Every volume but the models, so the next run does not pull
+        // gigabytes again.
+        const { stdout } = await run(
+          'docker',
+          [
+            'volume',
+            'ls',
+            '-q',
+            '--filter',
+            `label=com.docker.compose.project=${options.project}`,
+          ],
+          { quiet: true },
+        );
+        const volumes = stdout
+          .split('\n')
+          .filter((name) => name && !name.endsWith('_ollama_models'));
+        if (volumes.length > 0) {
+          await run('docker', ['volume', 'rm', ...volumes], { quiet: true });
+        }
+      } catch (error) {
+        console.error(
+          `Cleanup was incomplete: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      } finally {
+        rmSync(workdir, { recursive: true, force: true });
       }
-      rmSync(workdir, { recursive: true, force: true });
     } else {
       console.log(`\nLeft running as project ${options.project} (${workdir}).`);
     }
