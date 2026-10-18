@@ -11,13 +11,12 @@
  * `APP_URL` is the source of truth because Better Auth already builds the
  * magic-link, password-reset and email-verification URLs from it (`baseURL` in
  * `src/lib/auth.ts`), so every other link in every other email this app sends
- * already resolves this way. It is read through `resolveAppUrl()`, which also
- * accepts the deprecated `BETTER_AUTH_URL`. Both are read at runtime, unlike
- * `NEXT_PUBLIC_APP_URL`, which Next inlines at build time and which therefore
- * cannot be set by an operator running a prebuilt image. That fallback goes
- * through `readPublicRuntimeConfig()`, which reads the real environment, so an
- * install that configured only the legacy name still works from an image
- * nobody rebuilt.
+ * already resolves this way. It is read at runtime through `resolveAppUrl()`,
+ * unlike `NEXT_PUBLIC_APP_URL`, which Next inlines at build time and which
+ * therefore cannot be set by an operator running a prebuilt image. That
+ * fallback goes through `readPublicRuntimeConfig()`, which reads the real
+ * environment, so an install that configured only it still works from an
+ * image nobody rebuilt.
  */
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
 import { isDeployedEnv, normalizeTargetEnv, resolveAppUrl } from '@ragenai/env';

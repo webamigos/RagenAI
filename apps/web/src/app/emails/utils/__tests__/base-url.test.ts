@@ -26,12 +26,11 @@ describe('getBaseUrl', () => {
     expect(getBaseUrl()).toBe('https://ragen.example.com');
   });
 
-  it('still reads the deprecated BETTER_AUTH_URL, ahead of NEXT_PUBLIC_APP_URL', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('no longer reads the renamed BETTER_AUTH_URL', () => {
     vi.stubEnv('BETTER_AUTH_URL', 'https://legacy.example.com');
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://ignored.example.com');
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://selfhosted.example.com');
 
-    expect(getBaseUrl()).toBe('https://legacy.example.com');
+    expect(getBaseUrl()).toBe('https://selfhosted.example.com');
   });
 
   it('falls back to NEXT_PUBLIC_APP_URL for installs that only set that one', () => {

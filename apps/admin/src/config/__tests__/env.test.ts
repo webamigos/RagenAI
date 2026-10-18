@@ -39,6 +39,18 @@ describe('the apps/admin environment contract', () => {
     expect(parseAdminEnv(base).ok).toBe(true);
   });
 
+  it('names the rename when only the old BETTER_AUTH_URL is set', () => {
+    const result = parseAdminEnv({
+      ...base,
+      BETTER_AUTH_URL: 'http://localhost:3200',
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.report).toContain('BETTER_AUTH_URL was renamed to APP_URL');
+    }
+  });
+
   it('accepts a fully configured deployment', () => {
     expect(parseAdminEnv(deployed).ok).toBe(true);
   });

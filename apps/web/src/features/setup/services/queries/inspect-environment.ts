@@ -1,4 +1,4 @@
-import { APP_URL_VARIABLE, LEGACY_APP_URL_VARIABLE } from '@ragenai/env';
+import { APP_URL_VARIABLE } from '@ragenai/env';
 import { resolveWorkerRuntime } from '@ragenai/jobs';
 import { PROVIDER_CREDENTIAL_VARS } from '@ragenai/llm-gateway';
 import {
@@ -65,14 +65,14 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     example: 'SMTP_HOST=smtp.example.com, or RESEND_API_KEY=re_...',
   },
   {
-    // Any of the three satisfies this. `APP_URL` is the name: Better Auth
-    // signs its own email links with it, `emails/utils/base-url.ts` prefers it
-    // and the browser reads it through `public-runtime-config.ts`.
-    // `BETTER_AUTH_URL` is its deprecated spelling, still read;
+    // Either satisfies this. `APP_URL` is the name: Better Auth signs its own
+    // email links with it, `emails/utils/base-url.ts` prefers it and the
+    // browser reads it through `public-runtime-config.ts`.
     // `NEXT_PUBLIC_APP_URL` is the build-time spelling that still works and
-    // cannot be set on a prebuilt image.
+    // cannot be set on a prebuilt image. The renamed `BETTER_AUTH_URL` no
+    // longer counts; the env check names it (`appUrlRenameRule`).
     id: 'app-url',
-    vars: [APP_URL_VARIABLE, LEGACY_APP_URL_VARIABLE, 'NEXT_PUBLIC_APP_URL'],
+    vars: [APP_URL_VARIABLE, 'NEXT_PUBLIC_APP_URL'],
     example: 'https://ragen.example.com',
   },
   {

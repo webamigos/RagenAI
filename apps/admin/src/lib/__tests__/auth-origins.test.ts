@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { adminTrustedOrigins, LOCAL_ADMIN_ORIGIN } from '../auth-origins';
 
@@ -68,14 +68,12 @@ describe('adminTrustedOrigins', () => {
     ).toEqual(['https://admin.example.com']);
   });
 
-  it('still reads the deprecated BETTER_AUTH_URL when APP_URL is unset', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
+  it('no longer reads the renamed BETTER_AUTH_URL', () => {
     expect(
       adminTrustedOrigins({
         BETTER_AUTH_URL: 'https://admin.example.com',
         NODE_ENV: 'production',
       }),
-    ).toEqual(['https://admin.example.com']);
+    ).toEqual([]);
   });
 });

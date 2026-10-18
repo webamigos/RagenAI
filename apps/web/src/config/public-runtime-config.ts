@@ -81,8 +81,7 @@ export function readPublicRuntimeConfig(
   env: Record<string, string | undefined> = process.env,
 ): PublicRuntimeConfig {
   return {
-    // `resolveAppUrl()` is `APP_URL`, then the deprecated `BETTER_AUTH_URL`;
-    // the build-time spelling comes after both.
+    // `APP_URL`, then the build-time spelling.
     appUrl: resolveAppUrl(env) ?? pick(env, 'NEXT_PUBLIC_APP_URL'),
     pusherKey: pick(env, 'PUSHER_PUBLIC_KEY', 'NEXT_PUBLIC_PUSHER_KEY'),
     pusherCluster: pick(env, 'PUSHER_CLUSTER', 'NEXT_PUBLIC_PUSHER_CLUSTER'),

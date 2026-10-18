@@ -218,8 +218,8 @@ const appUrl = resolveAppUrl();
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
-  // `APP_URL` (or its deprecated name) — the origin Better Auth signs its
-  // magic-link, reset and verification links with.
+  // `APP_URL` — the origin Better Auth signs its magic-link, reset and
+  // verification links with.
   baseURL: appUrl || 'http://localhost:3000',
   trustedOrigins: ['http://localhost:3000', ...(appUrl ? [appUrl] : [])],
 

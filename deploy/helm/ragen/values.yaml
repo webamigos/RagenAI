@@ -296,7 +296,7 @@ config:
   TEMPORAL_SERVER_ADDRESS: ''
   # Public URLs. Set these — sign-in links and OAuth callbacks are built from
   # them, and there is no sensible default. APP_URL was BETTER_AUTH_URL, which
-  # is still read when APP_URL is unset (deprecated).
+  # is no longer read: every app's boot check names it if it is still set.
   APP_URL: ''
   NEXT_PUBLIC_APP_URL: ''
 

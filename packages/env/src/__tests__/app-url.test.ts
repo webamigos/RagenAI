@@ -1,64 +1,24 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { resetAppUrlWarningForTests, resolveAppUrl } from '../app-url';
+import { appUrlRenameRule, resolveAppUrl } from '../app-url';
 import { appOrigin } from '../fragments';
 
 describe('resolveAppUrl', () => {
-  let warn: ReturnType<typeof vi.spyOn>;
-
-  beforeEach(() => {
-    resetAppUrlWarningForTests();
-    warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-  });
-
-  afterEach(() => {
-    warn.mockRestore();
-  });
-
   it('reads APP_URL', () => {
     expect(resolveAppUrl({ APP_URL: 'https://ragen.example' })).toBe(
       'https://ragen.example',
     );
-    expect(warn).not.toHaveBeenCalled();
   });
 
-  it('prefers APP_URL over the legacy name when both are set', () => {
+  it('no longer reads BETTER_AUTH_URL', () => {
     expect(
-      resolveAppUrl({
-        APP_URL: 'https://ragen.example',
-        BETTER_AUTH_URL: 'http://localhost:3000',
-      }),
-    ).toBe('https://ragen.example');
-  });
-
-  it('falls back to BETTER_AUTH_URL, so an existing install keeps working', () => {
-    expect(resolveAppUrl({ BETTER_AUTH_URL: 'https://legacy.example' })).toBe(
-      'https://legacy.example',
-    );
-  });
-
-  it('warns about the legacy name once per process, not per call', () => {
-    resolveAppUrl({ BETTER_AUTH_URL: 'https://legacy.example' });
-    resolveAppUrl({ BETTER_AUTH_URL: 'https://legacy.example' });
-
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0]?.[0]).toContain('APP_URL');
-  });
-
-  it('treats a blank APP_URL as unset rather than letting it shadow the legacy value', () => {
-    expect(
-      resolveAppUrl({
-        APP_URL: '   ',
-        BETTER_AUTH_URL: 'https://legacy.example',
-      }),
-    ).toBe('https://legacy.example');
-  });
-
-  it('returns undefined when neither is set', () => {
-    expect(resolveAppUrl({})).toBeUndefined();
-    expect(
-      resolveAppUrl({ APP_URL: '', BETTER_AUTH_URL: ' ' }),
+      resolveAppUrl({ BETTER_AUTH_URL: 'https://legacy.example' }),
     ).toBeUndefined();
+  });
+
+  it('treats a blank APP_URL as unset', () => {
+    expect(resolveAppUrl({ APP_URL: '   ' })).toBeUndefined();
+    expect(resolveAppUrl({})).toBeUndefined();
   });
 
   it('strips trailing slashes, because callers append absolute paths', () => {
@@ -68,17 +28,47 @@ describe('resolveAppUrl', () => {
   });
 });
 
-describe('appOrigin', () => {
-  it('accepts either name and treats blank as unset', () => {
-    expect(
-      appOrigin.parse({
-        APP_URL: 'https://ragen.example',
-        BETTER_AUTH_URL: '',
-      }),
-    ).toEqual({ APP_URL: 'https://ragen.example', BETTER_AUTH_URL: undefined });
+describe('appUrlRenameRule', () => {
+  const schema = appOrigin.superRefine(appUrlRenameRule);
+
+  it('reports an install that still sets only BETTER_AUTH_URL, naming both', () => {
+    const result = schema.safeParse({
+      BETTER_AUTH_URL: 'https://legacy.example',
+    });
+
+    expect(result.success).toBe(false);
+    const message = result.error?.issues[0]?.message ?? '';
+    expect(message).toContain('BETTER_AUTH_URL');
+    expect(message).toContain('APP_URL');
+    expect(result.error?.issues[0]?.path).toEqual(['APP_URL']);
   });
 
-  it('rejects a value that is not an http(s) url', () => {
+  it('reports the old name even when its value is not a url', () => {
+    expect(
+      schema.safeParse({ BETTER_AUTH_URL: 'localhost:3000' }).success,
+    ).toBe(false);
+  });
+
+  it('accepts APP_URL alone, both names together, and neither', () => {
+    expect(schema.safeParse({ APP_URL: 'https://ragen.example' }).success).toBe(
+      true,
+    );
+    expect(
+      schema.safeParse({
+        APP_URL: 'https://ragen.example',
+        BETTER_AUTH_URL: 'https://legacy.example',
+      }).success,
+    ).toBe(true);
+    expect(schema.safeParse({}).success).toBe(true);
+  });
+
+  it('ignores a blank BETTER_AUTH_URL left in an env file', () => {
+    expect(schema.safeParse({ BETTER_AUTH_URL: '' }).success).toBe(true);
+  });
+});
+
+describe('appOrigin', () => {
+  it('rejects an APP_URL that is not an http(s) url', () => {
     expect(appOrigin.safeParse({ APP_URL: 'localhost:3000' }).success).toBe(
       false,
     );

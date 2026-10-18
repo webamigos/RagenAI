@@ -130,8 +130,9 @@ HEX64  = ${{secret(64, "abcdef0123456789")}}      # openssl rand -hex 32
 `NEXT_PUBLIC_APP_URL` is deliberately absent: it is baked in at build time and
 cannot be set on a prebuilt image. `APP_URL` is the runtime name
 (`docs/lessons/next-public-vars-are-baked-in-at-build-time.md`). It was
-`BETTER_AUTH_URL`, which every app still reads when `APP_URL` is unset — a
-project created from an older template keeps working, and should rename it.
+`BETTER_AUTH_URL`, which is no longer read. A project created from an older
+template must rename it; until it does, each service's boot check reports
+`BETTER_AUTH_URL was renamed to APP_URL`.
 
 ### `api`
 
@@ -173,7 +174,7 @@ The worker takes the **same** encryption key and the same storage as `web` and
 | `TARGET_ENV` | `production` |
 | `DATABASE_URL` | `${{postgres.DATABASE_URL}}` |
 | `BETTER_AUTH_SECRET` | HEX64 — **its own**, not `web`'s (the panel is a separate Better Auth instance, as `create-ragen-app` sets it up) |
-| `APP_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` — also what makes the panel's own origin trusted at sign-in (`apps/admin/src/lib/auth-origins.ts`); without it (or the deprecated `BETTER_AUTH_URL`) a production build answers "Invalid origin" |
+| `APP_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` — also what makes the panel's own origin trusted at sign-in (`apps/admin/src/lib/auth-origins.ts`); without it a production build answers "Invalid origin" |
 | `RAGEN_APP_URL` | `http://${{web.RAILWAY_PRIVATE_DOMAIN}}:3000` — invitations and guardrail trials post to `web` |
 | `INTERNAL_API_SECRET` | `${{web.INTERNAL_API_SECRET}}` |
 | `RAGEN_TOKEN_VAULT_URL`, `RAGEN_TOKEN_VAULT_SERVICE_SECRET` | as `web` |

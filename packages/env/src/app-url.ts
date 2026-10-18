@@ -1,69 +1,57 @@
+import { type z } from 'zod';
+
 /**
  * The public origin users reach this installation at — the one place it is
  * resolved.
  *
  * `APP_URL` is the name. It used to be `BETTER_AUTH_URL`, which says which
- * library reads the value rather than what it is, and operators reasonably
- * took it for something auth-internal and left it at `localhost` — which
- * breaks every invitation, reset and verification link
- * (docs/specs/2026-10-18-app-url-replaces-better-auth-url.md).
- *
- * The old name is still read, after the new one, so no install has to be
- * reconfigured for this to land. It is read *here and nowhere else* —
- * `tests/architecture/app-url-is-resolved-in-one-place.test.ts` fails on any
- * other read — which is what makes dropping it later a one-line change.
- *
- * `APP_URL` first, not the legacy name: it is the one meant to win, and the
- * web image's build stage carries a placeholder for the legacy name that must
- * never shadow a value an operator set.
+ * library reads the value rather than what it is
+ * (docs/specs/2026-10-18-app-url-replaces-better-auth-url.md). v2.58.0 read
+ * the old name as a fallback; Phase C removed the fallback. The old name is
+ * now read in exactly one place, {@link appUrlRenameRule}, and only to say
+ * that it was renamed — never as a value.
  */
-
-/** Read only as {@link resolveAppUrl}'s fallback. Remove in Phase C. */
-export const LEGACY_APP_URL_VARIABLE = 'BETTER_AUTH_URL' as const;
 
 export const APP_URL_VARIABLE = 'APP_URL' as const;
 
-let warned = false;
+/** The name `APP_URL` replaced. Detected by {@link appUrlRenameRule}, never read as a value. */
+export const RENAMED_APP_URL_VARIABLE = 'BETTER_AUTH_URL' as const;
 
 /**
- * The configured origin, or `undefined` when neither name is set.
- *
- * Blank counts as unset per variable: `APP_URL=` left empty in an env file
- * must not shadow a configured legacy value. A trailing slash is stripped,
- * because every caller appends an absolute path.
+ * The configured origin, or `undefined` when `APP_URL` is unset or blank.
+ * A trailing slash is stripped, because every caller appends an absolute path.
  */
 export function resolveAppUrl(
   // The index signature lets a parsed env (numbers included) and
-  // `process.env` both pass; only the two names below are read.
+  // `process.env` both pass.
   env: {
     readonly APP_URL?: string;
-    readonly BETTER_AUTH_URL?: string;
     readonly [name: string]: unknown;
   } = process.env,
 ): string | undefined {
-  const current = env[APP_URL_VARIABLE]?.trim();
-  if (current) {
-    return current.replace(/\/+$/, '');
-  }
-
-  const legacy = env[LEGACY_APP_URL_VARIABLE]?.trim();
-  if (!legacy) {
-    return undefined;
-  }
-
-  // Once per process, and never fatal: apps/web must keep serving the setup
-  // page whatever its environment says, and a renamed variable is a nudge.
-  if (!warned) {
-    warned = true;
-    // eslint-disable-next-line no-console -- a config read has no logger, by design
-    console.warn(
-      `[config] ${LEGACY_APP_URL_VARIABLE} is deprecated — rename it to ${APP_URL_VARIABLE}. It is still read, for now.`,
-    );
-  }
-  return legacy.replace(/\/+$/, '');
+  const value = env[APP_URL_VARIABLE]?.trim();
+  return value ? value.replace(/\/+$/, '') : undefined;
 }
 
-/** Test seam: the warning is once per process, and tests share one. */
-export function resetAppUrlWarningForTests(): void {
-  warned = false;
+/**
+ * Report an install that still sets only the old name.
+ *
+ * Without this, removing the fallback would fail quietly: Better Auth would
+ * sign links with its localhost default, emails would stop going out (their
+ * mailer catches and logs) and the MCP OAuth issuer would be missing — none of
+ * it naming the variable. With it, every app's boot-time check says exactly
+ * what to rename. Both set is fine: `APP_URL` wins and the old one is inert.
+ */
+export function appUrlRenameRule(
+  env: { readonly APP_URL?: string; readonly BETTER_AUTH_URL?: string },
+  ctx: z.RefinementCtx,
+): void {
+  if (env[APP_URL_VARIABLE]?.trim() || !env[RENAMED_APP_URL_VARIABLE]?.trim()) {
+    return;
+  }
+  ctx.addIssue({
+    code: 'custom',
+    path: [APP_URL_VARIABLE],
+    message: `${RENAMED_APP_URL_VARIABLE} was renamed to ${APP_URL_VARIABLE} in v2.58.0 and is no longer read. Rename it to ${APP_URL_VARIABLE}, keeping the same value.`,
+  });
 }

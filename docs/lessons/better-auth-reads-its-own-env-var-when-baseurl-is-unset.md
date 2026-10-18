@@ -11,7 +11,11 @@ topics: ['better-auth', 'environment-variables', 'app-url', 'rename', 'adr-37', 
 
 **Context**: `docs/specs/2026-10-18-app-url-replaces-better-auth-url.md` made
 `APP_URL` the public-origin variable and kept `BETTER_AUTH_URL` as a deprecated
-fallback, read only in `packages/env/src/app-url.ts`.
+fallback, read only in `packages/env/src/app-url.ts`; Phase C then removed the
+fallback. Even now, apps/admin with no `APP_URL` hands Better Auth an undefined
+`baseURL`, and the library still picks up a leftover `BETTER_AUTH_URL` on its
+own. That is why the rename is reported by each app's env check
+(`appUrlRenameRule`) rather than trusted to the code that no longer reads it.
 
 **Problem**: A grep of the repository found every reader except one. apps/admin
 had no `baseURL` in its `betterAuth()` config, so the library read the old name

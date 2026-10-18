@@ -102,21 +102,27 @@ describe('inspectEnvironment', () => {
     expect(finding?.vars).toEqual(['DEFAULT_MODEL_PROVIDER']);
   });
 
-  it('accepts any of the app-URL variables', () => {
-    // base-url.ts reads APP_URL, its deprecated name BETTER_AUTH_URL, then
-    // NEXT_PUBLIC_APP_URL, so nagging for another when one is set is wrong.
+  it('accepts either app-URL variable, and not the renamed one', () => {
+    // base-url.ts reads APP_URL, then NEXT_PUBLIC_APP_URL, so nagging for the
+    // other when one is set is wrong. BETTER_AUTH_URL is no longer read, so it
+    // must not count.
     expect(idsOf({ ...completeEnv, NEXT_PUBLIC_APP_URL: undefined })).toContain(
       'app-url',
     );
-    for (const name of ['APP_URL', 'BETTER_AUTH_URL']) {
-      expect(
-        idsOf({
-          ...completeEnv,
-          NEXT_PUBLIC_APP_URL: undefined,
-          [name]: 'https://ragen.example.com',
-        }),
-      ).not.toContain('app-url');
-    }
+    expect(
+      idsOf({
+        ...completeEnv,
+        NEXT_PUBLIC_APP_URL: undefined,
+        APP_URL: 'https://ragen.example.com',
+      }),
+    ).not.toContain('app-url');
+    expect(
+      idsOf({
+        ...completeEnv,
+        NEXT_PUBLIC_APP_URL: undefined,
+        BETTER_AUTH_URL: 'https://ragen.example.com',
+      }),
+    ).toContain('app-url');
   });
 
   it('reports an unset TARGET_ENV', () => {

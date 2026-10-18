@@ -6,19 +6,18 @@ import { readSource, trackedFiles } from './tracked-files';
  * The installation's public origin is read through `resolveAppUrl()` and
  * nowhere else.
  *
- * `APP_URL` replaced `BETTER_AUTH_URL`, which is still accepted as a fallback
- * so no deployment had to be reconfigured at once
- * (docs/specs/2026-10-18-app-url-replaces-better-auth-url.md). Before that,
+ * `APP_URL` replaced `BETTER_AUTH_URL`
+ * (docs/specs/2026-10-18-app-url-replaces-better-auth-url.md). The old name
+ * is no longer read as a value; `appUrlRenameRule` reads it only to tell an
+ * install to rename it, and that rule lives in the same file. Before that,
  * three files read the origin by hand and disagreed on which name won — emails
- * and the browser could point at different hosts. One reader is what makes
- * the order the same everywhere, and what makes dropping the old name later a
- * one-line change rather than a hunt.
+ * and the browser could point at different hosts. One reader keeps it that
+ * way, and keeps the old name from creeping back in as a quiet fallback.
  *
  * A *read* is what is policed: `process.env.BETTER_AUTH_URL`,
  * `env['BETTER_AUTH_URL']`, or the name as a string literal handed to a
- * lookup. Comments, the schema key in `fragments.ts` that lets a legacy
- * install validate, and tests (which must exercise the fallback) are not
- * reads.
+ * lookup. Comments, the schema key in `fragments.ts` that lets the rule see
+ * the old name, and tests (which must prove it is ignored) are not reads.
  */
 
 const RESOLVER = 'packages/env/src/app-url.ts';
@@ -57,7 +56,7 @@ describe('the app origin is resolved in one place', () => {
     expect(files).toContain(RESOLVER);
   });
 
-  it('reads BETTER_AUTH_URL only inside resolveAppUrl()', () => {
+  it('reads BETTER_AUTH_URL only inside app-url.ts, to report the rename', () => {
     const offenders = files
       .filter((file) => file !== RESOLVER)
       .filter((file) => {
@@ -67,9 +66,9 @@ describe('the app origin is resolved in one place', () => {
 
     expect(
       offenders,
-      'Read the public origin with `resolveAppUrl()` from @ragenai/env — it ' +
-        'takes APP_URL first and the deprecated BETTER_AUTH_URL second, the ' +
-        'same order in every app.',
+      'Read the public origin with `resolveAppUrl()` from @ragenai/env. ' +
+        'BETTER_AUTH_URL was renamed to APP_URL and must not come back as a ' +
+        'fallback.',
     ).toEqual([]);
   });
 });

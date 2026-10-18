@@ -4,8 +4,8 @@ import { resolveAppUrl } from '@ragenai/env';
  * The origins Better Auth will accept a request from in this app.
  *
  * Why this exists at all: `betterAuth()` here declared no `baseURL` and no
- * `trustedOrigins`, so it fell back to the app-origin variable — `APP_URL`
- * now, `BETTER_AUTH_URL` then — and AGENTS.md says one `.env.local` at the
+ * `trustedOrigins`, so it fell back to the app-origin variable (then named
+ * `BETTER_AUTH_URL`, now `APP_URL`) — and AGENTS.md says one `.env.local` at the
  * repository root serves every app. That variable holds a single origin, and
  * the root file names apps/web's. Signing in to the admin panel on `:3200`
  * then fails with **"Sign-in failed: Invalid origin"**, a message that names

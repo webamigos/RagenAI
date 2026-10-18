@@ -1,4 +1,5 @@
 import {
+  appUrlRenameRule,
   fieldGroupRules,
   encryptionRules,
   fragments,
@@ -83,9 +84,9 @@ export const webEnvSchema = fragments.targetEnv
     /**
      * Any of these satisfies `getBaseUrl()`, so none is required on its own;
      * the refinement below requires one of them on a deployment. `APP_URL` is
-     * the name — `BETTER_AUTH_URL` is its deprecated spelling, and
-     * `NEXT_PUBLIC_APP_URL` is inlined at build time and cannot be set by an
-     * operator running a prebuilt image.
+     * the name; `NEXT_PUBLIC_APP_URL` is inlined at build time and cannot be
+     * set by an operator running a prebuilt image. The fragment also declares
+     * the renamed `BETTER_AUTH_URL`, only so `appUrlRenameRule` can report it.
      */
     ...fragments.appOrigin.shape,
     NEXT_PUBLIC_APP_URL: fragments.blankAsUndefined(
@@ -110,6 +111,7 @@ export const webEnvSchema = fragments.targetEnv
   })
   .superRefine((env, ctx) => {
     mcpOAuthRules(env, ctx);
+    appUrlRenameRule(env, ctx);
     // Only on the proxy path — `native` is the default and authenticates
 
     requiredInDeployedEnvs(

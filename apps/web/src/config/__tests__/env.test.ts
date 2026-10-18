@@ -82,14 +82,16 @@ describe('the apps/web environment contract', () => {
     ).toBe(true);
   });
 
-  it('accepts the deprecated BETTER_AUTH_URL alone, so an existing deployment still boots', () => {
-    expect(
-      parseWebEnv({
-        ...deployed,
-        APP_URL: undefined,
-        BETTER_AUTH_URL: 'https://demo.example.com',
-      }).ok,
-    ).toBe(true);
+  it('names the rename when only the old BETTER_AUTH_URL is set', () => {
+    const result = parseWebEnv({
+      ...base,
+      BETTER_AUTH_URL: 'https://demo.example.com',
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.report).toContain('BETTER_AUTH_URL was renamed to APP_URL');
+    }
   });
 
   it.each(['local', 'test', 'e2e', 'ci'])(
