@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   gateProfile,
+  googleHostedDomainHint,
   isAllowedEmail,
+  issuerEmailVerified,
   isOidcCallback,
   oidcConfigFromEnv,
 } from '../oidc-config';
@@ -24,6 +26,8 @@ describe('oidcConfigFromEnv', () => {
       status: 'on',
       config: {
         issuer: 'https://login.example.com/tenant/v2.0',
+        kind: 'generic',
+        entraTenantId: null,
         discoveryUrl:
           'https://login.example.com/tenant/v2.0/.well-known/openid-configuration',
         clientId: 'client',
@@ -177,5 +181,104 @@ describe('isOidcCallback', () => {
         google,
       ),
     ).toEqual({ email: 'jan@acme.pl', emailVerified: true });
+  });
+});
+
+describe('Microsoft Entra ID', () => {
+  const tenant = '6F1B2C3D-0000-4000-8000-00000000ABCD';
+
+  it('recognises a tenant named by GUID, with or without /v2.0', () => {
+    for (const issuer of [
+      `https://login.microsoftonline.com/${tenant}/v2.0`,
+      `https://login.microsoftonline.com/${tenant}`,
+    ]) {
+      expect(
+        oidcConfigFromEnv({ ...valid, OIDC_ISSUER: issuer }),
+      ).toMatchObject({
+        status: 'on',
+        config: {
+          kind: 'microsoft-entra-id',
+          entraTenantId: tenant.toLowerCase(),
+          requireHostedDomain: false,
+        },
+      });
+    }
+  });
+
+  it('refuses a multi-tenant authority', () => {
+    // Its discovery issuer is a `{tenantid}` template no ID token matches, and
+    // it vouches for every Entra tenant there is.
+    for (const authority of ['common', 'organizations', 'Consumers']) {
+      expect(
+        oidcConfigFromEnv({
+          ...valid,
+          OIDC_ISSUER: `https://login.microsoftonline.com/${authority}/v2.0`,
+        }),
+      ).toEqual({
+        status: 'invalid',
+        problems: [
+          'OIDC_ISSUER names a multi-tenant Microsoft authority (common, organizations or consumers); use your tenant ID',
+        ],
+      });
+    }
+  });
+
+  it('keeps a tenant named by domain on the generic path', () => {
+    expect(
+      oidcConfigFromEnv({
+        ...valid,
+        OIDC_ISSUER:
+          'https://login.microsoftonline.com/acme.onmicrosoft.com/v2.0',
+      }),
+    ).toMatchObject({
+      status: 'on',
+      config: { kind: 'generic', entraTenantId: null },
+    });
+  });
+});
+
+describe('googleHostedDomainHint', () => {
+  it('names the one allowed domain, or any Workspace for several', () => {
+    expect(googleHostedDomainHint(['acme.pl'])).toBe('acme.pl');
+    expect(googleHostedDomainHint(['acme.pl', 'acme.com'])).toBe('*');
+  });
+
+  it('marks Google as its own kind', () => {
+    expect(
+      oidcConfigFromEnv({
+        ...valid,
+        OIDC_ISSUER: 'https://accounts.google.com',
+      }),
+    ).toMatchObject({ status: 'on', config: { kind: 'google' } });
+  });
+});
+
+describe('issuerEmailVerified', () => {
+  it('believes an explicit email_verified claim either way', () => {
+    expect(issuerEmailVerified({ email_verified: true })).toBe(true);
+    expect(issuerEmailVerified({ email_verified: false })).toBe(false);
+  });
+
+  it('is null when the issuer says nothing, so OIDC_TRUST_EMAIL can fill it in', () => {
+    // Better Auth's Entra helper reports a missing claim as `emailVerified:
+    // false`; reading that instead would make the setting a no-op on Entra.
+    expect(
+      issuerEmailVerified({ email: 'jan@acme.pl', emailVerified: false }),
+    ).toBeNull();
+  });
+
+  it("reads Entra's verified_primary_email / verified_secondary_email claims", () => {
+    expect(
+      issuerEmailVerified({
+        email: 'Jan@acme.pl',
+        verified_primary_email: ['jan@acme.pl'],
+      }),
+    ).toBe(true);
+    expect(
+      issuerEmailVerified({
+        email: 'jan@acme.pl',
+        verified_secondary_email: ['other@acme.pl'],
+      }),
+    ).toBe(false);
   });
 });

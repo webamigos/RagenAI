@@ -14,8 +14,25 @@
 /** The Better Auth provider id. Part of the callback URL the IdP is given. */
 export const OIDC_PROVIDER_ID = 'oidc';
 
+/**
+ * Which issuer this is, where Better Auth has something specific for it.
+ *
+ * - `microsoft-entra-id`: a single Entra tenant named by its GUID. Wired
+ *   through Better Auth's `microsoftEntraId` helper, which keys the account on
+ *   the immutable `oid` claim rather than the per-application `sub`.
+ * - `google`: Google's issuer. The `hd` claim is required (see
+ *   `requireHostedDomain`) and the authorization request carries `hd`, so
+ *   Google's account chooser offers Workspace accounts only.
+ * - `generic`: everything else — Keycloak, Okta, Authentik, an Entra tenant
+ *   named by domain rather than GUID — over its discovery document.
+ */
+export type OidcIssuerKind = 'generic' | 'microsoft-entra-id' | 'google';
+
 export type OidcConfig = {
   issuer: string;
+  kind: OidcIssuerKind;
+  /** The Entra tenant GUID, lowercase, for `microsoft-entra-id`; else null. */
+  entraTenantId: string | null;
   discoveryUrl: string;
   clientId: string;
   clientSecret: string;
@@ -86,6 +103,10 @@ export function oidcConfigFromEnv(env: Env): OidcStatus {
     problems.push('OIDC_ISSUER is not set');
   } else if (!isHttpUrl(issuer)) {
     problems.push('OIDC_ISSUER is not an http(s) URL');
+  } else if (entraTenant(issuer)?.multiTenant) {
+    problems.push(
+      'OIDC_ISSUER names a multi-tenant Microsoft authority (common, organizations or consumers); use your tenant ID',
+    );
   }
   if (!clientId) {
     problems.push('OIDC_CLIENT_ID is not set');
@@ -111,10 +132,19 @@ export function oidcConfigFromEnv(env: Env): OidcStatus {
   }
 
   const base = issuer!.replace(/\/+$/, '');
+  const entraTenantId = entraTenant(base)?.guid ?? null;
+  let kind: OidcIssuerKind = 'generic';
+  if (entraTenantId) {
+    kind = 'microsoft-entra-id';
+  } else if (isGoogleIssuer(base)) {
+    kind = 'google';
+  }
   return {
     status: 'on',
     config: {
       issuer: base,
+      kind,
+      entraTenantId,
       discoveryUrl: `${base}/.well-known/openid-configuration`,
       clientId: clientId!,
       clientSecret: clientSecret!,
@@ -122,9 +152,83 @@ export function oidcConfigFromEnv(env: Env): OidcStatus {
       displayName: set(env.OIDC_DISPLAY_NAME) ?? 'company account',
       joinOrganization: set(env.OIDC_JOIN_ORGANIZATION) ?? null,
       trustEmail: set(env.OIDC_TRUST_EMAIL) === 'true',
-      requireHostedDomain: isGoogleIssuer(base),
+      requireHostedDomain: kind === 'google',
     },
   };
+}
+
+const ENTRA_HOST = 'login.microsoftonline.com';
+const ENTRA_MULTI_TENANT = new Set(['common', 'organizations', 'consumers']);
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * The tenant segment of an Entra issuer, or null for any other issuer.
+ *
+ * A multi-tenant authority is refused outright: its discovery document
+ * advertises a templated `{tenantid}` issuer that no ID token matches, and it
+ * would vouch for every Entra tenant there is. A tenant named by domain
+ * (`contoso.onmicrosoft.com`) is neither — discovery resolves it — so it stays
+ * on the generic path; only a GUID gets the Entra helper, which requires one.
+ */
+function entraTenant(
+  issuer: string,
+): { guid: string | null; multiTenant: boolean } | null {
+  let url: URL;
+  try {
+    url = new URL(issuer);
+  } catch {
+    return null;
+  }
+  if (url.hostname !== ENTRA_HOST) {
+    return null;
+  }
+  const tenant = url.pathname.split('/').filter(Boolean)[0]?.toLowerCase();
+  return {
+    guid: tenant && GUID.test(tenant) ? tenant : null,
+    multiTenant: tenant !== undefined && ENTRA_MULTI_TENANT.has(tenant),
+  };
+}
+
+/**
+ * The `hd` authorization parameter for Google: the one allowed domain, or `*`
+ * (any Workspace) when there are several. It only shapes Google's account
+ * chooser — the ID token's `hd` claim is what `gateProfile` checks.
+ */
+export function googleHostedDomainHint(
+  allowedDomains: readonly string[],
+): string {
+  return allowedDomains.length === 1 ? allowedDomains[0]! : '*';
+}
+
+/**
+ * Whether the issuer vouched for the address, from the raw claims: `true`,
+ * `false`, or `null` when it said nothing.
+ *
+ * Read from the claims rather than the profile's `emailVerified`, which
+ * Better Auth's Entra helper sets to `false` for a missing claim — and that
+ * would make `OIDC_TRUST_EMAIL` unable to fill it in. Entra's optional
+ * `verified_primary_email` / `verified_secondary_email` claims count, as they
+ * do in Better Auth's own Microsoft provider.
+ */
+export function issuerEmailVerified(
+  claims: Record<string, unknown>,
+): boolean | null {
+  if (typeof claims.email_verified === 'boolean') {
+    return claims.email_verified;
+  }
+  const verifiedLists = [
+    claims.verified_primary_email,
+    claims.verified_secondary_email,
+  ].filter((list): list is unknown[] => Array.isArray(list));
+  if (verifiedLists.length === 0 || typeof claims.email !== 'string') {
+    return null;
+  }
+  const email = claims.email.toLowerCase();
+  return verifiedLists.some((list) =>
+    list.some(
+      (entry) => typeof entry === 'string' && entry.toLowerCase() === email,
+    ),
+  );
 }
 
 function isGoogleIssuer(issuer: string): boolean {

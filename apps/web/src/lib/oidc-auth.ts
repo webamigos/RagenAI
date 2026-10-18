@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // Loaded by auth.ts, which is bundled for the Edge middleware too, so the
 // logger stays out of this file for the same reason it stays out of that one.
-import { genericOAuth } from 'better-auth/plugins';
+import { genericOAuth, microsoftEntraId } from 'better-auth/plugins';
 import db from '@ragenai/prisma-client';
 import { ORG_MEMBER_ROLE } from '@ragenai/platform-contracts';
 
@@ -9,7 +9,9 @@ import { ensureDefaultTeamMembershipCommand } from '@/features/teams/services/co
 import {
   OIDC_PROVIDER_ID,
   gateProfile,
+  googleHostedDomainHint,
   isAllowedEmail,
+  issuerEmailVerified,
   isOidcCallback,
   oidcConfigFromEnv,
   type OidcConfig,
@@ -37,6 +39,14 @@ export function activeOidcConfig(): OidcConfig | null {
  * `requireIdTokenVerification` makes a missing or incomplete discovery
  * document an error rather than a silent downgrade to decoding the ID token
  * without checking its signature. PKCE is on, as it is by default.
+ *
+ * Better Auth has Entra-specific wiring, so a tenant named by GUID goes
+ * through its `microsoftEntraId` helper: fixed tenant endpoints, the account
+ * keyed on `oid` (stable across app registrations, where `sub` is not), and
+ * the Graph userinfo merged in. The provider id stays `oidc` whatever the
+ * issuer, so the redirect URI registered at the IdP and `isOidcCallback` do
+ * not depend on which issuer it is. Google has no helper in the generic
+ * plugin; it gets the `hd` hint on the authorization request instead.
  */
 export function oidcPlugins() {
   const config = activeOidcConfig();
@@ -44,35 +54,61 @@ export function oidcPlugins() {
     return [];
   }
 
+  const gate = {
+    name: config.displayName,
+    mapProfileToUser: (profile: Record<string, unknown>) =>
+      gateProfile(
+        {
+          email: typeof profile.email === 'string' ? profile.email : null,
+          emailVerified: issuerEmailVerified(profile),
+          hostedDomain: typeof profile.hd === 'string' ? profile.hd : null,
+        },
+        config.allowedDomains,
+        {
+          trustEmail: config.trustEmail,
+          requireHostedDomain: config.requireHostedDomain,
+        },
+      ),
+  };
+
+  if (config.kind === 'microsoft-entra-id') {
+    return [
+      genericOAuth({
+        config: [
+          {
+            ...microsoftEntraId({
+              clientId: config.clientId,
+              clientSecret: config.clientSecret,
+              tenantId: config.entraTenantId!,
+              pkce: true,
+            }),
+            ...gate,
+            providerId: OIDC_PROVIDER_ID,
+          },
+        ],
+      }),
+    ];
+  }
+
   return [
     genericOAuth({
       config: [
         {
           providerId: OIDC_PROVIDER_ID,
-          name: config.displayName,
           discoveryUrl: config.discoveryUrl,
           requireIdTokenVerification: true,
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           scopes: ['openid', 'email', 'profile'],
           pkce: true,
-          mapProfileToUser: (profile) =>
-            gateProfile(
-              {
-                email: typeof profile.email === 'string' ? profile.email : null,
-                emailVerified:
-                  typeof profile.emailVerified === 'boolean'
-                    ? profile.emailVerified
-                    : null,
-                hostedDomain:
-                  typeof profile.hd === 'string' ? profile.hd : null,
-              },
-              config.allowedDomains,
-              {
-                trustEmail: config.trustEmail,
-                requireHostedDomain: config.requireHostedDomain,
-              },
-            ),
+          ...(config.kind === 'google'
+            ? {
+                authorizationUrlParams: {
+                  hd: googleHostedDomainHint(config.allowedDomains),
+                },
+              }
+            : {}),
+          ...gate,
         },
       ],
     }),

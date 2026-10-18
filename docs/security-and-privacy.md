@@ -36,11 +36,11 @@ upstream serves each model id — see
 the whole of the model layer's swappability: nothing in the application names a
 provider.
 
-| Configuration                              | What leaves your network                                                        |
-| ------------------------------------------ | ------------------------------------------------------------------------------- |
-| Routes pointed at a locally-served model    | Nothing from the model layer, in normal operation                               |
-| The on-premises appliance                   | Nothing, checked by `npm run appliance:egress-check` (scope below)              |
-| Routes pointed at a commercial API          | The prompt: the question plus the retrieved document chunks needed to answer it |
+| Configuration                            | What leaves your network                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| Routes pointed at a locally-served model | Nothing from the model layer, in normal operation                               |
+| The on-premises appliance                | Nothing, checked by `npm run appliance:egress-check` (scope below)              |
+| Routes pointed at a commercial API       | The prompt: the question plus the retrieved document chunks needed to answer it |
 
 **Two things to know before assuming isolation:**
 
@@ -187,7 +187,10 @@ ID, Google Workspace or any OIDC provider, configured by `OIDC_ISSUER`,
 (`apps/web/src/lib/oidc-config.ts`, `.env.example`). The ID token is verified
 against the issuer's keys; an address outside the allowed domains is refused
 before anything is created or linked; with Google, the account must also belong
-to an allowed Workspace domain. With `OIDC_JOIN_ORGANIZATION`, a new SSO user
+to an allowed Workspace domain. An Entra tenant named by its GUID goes through
+Better Auth's `microsoftEntraId` helper, which keys the account on the
+immutable `oid` claim; the multi-tenant `common`/`organizations`/`consumers`
+authorities are refused. With `OIDC_JOIN_ORGANIZATION`, a new SSO user
 joins that organization as a member. A partial configuration turns SSO off and
 shows on the setup checklist; password sign-in is never affected.
 
