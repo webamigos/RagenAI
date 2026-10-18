@@ -50,6 +50,10 @@ services:
         required: false
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      # Off: the Prisma CLI's version check (checkpoint.prisma.io), which
+      # `prisma migrate deploy` makes before it touches the database. Every
+      # app below sets it too — each carries a Prisma client.
+      CHECKPOINT_DISABLE: '1'
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +72,8 @@ services:
       - path: .env.local
         required: false
     environment:
+      # Prisma's version check (checkpoint.prisma.io); see migrate.
+      CHECKPOINT_DISABLE: '1'
       # Service names, not localhost: these resolve on the compose network.
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
@@ -136,6 +142,8 @@ services:
       - path: .env.local
         required: false
     environment:
+      # Prisma's version check (checkpoint.prisma.io); see migrate.
+      CHECKPOINT_DISABLE: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
@@ -184,6 +192,8 @@ services:
       - path: .env.local
         required: false
     environment:
+      # Prisma's version check (checkpoint.prisma.io); see migrate.
+      CHECKPOINT_DISABLE: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       QDRANT_URL: http://qdrant:6333
       REDIS_URL: redis://redis:6379
@@ -252,6 +262,8 @@ services:
       - path: apps/admin/.env.local
         required: false
     environment:
+      # Prisma's version check (checkpoint.prisma.io); see migrate.
+      CHECKPOINT_DISABLE: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       # Its .env.local says localhost:3000, which inside this container is the
       # admin app itself; invitations and guardrail trials post to web.

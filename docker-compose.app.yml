@@ -44,6 +44,8 @@ services:
     restart: unless-stopped
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
+      # Off: anonymous usage reports to telemetry.qdrant.io.
+      QDRANT__TELEMETRY_DISABLED: 'true'
     ports:
       - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_PORT:-6333}:6333"
       - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_GRPC_PORT:-6334}:6334"

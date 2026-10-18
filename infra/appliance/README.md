@@ -84,15 +84,18 @@ to a new service shows up the day it is added.
 - `--keep` leaves the stack running for a look around, and `--version` pins
   the image tag (the default is `latest`).
 
-Its first runs found seven services calling home. `docker-compose.appliance.yml`
-now switches each of them off, with a comment naming the host it asked for:
+Its first runs found seven services calling home. Each is switched off, with a
+comment naming the host it asked for. Ollama's is in
+`docker-compose.appliance.yml`; the rest are in the standard stack
+(`docker-compose.yml`, `docker-compose.fullapp.yml`), which the appliance
+inherits:
 
 | Service | Host | Switch |
 | --- | --- | --- |
 | qdrant | `telemetry.qdrant.io` | `QDRANT__TELEMETRY_DISABLED` |
 | api, worker, web, migrate | `checkpoint.prisma.io` | `CHECKPOINT_DISABLE` |
 | ollama | `ollama.com` | `OLLAMA_NO_CLOUD` |
-| docling | `api.gradio.app`, `raw.githubusercontent.com` | `DOCLING_SERVE_ENABLE_UI=false` |
+| docling | `api.gradio.app`, `raw.githubusercontent.com` | `DOCLING_SERVE_ENABLE_UI=false`, `GRADIO_ANALYTICS_ENABLED=False` |
 | docling | `huggingface.co` | `HF_HUB_OFFLINE` |
 | docling | `mobile.events.data.microsoft.com` | `ORT_DISABLE_TELEMETRY` |
 
