@@ -133,6 +133,9 @@ spec:
           env:
             - name: QDRANT__SERVICE__GRPC_PORT
               value: {{ .Values.qdrant.grpcPort | quote }}
+            # Off: anonymous usage reports to telemetry.qdrant.io.
+            - name: QDRANT__TELEMETRY_DISABLED
+              value: 'true'
           {{- /*
             An HTTP probe, not an exec one: the Qdrant image ships no curl,
             wget or nc, which is exactly how the compose healthcheck was broken

@@ -71,6 +71,9 @@ services:
     restart: unless-stopped
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
+      # Off: anonymous usage reports to telemetry.qdrant.io. Found by
+      # `npm run appliance:egress-check`.
+      QDRANT__TELEMETRY_DISABLED: 'true'
     ports:
       - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_PORT:-6333}:6333"
       - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_GRPC_PORT:-6334}:6334"
@@ -104,8 +107,18 @@ services:
       UVICORN_WORKERS: "1"
       DOCLING_SERVE_MAX_SYNC_WAIT: "300"
       DOCLING_SERVE_LOAD_MODELS_AT_BOOT: "true"
-      DOCLING_SERVE_ENABLE_UI: "true"
+      # Off by default: the Gradio UI is a developer convenience, and it
+      # fetches assets from raw.githubusercontent.com. Set
+      # DOCLING_SERVE_ENABLE_UI=true to look at a conversion by hand.
+      DOCLING_SERVE_ENABLE_UI: ${DOCLING_SERVE_ENABLE_UI:-false}
+      # Gradio's analytics (api.gradio.app), off even when the UI is on.
+      GRADIO_ANALYTICS_ENABLED: "False"
       DOCLING_NUM_THREADS: "4"
+      # The models are in the image; never ask the Hub (huggingface.co).
+      HF_HUB_OFFLINE: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      # onnxruntime's own telemetry (mobile.events.data.microsoft.com).
+      ORT_DISABLE_TELEMETRY: "1"
     ports:
       - "${RAGEN_BIND_ADDR:-127.0.0.1}:${DOCLING_PORT:-5001}:5001"
     healthcheck:
