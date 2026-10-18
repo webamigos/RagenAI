@@ -104,7 +104,7 @@ archive is the blog.
   calls and Gradio's analytics are now off in the standard Compose stack,
   the Helm chart and the Railway Docling image — not only in the local-model
   one. Docling's web UI is off by default; `DOCLING_SERVE_ENABLE_UI=true`
-  brings it back. ([#PR](https://github.com/webamigos/RagenAI/pulls))
+  brings it back. ([#1657](https://github.com/webamigos/RagenAI/pull/1657))
 
 - `[brief]` **An offline install that is checked to be offline.**
   `npm run appliance:egress-check` runs the local-model stack on a network
