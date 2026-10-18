@@ -93,6 +93,10 @@ solution*, "Rejected"). The owner confirmed the recommended answers to Q1–Q4.
 4. **Deprecation is visible but never fatal**: when only `BETTER_AUTH_URL` is
    set, the resolver logs one warning per process naming `APP_URL`, and the
    setup checklist lists `APP_URL` first. apps/web must not exit over it.
+5. **Phase C (implemented after v2.58.0)** removes the fallback:
+   `resolveAppUrl()` reads only `APP_URL`, and the warning in point 4 becomes
+   `appUrlRenameRule`, an env-check issue in web, admin and mcp that names the
+   rename. Points 1 and 4 describe the v2.58.0 behaviour.
 
 **Rejected:** a hard rename (Q1 — breaks every existing install silently on the
 email path); `RAGEN_APP_URL` (already taken: apps/admin uses it for apps/web's
@@ -172,16 +176,23 @@ No Prisma, tenancy or RBAC change.
 
 ## Failure modes
 
-- **Only `BETTER_AUTH_URL` set** (every install today): works, one warning.
+- **Only `BETTER_AUTH_URL` set.** In v2.58.0 this works, with one warning.
+  After Phase C, `resolveAppUrl()` returns `undefined`, so without
+  `NEXT_PUBLIC_APP_URL` email links have no origin and Better Auth falls back
+  to localhost. `appUrlRenameRule` makes that loud instead: web reports
+  `BETTER_AUTH_URL was renamed to APP_URL` on its setup page, mcp refuses to
+  boot, and admin logs it at start.
 - **Both set, different values**: `APP_URL` now wins for Better Auth too
   (today Better Auth used `BETTER_AUTH_URL`). Behaviour change for such an
   install — it was already inconsistent (browser vs. emails); changelog says so.
 - **Neither set on a deployment**: web validation reports `APP_URL`; email
   sending throws with `APP_URL` in the message, as today.
 - **admin with neither `APP_URL` nor `BETTER_AUTH_URL`**: Better Auth gets
-  `baseURL: undefined` and falls
-  back to request origin exactly as now; `localhost:3200` still trusted
-  outside production.
+  `baseURL: undefined` and falls back to the request origin, as before;
+  `localhost:3200` is still trusted outside production. With only a leftover
+  `BETTER_AUTH_URL`, Better Auth still picks it up by its own convention, so
+  admin's env check reporting the rename matters more than our code not
+  reading it.
 
 ## Phases
 
