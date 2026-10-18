@@ -34,6 +34,9 @@ const SWITCHES: Record<string, Record<string, string>> = {
 
 const PRISMA_APPS = ['migrate', 'web', 'api', 'worker', 'admin'];
 
+/** The images whose base stage every Prisma-running stage inherits from. */
+const PRISMA_IMAGES = ['web', 'api', 'worker', 'admin'];
+
 describe('third-party telemetry in the standard stack', () => {
   const base = parse(read('docker-compose.yml')) as Compose;
 
@@ -59,6 +62,21 @@ describe('third-party telemetry in the standard stack', () => {
         String(fullapp.services[app]?.environment?.CHECKPOINT_DISABLE),
         app,
       ).toBe('1');
+    }
+  });
+
+  it("is off for Prisma's checkpoint in every app image, not only in compose", () => {
+    // A deploy that runs the published images directly — Railway, a plain
+    // `docker run` — never reads docker-compose.fullapp.yml.
+    for (const app of PRISMA_IMAGES) {
+      const dockerfile = read(`apps/${app}/Dockerfile`);
+      const base = dockerfile.slice(
+        dockerfile.indexOf(' AS base'),
+        dockerfile.indexOf('\nFROM ', dockerfile.indexOf(' AS base')),
+      );
+      expect(base, `apps/${app}/Dockerfile base stage`).toMatch(
+        /^ENV CHECKPOINT_DISABLE=1$/m,
+      );
     }
   });
 });

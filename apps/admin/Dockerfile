@@ -1,4 +1,9 @@
 FROM node:24-alpine AS base
+# Prisma's version check calls checkpoint.prisma.io from `prisma generate`,
+# `migrate deploy` and the client at runtime. Set on the base stage so every
+# stage inherits it, including a deploy that runs this image outside the
+# compose files (Railway). tests/architecture/third-party-telemetry-stays-off.test.ts
+ENV CHECKPOINT_DISABLE=1
 
 FROM base AS deps
 WORKDIR /app

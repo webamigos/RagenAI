@@ -99,6 +99,11 @@ archive is the blog.
 
 ### Self-hosting
 
+- `[brief]` **The published images stop Prisma's update check on their own.**
+  The web, API, worker and admin images now set `CHECKPOINT_DISABLE=1`, so a
+  deployment that runs them directly (Railway, a plain `docker run`) no longer
+  calls `checkpoint.prisma.io` either, not only the Compose and Helm stacks.
+
 - `[brief]` **The standard install stops calling home too.** Qdrant's
   telemetry, Prisma's version check, Docling's Hugging Face and onnxruntime
   calls and Gradio's analytics are now off in the standard Compose stack,
