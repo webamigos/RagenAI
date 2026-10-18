@@ -99,6 +99,15 @@ archive is the blog.
 
 ### Self-hosting
 
+- `[brief]` **An offline install that is checked to be offline.**
+  `npm run appliance:egress-check` runs the local-model stack on a network
+  with no way out, ingests a document, asks about it, and names any
+  container that tried to reach the internet. Its first runs found
+  telemetry and update checks in Qdrant, Prisma, Ollama and Docling. The
+  local-model compose file now switches all of them off. Its environment
+  template also lists the secrets that the API and the worker need in order
+  to start. ([#1655](https://github.com/webamigos/RagenAI/pull/1655))
+
 - `[brief]` **The knowledge base from a terminal.** `ragen kb upload docs/*.pdf
   --wait` uploads files with an API key and waits until each is indexed,
   exiting non-zero if one fails; `ragen kb ls`, `status` and `rm` cover the
