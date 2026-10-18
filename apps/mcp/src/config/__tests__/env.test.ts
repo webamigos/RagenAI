@@ -212,7 +212,7 @@ describe('MCP OAuth resource configuration', () => {
   const valid = {
     TARGET_ENV: 'local',
     MCP_OAUTH_ENABLED: 'true',
-    BETTER_AUTH_URL: 'http://localhost:3000',
+    APP_URL: 'http://localhost:3000',
     RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
     MCP_SERVICE_SECRET: 'm'.repeat(32),
   };
@@ -225,6 +225,22 @@ describe('MCP OAuth resource configuration', () => {
     expect(
       mcpEnvSchema.safeParse({ ...valid, MCP_SERVICE_SECRET: undefined })
         .success,
+    ).toBe(false);
+  });
+  it('takes the issuer from the deprecated BETTER_AUTH_URL when APP_URL is unset', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const parsed = mcpEnvSchema.safeParse({
+      ...valid,
+      APP_URL: undefined,
+      BETTER_AUTH_URL: 'http://localhost:3000',
+    });
+
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.APP_URL).toBe('http://localhost:3000');
+  });
+  it('requires an issuer origin when OAuth is on', () => {
+    expect(
+      mcpEnvSchema.safeParse({ ...valid, APP_URL: undefined }).success,
     ).toBe(false);
   });
   it('refuses reusing the session credential', () => {
@@ -246,14 +262,14 @@ it.each([
   }).href,
   'https://auth.example?query=1',
   'https://auth.example#fragment',
-])('rejects an unsafe OAuth issuer origin %s', (BETTER_AUTH_URL) => {
+])('rejects an unsafe OAuth issuer origin %s', (APP_URL) => {
   expect(
     mcpEnvSchema.safeParse({
       TARGET_ENV: 'local',
       MCP_OAUTH_ENABLED: 'true',
       RAGEN_MCP_PUBLIC_URL: 'https://mcp.example/mcp',
       MCP_SERVICE_SECRET: 'm'.repeat(32),
-      BETTER_AUTH_URL,
+      APP_URL,
     }).success,
   ).toBe(false);
 });

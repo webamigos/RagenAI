@@ -2505,7 +2505,7 @@
       "temporal": "Geüploade documenten worden nooit verwerkt of geëmbed — de ingest-workflow kan nergens draaien.",
       "redis": "Achtergrondtaken draaien op Redis. Zonder Redis worden geüploade documenten nooit verwerkt en start de API niet.",
       "mail": "Er is geen e-mailverzending geconfigureerd, dus verificatielinks, magische links en uitnodigingen worden alleen naar het log geschreven. Stel Resend of een SMTP-server in om ze te bezorgen.",
-      "app-url": "Links in e-mails en in de insluitbare chatwidget hebben een absolute origin nodig. Beide variabelen werken; BETTER_AUTH_URL wordt tijdens runtime gelezen, NEXT_PUBLIC_APP_URL wordt tijdens de build ingebakken.",
+      "app-url": "Links in e-mails en in de insluitbare chatwidget hebben een absolute origin nodig. Beide variabelen werken; APP_URL wordt tijdens runtime gelezen, NEXT_PUBLIC_APP_URL wordt tijdens de build ingebakken.",
       "target-env": "Geeft de deployment een naam. Zonder deze waarde rapporteren traces en metrics geen omgeving, en hebben e-maillinks geen lokale terugvaloptie.",
       "moderation": "Contentmoderatie heeft geen aanbieder, dus de moderatie-guardrail logt ‘niet geconfigureerd’ en laat elk bericht door. Stel een OpenAI-sleutel in die alleen voor moderatie wordt gebruikt als je hem wilt inschakelen.",
       "message-encryption": "Berichten in gesprekken worden als platte tekst opgeslagen. Lokaal prima; stel een van deze in voordat er echte gesprekken in komen.",

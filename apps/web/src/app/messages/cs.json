@@ -2505,7 +2505,7 @@
       "temporal": "Nahrané dokumenty nejsou nikdy analyzovány ani embedovány — pracovní postup nahrávání nemá kde běžet.",
       "redis": "Úlohy na pozadí běží na Redisu. Bez něj se nahrané dokumenty nikdy nezpracují a API se nespustí.",
       "mail": "Není nakonfigurován žádný e-mailový přenos, takže ověřovací odkazy, magické odkazy a pozvánky se pouze zapisují do protokolu. Nakonfigurujte Resend nebo SMTP server pro jejich doručování.",
-      "app-url": "Odkazy v e-mailech a ve vložitelném chatovacím widgetu potřebují absolutní origin. Obě proměnné fungují; BETTER_AUTH_URL se čte za běhu, NEXT_PUBLIC_APP_URL se vkládá při kompilaci.",
+      "app-url": "Odkazy v e-mailech a ve vložitelném chatovacím widgetu potřebují absolutní origin. Obě proměnné fungují; APP_URL se čte za běhu, NEXT_PUBLIC_APP_URL se vkládá při kompilaci.",
       "target-env": "Pojmenovává nasazení. Pokud není nastavena, trasování a metriky nehlásí žádné prostředí a e-mailové odkazy nemají žádnou místní výchozí hodnotu.",
       "moderation": "Moderování obsahu nemá poskytovatele, takže guardrail moderování zapíše „nenakonfigurováno“ a propustí každou zprávu. Pokud ho chceš zapnout, nastav klíč OpenAI určený jen pro moderování.",
       "message-encryption": "Zprávy konverzací se ukládají jako prostý text. To je v pořádku lokálně; nastavte jednu z těchto hodnot, než se tam dostanou skutečné konverzace.",

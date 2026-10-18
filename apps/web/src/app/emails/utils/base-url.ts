@@ -8,18 +8,19 @@
  * else's invitation token), and an unset `TARGET_ENV` — the likelier case —
  * produced the literal string `undefined/accept-invitation?token=…`.
  *
- * `BETTER_AUTH_URL` is the source of truth because Better Auth already builds
- * the magic-link, password-reset and email-verification URLs from it
- * (`baseURL` in `src/lib/auth.ts`), so every other link in every other email
- * this app sends already resolves this way. It is also read at runtime, unlike
+ * `APP_URL` is the source of truth because Better Auth already builds the
+ * magic-link, password-reset and email-verification URLs from it (`baseURL` in
+ * `src/lib/auth.ts`), so every other link in every other email this app sends
+ * already resolves this way. It is read through `resolveAppUrl()`, which also
+ * accepts the deprecated `BETTER_AUTH_URL`. Both are read at runtime, unlike
  * `NEXT_PUBLIC_APP_URL`, which Next inlines at build time and which therefore
- * cannot be set by an operator running a prebuilt image. That fallback now goes
- * through `readPublicRuntimeConfig()`, which reads the real environment for
- * both the new `APP_URL` and the legacy name, so an install that configured
- * only one of them still works from an image nobody rebuilt.
+ * cannot be set by an operator running a prebuilt image. That fallback goes
+ * through `readPublicRuntimeConfig()`, which reads the real environment, so an
+ * install that configured only the legacy name still works from an image
+ * nobody rebuilt.
  */
 import { readPublicRuntimeConfig } from '@/config/public-runtime-config';
-import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
+import { isDeployedEnv, normalizeTargetEnv, resolveAppUrl } from '@ragenai/env';
 
 const LOCAL_FALLBACK = 'http://localhost:3000';
 
@@ -29,14 +30,14 @@ const LOCAL_FALLBACK = 'http://localhost:3000';
 // which is stricter than the shared default and deliberately so: see below.
 
 export function getBaseUrl(): string {
-  // Blank counts as unset per variable, not just per group: `BETTER_AUTH_URL=`
-  // left empty in an env file must not shadow a configured NEXT_PUBLIC_APP_URL.
+  // Blank counts as unset per variable, not just per group: `APP_URL=` left
+  // empty in an env file must not shadow a configured NEXT_PUBLIC_APP_URL.
   // Same rule as the first-run environment inspector's `isSet`.
   const configured = [
-    process.env.BETTER_AUTH_URL,
+    resolveAppUrl(),
     // The runtime reader, not `process.env.NEXT_PUBLIC_APP_URL`: that
     // expression is replaced at build time, so an operator running a prebuilt
-    // image could not set it. `BETTER_AUTH_URL` stays *first* — Better Auth
+    // image could not set it. `resolveAppUrl()` stays *first* — Better Auth
     // signs its own links with it, and an install that set both to different
     // origins must not get emails that disagree with the links Better Auth
     // sends.
@@ -70,6 +71,6 @@ export function getBaseUrl(): string {
   // that catches, logs and reports the failed send, so a misconfigured install
   // gets a named variable in its logs instead of delivering a dead link.
   throw new Error(
-    'BETTER_AUTH_URL (or NEXT_PUBLIC_APP_URL) must be set — email links have no origin to point at.',
+    'APP_URL must be set — email links have no origin to point at.',
   );
 }

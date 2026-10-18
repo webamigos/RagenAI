@@ -111,7 +111,7 @@ HEX64  = ${{secret(64, "abcdef0123456789")}}      # openssl rand -hex 32
 | `REDIS_URL` | `${{redis.REDIS_URL}}` |
 | `QDRANT_URL` | `http://${{qdrant.RAILWAY_PRIVATE_DOMAIN}}:6333` |
 | `RAGEN_API_INTERNAL_URL` | `http://${{api.RAILWAY_PRIVATE_DOMAIN}}:3001` |
-| `APP_URL`, `BETTER_AUTH_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` |
+| `APP_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` |
 | `RAGEN_TOKEN_VAULT_URL` | `http://${{vault.RAILWAY_PRIVATE_DOMAIN}}:3100` |
 | `RAGEN_TOKEN_VAULT_SERVICE_SECRET` | `${{vault.RAGEN_TOKEN_VAULT_SERVICE_SECRET}}` |
 | `OPENROUTER_API_KEY` | **asked** |
@@ -129,7 +129,9 @@ HEX64  = ${{secret(64, "abcdef0123456789")}}      # openssl rand -hex 32
 
 `NEXT_PUBLIC_APP_URL` is deliberately absent: it is baked in at build time and
 cannot be set on a prebuilt image. `APP_URL` is the runtime name
-(`docs/lessons/next-public-vars-are-baked-in-at-build-time.md`).
+(`docs/lessons/next-public-vars-are-baked-in-at-build-time.md`). It was
+`BETTER_AUTH_URL`, which every app still reads when `APP_URL` is unset — a
+project created from an older template keeps working, and should rename it.
 
 ### `api`
 
@@ -171,7 +173,7 @@ The worker takes the **same** encryption key and the same storage as `web` and
 | `TARGET_ENV` | `production` |
 | `DATABASE_URL` | `${{postgres.DATABASE_URL}}` |
 | `BETTER_AUTH_SECRET` | HEX64 — **its own**, not `web`'s (the panel is a separate Better Auth instance, as `create-ragen-app` sets it up) |
-| `BETTER_AUTH_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` — also what makes the panel's own origin trusted at sign-in (`apps/admin/src/lib/auth-origins.ts`); without it a production build answers "Invalid origin" |
+| `APP_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` — also what makes the panel's own origin trusted at sign-in (`apps/admin/src/lib/auth-origins.ts`); without it a production build answers "Invalid origin" |
 | `RAGEN_APP_URL` | `http://${{web.RAILWAY_PRIVATE_DOMAIN}}:3000` — invitations and guardrail trials post to `web` |
 | `INTERNAL_API_SECRET` | `${{web.INTERNAL_API_SECRET}}` |
 | `RAGEN_TOKEN_VAULT_URL`, `RAGEN_TOKEN_VAULT_SERVICE_SECRET` | as `web` |
@@ -209,7 +211,7 @@ does not migrate; without it the vault boots on an empty schema.
 With OAuth off, callers send their own Ragen API key, which `api` validates
 against the vault; `mcp` serves `/mcp` and `/health` on its one routed port. To
 turn on sign-in with OAuth, set `MCP_OAUTH_ENABLED=true` on `mcp`, `api` and
-`web`, and give `mcp` `BETTER_AUTH_URL` (`web`'s public HTTPS origin, no path)
+`web`, and give `mcp` `APP_URL` (`web`'s public HTTPS origin, no path)
 and `MCP_SERVICE_SECRET` (`${{web.MCP_SERVICE_SECRET}}`) — see
 [`2026-10-05-mcp-sign-in-with-oauth.md`](specs/2026-10-05-mcp-sign-in-with-oauth.md).
 

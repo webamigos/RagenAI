@@ -22,6 +22,8 @@
  * deployment which sets `NEXT_PUBLIC_APP_URL` today keep working while the new
  * name takes over.
  */
+import { resolveAppUrl } from '@ragenai/env';
+
 export interface PublicRuntimeConfig {
   /** Where this install is reachable, for embed snippets and the auth client. */
   readonly appUrl: string;
@@ -79,7 +81,9 @@ export function readPublicRuntimeConfig(
   env: Record<string, string | undefined> = process.env,
 ): PublicRuntimeConfig {
   return {
-    appUrl: pick(env, 'APP_URL', 'NEXT_PUBLIC_APP_URL', 'BETTER_AUTH_URL'),
+    // `resolveAppUrl()` is `APP_URL`, then the deprecated `BETTER_AUTH_URL`;
+    // the build-time spelling comes after both.
+    appUrl: resolveAppUrl(env) ?? pick(env, 'NEXT_PUBLIC_APP_URL'),
     pusherKey: pick(env, 'PUSHER_PUBLIC_KEY', 'NEXT_PUBLIC_PUSHER_KEY'),
     pusherCluster: pick(env, 'PUSHER_CLUSTER', 'NEXT_PUBLIC_PUSHER_CLUSTER'),
     targetEnv: pick(env, 'TARGET_ENV', 'NEXT_PUBLIC_TARGET_ENV'),

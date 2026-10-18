@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
 import { getBaseUrl } from '../base-url';
 
@@ -8,26 +8,39 @@ import { getBaseUrl } from '../base-url';
  * recipient cannot use — a different deployment, or `undefined/...`.
  */
 describe('getBaseUrl', () => {
+  beforeEach(() => {
+    // Both names unset unless a case says otherwise, so a developer's own
+    // environment cannot decide a case.
+    vi.stubEnv('APP_URL', '');
+  });
+
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  it('prefers BETTER_AUTH_URL, the origin Better Auth already builds its own email links from', () => {
-    vi.stubEnv('BETTER_AUTH_URL', 'https://ragen.example.com');
+  it('prefers APP_URL, the origin Better Auth already builds its own email links from', () => {
+    vi.stubEnv('APP_URL', 'https://ragen.example.com');
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://ignored.example.com');
 
     expect(getBaseUrl()).toBe('https://ragen.example.com');
   });
 
+  it('still reads the deprecated BETTER_AUTH_URL, ahead of NEXT_PUBLIC_APP_URL', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.stubEnv('BETTER_AUTH_URL', 'https://legacy.example.com');
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://ignored.example.com');
+
+    expect(getBaseUrl()).toBe('https://legacy.example.com');
+  });
+
   it('falls back to NEXT_PUBLIC_APP_URL for installs that only set that one', () => {
-    vi.stubEnv('BETTER_AUTH_URL', '');
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://selfhosted.example.com');
 
     expect(getBaseUrl()).toBe('https://selfhosted.example.com');
   });
 
   it('strips a trailing slash so appended paths do not double up', () => {
-    vi.stubEnv('BETTER_AUTH_URL', 'https://ragen.example.com///');
+    vi.stubEnv('APP_URL', 'https://ragen.example.com///');
 
     expect(`${getBaseUrl()}/accept-invitation`).toBe(
       'https://ragen.example.com/accept-invitation',
@@ -35,7 +48,7 @@ describe('getBaseUrl', () => {
   });
 
   it('treats a whitespace-only value as unset', () => {
-    vi.stubEnv('BETTER_AUTH_URL', '   ');
+    vi.stubEnv('APP_URL', '   ');
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://selfhosted.example.com');
 
     expect(getBaseUrl()).toBe('https://selfhosted.example.com');
@@ -44,7 +57,6 @@ describe('getBaseUrl', () => {
   it.each(['local', 'test', 'e2e', 'ci'])(
     'falls back to localhost when TARGET_ENV is %s, which is not a deployment',
     (targetEnv) => {
-      vi.stubEnv('BETTER_AUTH_URL', '');
       vi.stubEnv('NEXT_PUBLIC_APP_URL', '');
       vi.stubEnv('TARGET_ENV', targetEnv);
 
@@ -55,11 +67,10 @@ describe('getBaseUrl', () => {
   it.each(['demo', 'staging', 'production'])(
     'refuses to guess an origin on a real deployment (TARGET_ENV=%s)',
     (targetEnv) => {
-      vi.stubEnv('BETTER_AUTH_URL', '');
       vi.stubEnv('NEXT_PUBLIC_APP_URL', '');
       vi.stubEnv('TARGET_ENV', targetEnv);
 
-      expect(() => getBaseUrl()).toThrow(/BETTER_AUTH_URL/);
+      expect(() => getBaseUrl()).toThrow(/APP_URL/);
     },
   );
 
@@ -70,11 +81,10 @@ describe('getBaseUrl', () => {
       // undefined. Comparing the raw value against `undefined` let it reach
       // the localhost fallback, so a real deployment whose TARGET_ENV someone
       // emptied would have mailed out links pointing at localhost.
-      vi.stubEnv('BETTER_AUTH_URL', '');
       vi.stubEnv('NEXT_PUBLIC_APP_URL', '');
       vi.stubEnv('TARGET_ENV', targetEnv);
 
-      expect(() => getBaseUrl()).toThrow(/BETTER_AUTH_URL/);
+      expect(() => getBaseUrl()).toThrow(/APP_URL/);
     },
   );
 
@@ -83,10 +93,9 @@ describe('getBaseUrl', () => {
     // `isDeployedEnv()`, which reads an unset value as "not deployed". Here an
     // absent TARGET_ENV is the dangerous case: a real deployment that never
     // received its configuration would otherwise mail out localhost links.
-    vi.stubEnv('BETTER_AUTH_URL', '');
     vi.stubEnv('NEXT_PUBLIC_APP_URL', '');
     vi.stubEnv('TARGET_ENV', undefined);
 
-    expect(() => getBaseUrl()).toThrow(/BETTER_AUTH_URL/);
+    expect(() => getBaseUrl()).toThrow(/APP_URL/);
   });
 });

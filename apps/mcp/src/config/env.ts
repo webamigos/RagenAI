@@ -6,6 +6,7 @@ import {
   httpUrl,
   parseEnv,
   requiredInDeployedEnvs,
+  resolveAppUrl,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -38,7 +39,7 @@ export const DEV_SERVER_VERSION = 'dev';
 export const mcpEnvSchema = fragments.targetEnvRequired
   .merge(fragments.observability)
   .merge(fragments.mcpOAuth)
-  .merge(fragments.authOrigin)
+  .merge(fragments.appOrigin)
   .merge(fragments.mcpService)
   .extend({
     // `RAGEN_MCP_PORT` first, then `PORT` — see the transform below.
@@ -80,15 +81,18 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     RAILWAY_GIT_COMMIT_SHA: blankAsUndefined(z.string().trim().optional()),
   })
   .superRefine((env, ctx) => {
-    if (env.MCP_OAUTH_ENABLED === 'true' && !env.BETTER_AUTH_URL) {
+    // The OAuth issuer is apps/web, so this is web's public origin — the same
+    // `APP_URL` the shared root `.env.local` already gives every app.
+    const appUrl = resolveAppUrl(env);
+    if (env.MCP_OAUTH_ENABLED === 'true' && !appUrl) {
       ctx.addIssue({
         code: 'custom',
-        path: ['BETTER_AUTH_URL'],
-        message: 'BETTER_AUTH_URL is required for MCP OAuth',
+        path: ['APP_URL'],
+        message: 'APP_URL is required for MCP OAuth',
       });
     }
-    if (env.MCP_OAUTH_ENABLED === 'true' && env.BETTER_AUTH_URL) {
-      const issuer = new URL(env.BETTER_AUTH_URL);
+    if (env.MCP_OAUTH_ENABLED === 'true' && appUrl) {
+      const issuer = new URL(appUrl);
       if (
         (issuer.protocol !== 'https:' &&
           !(
@@ -103,7 +107,7 @@ export const mcpEnvSchema = fragments.targetEnvRequired
       ) {
         ctx.addIssue({
           code: 'custom',
-          path: ['BETTER_AUTH_URL'],
+          path: ['APP_URL'],
           message:
             'Use the public HTTPS auth origin (HTTP only on loopback), without path, credentials, query or fragment',
         });
@@ -120,6 +124,9 @@ export const mcpEnvSchema = fragments.targetEnvRequired
   })
   .transform((env) => ({
     ...env,
+    // Resolved once, so every reader takes `env.APP_URL` and none has to know
+    // about the deprecated name.
+    APP_URL: resolveAppUrl(env),
     PORT: env.RAGEN_MCP_PORT ?? env.PORT ?? DEFAULT_PORT,
     RAGEN_API_URL: env.RAGEN_API_URL ?? LOCAL_RAGEN_API_URL,
     SERVER_VERSION:
