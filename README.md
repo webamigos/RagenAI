@@ -7,6 +7,11 @@
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
 
+Private AI in the literal sense: the whole stack can run on one machine of
+yours — the model that answers, embeddings and document parsing included —
+with a check that watches ingest and chat and fails if anything leaves it. A
+cloud model provider is an option you choose, not a requirement.
+
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![CI status on main](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/webamigos/RagenAI/actions/workflows/ci.yml)
 [![Documentation: docs.ragen.ai](https://img.shields.io/badge/docs-docs.ragen.ai-informational.svg)](https://docs.ragen.ai)
@@ -21,6 +26,7 @@ data — on your own servers, with your own models.**
 [TypeScript SDK](https://www.npmjs.com/package/@webamigos/ragen-sdk-ts) ·
 [Security review](docs/security-and-privacy.md) ·
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting) ·
+[Fully local](#fully-local-on-premises-appliance) ·
 [Open models](https://docs.ragen.ai/docs/open-models)
 <!-- TODO(cta): community link — see open questions -->
 
@@ -39,6 +45,9 @@ Or try it without installing anything — one click, one OpenRouter key:
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/ragen?referralCode=0sAYuo&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
+Or keep everything, models included, on one machine of your own:
+[Fully local](#fully-local-on-premises-appliance).
+
 Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=header)**.
 
 ---
@@ -53,8 +62,8 @@ infrastructure, under someone else's retention policy.
 
 Ragen is neither. It is an open-source RAG platform for companies that you
 run yourself: retrieval that has been measured rather than assumed, access
-control enforced where it actually matters, and a model layer you can point
-at your own hardware.
+control enforced where it actually matters, and models that can run on your
+own hardware, so no part of a question or a document has to leave it.
 
 ## 💡 Why Ragen
 
@@ -75,17 +84,26 @@ provider — each with an ADR recording what it changed and what it cost:
 rephrasing and red-team behaviour all have eval datasets you can run yourself:
 [`apps/web/evals`](apps/web/evals).
 
-**Your infrastructure, your keys.** Documents, database, vector index and
-encryption keys stay where you put them. No component reports back to us, and
-there is no hosted tier we would rather sell you.
+**Your infrastructure, your keys — and your models.** Documents, database,
+vector index and encryption keys stay where you put them, and so can the
+models. The [on-premises appliance](#fully-local-on-premises-appliance) runs
+the whole stack on one machine with Ollama serving the models: answers,
+embeddings and document parsing never leave it. That is checked, not
+asserted — `npm run appliance:egress-check` runs the stack on a network with
+no route out, ingests a document, asks about it, and fails naming any
+container that tried to reach the outside. No component reports back to us,
+and there is no hosted tier we would rather sell you.
 [docs/security-and-privacy.md](docs/security-and-privacy.md) sets out exactly
-what leaves your network under which configuration — including the two cases
+what leaves your network under which configuration — including the cases
 where the honest answer is "it depends how you set it up".
 
-**No lock-in on the model.** Ragen calls providers itself, or goes through a
-gateway you run — LiteLLM, Portkey, vLLM, Ollama, anything speaking OpenAI's
-API. Scaleway, Azure OpenAI, AWS Bedrock, Google Vertex, OpenRouter, or a model
-on your own GPU — changing provider is a route, not a migration.
+**No lock-in on the model.** Run open models on your own hardware — Bielik,
+Qwen, Gemma or anything else an Ollama or vLLM server you run can serve — or
+call a provider: Scaleway, Azure OpenAI, AWS Bedrock, Google Vertex,
+OpenRouter, directly or through a gateway such as LiteLLM or Portkey. Ragen
+calls them itself, and changing provider is a route, not a migration. Mix
+them per model if you like; a model served on your own hardware costs nothing
+in the usage reports, because its cost is the hardware.
 
 **Multi-tenancy is structural.** One Qdrant collection per organization, a
 tenant-scope guard in the Prisma layer that flags any query missing its org
@@ -205,16 +223,17 @@ surface and has no public instance — the page above is what it looks like.
 
 ## ⚖️ How it compares
 
-|                           | Hosted "chat with your docs" | Your own LangChain stack    | **Ragen**                                            |
-| ------------------------- | ---------------------------- | --------------------------- | ---------------------------------------------------- |
-| Where your documents live | Vendor's cloud               | Yours                       | **Yours**                                            |
-| Choice of model           | Vendor's shortlist           | Anything                    | **Any provider, direct or through your own gateway** |
-| Access control            | Usually per workspace        | Whatever you build          | **Per file and folder, enforced at retrieval**       |
-| Multi-tenant              | Per seat, per workspace      | Whatever you build          | **Built in — org-scoped data and index**             |
-| Retrieval quality         | Opaque                       | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision**  |
-| Time to a working answer  | Minutes                      | Weeks                       | **Minutes — one command, plus your own model keys**  |
-| Cost shape                | Per seat, forever            | Your engineers' time        | **Your infrastructure + model spend**                |
-| When it breaks            | Support ticket               | You                         | **You, with the source and the ADRs**                |
+|                           | Hosted "chat with your docs" | Your own LangChain stack    | **Ragen**                                                       |
+| ------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------------------- |
+| Where your documents live | Vendor's cloud               | Yours                       | **Yours**                                                       |
+| Where the model runs      | Vendor's choice of cloud     | Wherever you wire it        | **Local models on your hardware, or any provider**              |
+| Proof nothing leaves      | Their word                   | Whatever you build          | **An egress check you run yourself: ingest and chat, local install** |
+| Access control            | Usually per workspace        | Whatever you build          | **Per file and folder, enforced at retrieval**                  |
+| Multi-tenant              | Per seat, per workspace      | Whatever you build          | **Built in — org-scoped data and index**                        |
+| Retrieval quality         | Opaque                       | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision**             |
+| Time to a working answer  | Minutes                      | Weeks                       | **Minutes with a provider key; add the model download if local** |
+| Cost shape                | Per seat, forever            | Your engineers' time        | **Your infrastructure, plus model spend if you use a provider** |
+| When it breaks            | Support ticket               | You                         | **You, with the source and the ADRs**                           |
 
 Fair warning on the middle column: if your requirements are genuinely unusual,
 building it yourself is a legitimate answer. Ragen is the better trade when you
@@ -284,20 +303,86 @@ Either way, open <http://localhost:3000>. A new install asks you to create
 its first account, which becomes the platform administrator; then upload a
 document under Knowledge and ask it something.
 
+### Fully local (on-premises appliance)
+
+Ragen and its models on one machine. Ollama runs as a container in the same
+stack and serves every model, Docling parses documents locally with
+`DOCLING_STRICT=1` (no cloud fallback), and no model call leaves the machine.
+Copy [`infra/appliance/appliance.env.example`](infra/appliance/appliance.env.example)
+to the repository root as `.env.local`, fill in the secrets, then:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f docker-compose.appliance.yml up -d
+```
+
+On a machine with an NVIDIA GPU and the NVIDIA Container Toolkit, add
+`-f docker-compose.appliance.gpu.yml`. The default models:
+
+| Model                          | Used for                                                    |
+| ------------------------------ | ----------------------------------------------------------- |
+| Bielik 11B v2.3 Instruct (Q4)  | answers                                                     |
+| Qwen 2.5 7B Instruct           | rephrasing, summaries, Brain extraction, the guardrail judge |
+| Gemma 3 12B                    | images and document attachments                             |
+| bge-m3                         | embeddings, 1024 dimensions                                 |
+
+The first start pulls about 20 GB of models into a Docker volume. That is the
+one step that needs the internet; the web app, API and worker wait for it, and
+later starts need no network at all. The model picker offers the local models
+by name, and the setup checklist on the sign-in page says when the model
+server is down or a model was never pulled.
+
+To prove nothing leaves the machine:
+
+```bash
+npm run appliance:egress-check
+```
+
+It runs the appliance on a Compose network with no route out, signs up an
+account, ingests a document and asks a question about it, while tcpdump
+watches the network bridge. Any container that tries to reach anything off
+that network fails the run, by name and with the host it asked for. It watches
+traffic rather than checking a list of allowed domains, so a new call to a new
+service shows up the day it is added. Its first runs found seven third-party
+services calling home — Qdrant and onnxruntime telemetry, Prisma's update
+check, Ollama, Docling's UI and its Hugging Face downloads — and the appliance
+overlay now switches each one off
+([#1655](https://github.com/webamigos/RagenAI/pull/1655)). By default the check
+swaps in two small models, because it is about traffic, not answer quality;
+`--full-models` runs the real ones.
+
+**What it is not yet.** This is a compose overlay and a check, not an
+installer. `create-ragen-app` does not offer it, there is no offline bundle,
+no hardware sizing has been measured, and there is no local reranker
+(reranking stays off). vLLM and a hybrid profile — data local, chat through one
+endpoint you choose — are designed but not built. The egress check covers
+ingest and chat, not Ragen Brain or the guardrail first pass, and it runs by
+hand rather than in CI. How to run it and change a model:
+[`infra/appliance/README.md`](infra/appliance/README.md). The design, and the
+rest of what is missing:
+[the appliance spec](docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md).
+
 ### Requirements
 
-|        | Evaluating                | Small production install                |
-| ------ | ------------------------- | --------------------------------------- |
-| CPU    | 4 cores                   | 4+ cores                                |
-| RAM    | 8 GB available to Docker  | 16 GB                                   |
-| Disk   | 25 GB                     | 100 GB SSD, growing with your documents |
-| Docker | >= 24.0, Compose >= v2.26 | same                                    |
-| GPU    | **not needed**            | **not needed**                          |
+|        | Evaluating                | Small production install                | Fully local (appliance)                  |
+| ------ | ------------------------- | --------------------------------------- | ---------------------------------------- |
+| CPU    | 4 cores                   | 4+ cores                                | not measured yet                         |
+| RAM    | 8 GB available to Docker  | 16 GB                                   | not measured yet                         |
+| Disk   | 25 GB                     | 100 GB SSD, growing with your documents | the same, plus ~20 GB of model weights   |
+| Docker | >= 24.0, Compose >= v2.26 | same                                    | same                                     |
+| GPU    | **not needed**            | **not needed**                          | **recommended**, see below               |
 
-**No GPU, unless you want one.** Chat, embeddings and reranking all leave over
-the network, so the machine running Ragen does no model inference of its own.
-Point it at a hosted provider and a laptop is enough. A GPU only enters the picture if you decide to serve models yourself,
-which is supported and is a separate box.
+**No GPU with a model provider.** Pointed at a hosted provider, chat,
+embeddings and reranking leave over the network, so the machine running
+Ragen does no model inference of its own, and a laptop is enough.
+
+**Fully local, the same machine serves the models**, and that is where the
+hardware goes. For models the size of the default set, the spec's indicative
+class is one GPU with 24–32 GB, or a workstation with 64–128 GB of unified
+memory. Those are placeholders until the benchmark on target hardware has
+measured them, and we will not publish a sizing table before it has. Ollama
+also runs on CPU alone — slowly: enough to try it and to run the egress
+check's small models, not to serve a team. The models can equally live on a
+separate GPU box on your own network; the route table points at it.
 
 **Where the memory actually goes.** Measured on an idle stack, backing services
 only:
@@ -386,10 +471,13 @@ base, search and Brain
 Opt-in AES-256-GCM envelope encryption, one key per conversation · optional PII
 masking via Presidio · per-organization guardrail rules on input and output ·
 audit log with before-and-after state · tenant-scope guard over ~20 models ·
-no training on your documents, ever
+company sign-in over OpenID Connect (Microsoft Entra ID, Google Workspace or any
+provider), limited to your domains · no training on your documents, ever
 
 **Operations**
 Platform admin app · per-organization model allowlists and usage limits ·
+local models priced at zero in usage reports, because their cost is the
+hardware ·
 OpenTelemetry traces, metrics and logs · UI in 17 languages — English,
 Polish, Spanish, German, French, Portuguese, Italian, Hungarian, Bulgarian,
 Ukrainian, Danish, Swedish, Finnish, Czech, Slovak, Dutch and Norwegian
@@ -471,7 +559,9 @@ Ragen is self-hosted. Documents, database, index and encryption keys stay on
 infrastructure you control, and nothing reports back to the vendor. Whether
 document _content_ leaves your network during processing depends on how you
 configure the model backend — which is a real decision, not a detail, and the
-document below treats it as one.
+document below treats it as one. Set up as the
+[on-premises appliance](#fully-local-on-premises-appliance), the answer is
+"nothing", and `npm run appliance:egress-check` is how you check it.
 
 **[docs/security-and-privacy.md](docs/security-and-privacy.md)** answers the
 questions that come up in a security review: where data lives, what leaves the
@@ -490,7 +580,7 @@ Two things worth knowing before you deploy:
 - **Parsing is local by default, but it falls back.** `DOCUMENT_PARSER=docling`
   parses on your own hardware; if Docling fails, the worker falls back to
   loaders that send PDFs to an external model. Set `DOCLING_STRICT=1` to fail
-  instead of falling back.
+  instead of falling back; the appliance sets it for you.
 - **Encryption at rest is opt-in.** With no key provider configured, Ragen
   starts normally and stores message content unencrypted — convenient locally,
   wrong in production. Set `ENCRYPTION_PROVIDER`.
@@ -559,12 +649,24 @@ the shape of it rather than a substitute for it.
 - **Slack as a place to ask.** Not the existing Slack connector, which reads
   Slack as a source, but an assistant you can talk to in a channel, carrying the
   same retrieval-time access filter as the application.
-- **A verified air-gapped configuration.** A local model, local embeddings,
-  `DOCLING_STRICT=1`, and a script that demonstrates no outbound traffic. The
-  pieces are all there today.
-- **Microsoft Entra ID sign-in.** SSO and MFA are
-  [not built yet](docs/security-and-privacy.md). Entra ID over OAuth comes
-  first; SAML and SCIM directory sync come after it.
+- **The on-premises appliance, from configuration to product.** What used to
+  be this item — a local model, local embeddings, `DOCLING_STRICT=1` and a
+  script that demonstrates no outbound traffic — has landed: the
+  [appliance overlay](infra/appliance/README.md), local models in the picker
+  at zero cost, and an egress check that found and switched off seven
+  services calling home ([#1655](https://github.com/webamigos/RagenAI/pull/1655)).
+  Not covered yet: Ragen Brain and the guardrail first pass in the check, the
+  hybrid profile, and running the check in CI. Ahead of those: an appliance
+  option in `create-ragen-app`, sizing measured on real hardware, a local
+  reranker, a vLLM variant and an offline bundle.
+  [The spec](docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md)
+  tracks each step.
+- **SAML and SCIM directory sync.** Company sign-in over OpenID Connect —
+  Microsoft Entra ID, Google Workspace or any OIDC provider, limited to your
+  own domains — is in the open edition
+  ([#1648](https://github.com/webamigos/RagenAI/pull/1648),
+  [#1649](https://github.com/webamigos/RagenAI/pull/1649)). SAML and SCIM come
+  after it; MFA is under Later.
 - **`docker compose up` to a working demo**, with sample documents and sample
   questions, so evaluating Ragen does not begin with an empty knowledge base.
 - **Microsoft 365 connectors:** SharePoint, OneDrive, Outlook, Teams.
@@ -657,7 +759,7 @@ flowchart LR
 
     worker --> docling["Docling<br/>document parsing"]
     worker -. "optional" .-> presidio["Presidio<br/>PII masking"]
-    web --> models["Model providers<br/>your keys or your own GPU"]
+    web --> models["Models<br/>local Ollama or vLLM,<br/>or a provider with your keys"]
     api --> models
     worker --> models
 ```
@@ -683,6 +785,7 @@ for why shared values live in one package.
 | [Quickstart](https://docs.ragen.ai/docs/quickstart)            | First install, first document, first question                                      |
 | [Self-hosting](https://docs.ragen.ai/docs/self-hosting)        | Deployment, sizing, configuration                                                  |
 | [Open models](https://docs.ragen.ai/docs/open-models)          | Running vLLM or Ollama, and what else it takes to keep traffic inside your network |
+| [On-premises appliance](infra/appliance/README.md)             | Ragen and its models on one machine, and the check that nothing leaves it          |
 | [Concepts](https://docs.ragen.ai/docs/concepts)                | Assistants, knowledge bases, projects, organizations                               |
 | [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint                                               |
 | [Security](docs/security-and-privacy.md)                       | The document to hand a security reviewer                                           |

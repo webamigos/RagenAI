@@ -38,7 +38,8 @@ provider.
 
 | Configuration                              | What leaves your network                                                        |
 | ------------------------------------------ | ------------------------------------------------------------------------------- |
-| Routes pointed at a locally-served model    | Nothing, in normal operation                                                    |
+| Routes pointed at a locally-served model    | Nothing from the model layer, in normal operation                               |
+| The on-premises appliance                   | Nothing, checked by `npm run appliance:egress-check` (scope below)              |
 | Routes pointed at a commercial API          | The prompt: the question plus the retrieved document chunks needed to answer it |
 
 **Two things to know before assuming isolation:**
@@ -55,16 +56,40 @@ provider.
    the ingest instead. For a deployment that must not transmit documents, that
    variable is not optional.
 
-2. **A fully air-gapped deployment is real work, not a config flag.** The
-   architecture supports it — the model layer is genuinely decoupled — but
-   running a capable model on your own hardware means GPU capacity, and locally
+2. **A fully local deployment exists, and it is still being finished.** The
+   [on-premises appliance](../infra/appliance/README.md) is a compose overlay
+   that serves every model from Ollama on the same machine and sets
+   `DOCLING_STRICT=1`. `npm run appliance:egress-check` runs it on a network
+   with no route out, ingests a document, asks about it, and fails naming any
+   container that tried to reach the outside. It does not yet cover Ragen
+   Brain, the guardrail first pass or a hybrid profile, and it runs by hand,
+   not in CI ([the spec](specs/2026-10-17-ragen-as-an-on-premises-appliance.md)
+   tracks what is missing). The other costs are real too: running a capable
+   model on your own hardware means GPU capacity, and locally
    served open models generally answer less well than commercial ones today. How
    much less depends on your documents and your questions. Measure it on your own
    material before committing to the trade-off; `evals/` exists for exactly that.
 
-Nothing else phones home. After installation the only outbound needs are an SMTP
-server for notifications (your own internal one works) and pulling container
-images, which can be done once and then served from your internal registry.
+Ragen's own code makes no call nobody asked for: no telemetry, no update
+check. The model calls you configure are a different matter, and the table
+above says where each one goes. **The third-party components in the stack
+did call home**, and nobody knew until the egress check watched the traffic:
+Qdrant's telemetry, Prisma's update check, Ollama, Docling's web UI and its
+Hugging Face downloads, and onnxruntime's telemetry inside Docling. The
+standard `docker-compose.yml`, `docker-compose.fullapp.yml` and the Helm chart
+now switch them off, each with a comment naming the host it stops; Ollama's
+switch lives in `docker-compose.appliance.yml`, the only stack that runs it.
+One gap remains: the app images themselves do not set `CHECKPOINT_DISABLE`,
+so a deployment that runs them outside these files (Railway, for one) still
+makes Prisma's check unless you set it. The table is in
+[`infra/appliance/README.md`](../infra/appliance/README.md#proving-nothing-leaves-the-machine).
+
+With them off, a deployment on local models needs only two things from
+outside after installation: an SMTP server for notifications (your own
+internal one works), and pulling container images and model weights, which
+can be done once and then served from your internal registry. A deployment
+on a model provider also sends prompts and retrieved passages to that
+provider, as the table above says.
 
 **That sentence used to be untrue, and the reason is worth keeping.** The
 application shell hardcoded our own Google Tag Manager container and gated it on
@@ -156,7 +181,17 @@ data model, and each organization gets its own Qdrant collection. A warn-only
 guard logs any query that touches a tenant-scoped model without its
 organization filter ([ADR-23](adrs/23-tenant-scope-guard.md)).
 
-**Not built yet:** SSO (SAML, Entra ID, SCIM directory sync) and MFA. Today
+**Company sign-in** over OpenID Connect is in the open edition: Microsoft Entra
+ID, Google Workspace or any OIDC provider, configured by `OIDC_ISSUER`,
+`OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and the required `OIDC_ALLOWED_DOMAINS`
+(`apps/web/src/lib/oidc-config.ts`, `.env.example`). The ID token is verified
+against the issuer's keys; an address outside the allowed domains is refused
+before anything is created or linked; with Google, the account must also belong
+to an allowed Workspace domain. With `OIDC_JOIN_ORGANIZATION`, a new SSO user
+joins that organization as a member. A partial configuration turns SSO off and
+shows on the setup checklist; password sign-in is never affected.
+
+**Not built yet:** SAML, SCIM directory sync and MFA. Without OIDC,
 authentication is username/password with per-organization membership, plus
 opaque API keys for programmatic access ([ADR-13](adrs/13-opaque-api-keys.md)) —
 stored non-reversibly, with only a masked value in the database.
