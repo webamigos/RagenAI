@@ -57,6 +57,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [A retired file outlives the comments that name it, and the entry-point comment is the worst place for that](lessons/a-retired-file-outlives-the-comments-that-name-it.md)
 
 - [A generated docs page can be hand-edited in `ragen-docs`, and the drift test that would catch it only runs where both checkouts exist](lessons/a-generated-page-can-be-hand-edited-in-the-other-repository.md)
+- [Better Auth reads `BETTER_AUTH_URL` by itself when `baseURL` is unset, so renaming the variable silently changes an app that never names it](lessons/better-auth-reads-its-own-env-var-when-baseurl-is-unset.md)
 
 - [A renamed field outlives the rename wherever it is a string — a query parameter, and the branch that never got the second edit](lessons/a-renamed-field-outlives-the-rename-in-a-query-string.md)
 

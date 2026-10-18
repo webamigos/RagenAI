@@ -2505,7 +2505,7 @@
       "temporal": "Ladattuja asiakirjoja ei koskaan analysoida tai upoteta — käsittelyn työnkululla ei ole paikkaa, jossa se voisi toimia.",
       "redis": "Taustatyöt ajetaan Redisissä. Ilman sitä ladattuja dokumentteja ei koskaan käsitellä, eikä API käynnisty.",
       "mail": "Sähköpostikuljetusta ei ole määritetty, joten vahvistuslinkit, taikalinkit ja kutsut vain kirjoitetaan lokiin. Määritä Resend tai SMTP-palvelin niiden toimittamiseksi.",
-      "app-url": "Sähköposteissa ja upotettavassa keskusteluwidgetissä olevat linkit tarvitsevat absoluuttisen alkuperän. Molemmat muuttujat toimivat; BETTER_AUTH_URL luetaan ajon aikana, NEXT_PUBLIC_APP_URL upotetaan käännösvaiheessa.",
+      "app-url": "Sähköposteissa ja upotettavassa keskusteluwidgetissä olevat linkit tarvitsevat absoluuttisen alkuperän. Molemmat muuttujat toimivat; APP_URL luetaan ajon aikana, NEXT_PUBLIC_APP_URL upotetaan käännösvaiheessa.",
       "target-env": "Nimeää käyttöönoton. Jos sitä ei ole asetettu, jäljitykset ja mittarit eivät raportoi ympäristöä, eikä sähköpostilinkeillä ole paikallista oletusarvoa.",
       "moderation": "Sisällön moderoinnilla ei ole toimittajaa, joten moderoinnin guardrail kirjaa ”ei määritetty” ja päästää jokaisen viestin läpi. Aseta pelkästään moderointiin käytettävä OpenAI-avain, jos aiot ottaa sen käyttöön.",
       "message-encryption": "Keskustelujen viestit tallennetaan pelkkänä tekstinä. Se on paikallisesti ok; aseta jokin näistä arvoista ennen kuin oikeita keskusteluja päätyy sinne.",

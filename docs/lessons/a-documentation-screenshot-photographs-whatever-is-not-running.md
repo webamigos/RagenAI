@@ -7,7 +7,7 @@ topics: ['screenshots', 'capture', 'better-auth', 'apps-api', 'fail-open', 'seed
 
 # A documentation screenshot photographs whatever is not running — an unreachable service renders as an empty section, not an error
 
-**In short**: The knowledge base's folder rail comes from apps/api, which was down: the page caught the error and rendered a rail with no FOLDERS section, and the capture script's "refuse to photograph a failure" guard saw nothing to refuse. Also: `demo-data.sql` is an input to every image it feeds — raising a storage ceiling for one page stales another — and `apps/admin` cannot sign in on 3200 without its own `BETTER_AUTH_URL`.
+**In short**: The knowledge base's folder rail comes from apps/api, which was down: the page caught the error and rendered a rail with no FOLDERS section, and the capture script's "refuse to photograph a failure" guard saw nothing to refuse. Also: `demo-data.sql` is an input to every image it feeds — raising a storage ceiling for one page stales another — and `apps/admin` cannot sign in on 3200 without its own `APP_URL` (formerly `BETTER_AUTH_URL`).
 
 **Context**: `docs/img/web/knowledge-base.png` had been a hand-placed design
 target since #991. Phase 7 shipped, so the image went back to being generated:
@@ -41,7 +41,7 @@ seven-figure percentage in the panel. A number in `demo-data.sql` is an input
 to every image the file feeds, not just the page being worked on.
 
 **And the admin capture cannot sign in at all without its own origin.** Better
-Auth takes `BETTER_AUTH_URL` as its base URL; the root `.env.local` sets it to
+Auth takes `APP_URL` (formerly `BETTER_AUTH_URL`) as its base URL; the root `.env.local` sets it to
 `http://localhost:3000` for the app, so serving the panel on 3200 answers every
 sign-in with "Invalid origin". In the script that surfaces as a navigation
 timeout inside `signIn()` with an empty log — nothing names the origin.

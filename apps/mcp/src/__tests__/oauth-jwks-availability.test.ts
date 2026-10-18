@@ -45,7 +45,7 @@ it('returns 503 for unavailable authorization keys while cached keys and API key
     ({ headers: { authorization: value } }) as IncomingMessage;
   vi.stubEnv('TARGET_ENV', 'local');
   vi.stubEnv('MCP_OAUTH_ENABLED', 'true');
-  vi.stubEnv('BETTER_AUTH_URL', origin);
+  vi.stubEnv('APP_URL', origin);
   vi.stubEnv('RAGEN_MCP_PUBLIC_URL', resource);
   vi.stubEnv(
     'MCP_SERVICE_SECRET',

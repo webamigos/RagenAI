@@ -82,7 +82,7 @@ route for the model you select. Paste the key into `.env.local`, add the route
 to `infra/llm-gateway/routes.yaml`, and restart the dev server — the app reads
 both at startup, and there is no separate service to restart.
 
-In a Codespace, `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` are pointed at the
+In a Codespace, `APP_URL` and `NEXT_PUBLIC_APP_URL` are pointed at the
 forwarded `https://…app.github.dev` host. With the `localhost` defaults sign-in
 fails in a way that looks like broken auth rather than a wrong origin.
 

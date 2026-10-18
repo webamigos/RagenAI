@@ -15,7 +15,7 @@
  *        DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:55432/ragen_e2e"
  *
  *      For `apps/admin`, add its own origin as well:
- *        BETTER_AUTH_URL="http://localhost:3200"
+ *        APP_URL="http://localhost:3200"
  *      Better Auth takes that variable as its base URL, and the root
  *      `.env.local` sets it to port 3000 for the app. Without the override
  *      every sign-in here answers "Invalid origin" and the run dies in
@@ -546,7 +546,7 @@ async function main(): Promise<void> {
 //     next start --port 3000                       # apps/web
 //   DATABASE_URL=…/ragen_demo DATABASE_DIRECT_URL=…/ragen_demo PORT=3001 \
 //     node apps/api/dist/main.js                    # the thread sidebar and analytics
-//   ADMIN_TRUSTED_ORIGINS=http://localhost:3200 BETTER_AUTH_URL=http://localhost:3200 \
+//   ADMIN_TRUSTED_ORIGINS=http://localhost:3200 APP_URL=http://localhost:3200 \
 //     DATABASE_URL=…/ragen_demo next start --port 3200   # apps/admin
 //
 // apps/api must be given `ragen_demo` explicitly: started bare it falls

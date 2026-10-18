@@ -2505,7 +2505,7 @@
       "temporal": "Os documentos enviados nunca são analisados nem processados por embedding — o workflow de ingestão não tem onde ser executado.",
       "redis": "As tarefas em segundo plano correm no Redis. Sem ele, os documentos carregados nunca são processados e a API não arranca.",
       "mail": "Nenhum transporte de e-mail está configurado, então os links de verificação, links mágicos e convites são apenas registrados no log. Configure o Resend ou um servidor SMTP para entregá-los.",
-      "app-url": "Os links em e-mails e no widget de chat incorporável precisam de uma origem absoluta. Ambas as variáveis funcionam; BETTER_AUTH_URL é lida em tempo de execução, NEXT_PUBLIC_APP_URL é incorporada no momento da compilação.",
+      "app-url": "Os links em e-mails e no widget de chat incorporável precisam de uma origem absoluta. Ambas as variáveis funcionam; APP_URL é lida em tempo de execução, NEXT_PUBLIC_APP_URL é incorporada no momento da compilação.",
       "target-env": "Nomeia a implantação. Se não estiver definida, os traces e métricas não relatam nenhum ambiente, e os links de e-mail não têm um padrão local.",
       "moderation": "A moderação de conteúdo não tem fornecedor, por isso o guardrail de moderação regista «não configurado» e deixa passar todas as mensagens. Define uma chave OpenAI só para moderação se pretendes ativá-lo.",
       "message-encryption": "As mensagens das conversas são armazenadas em texto simples. Isso é aceitável localmente; defina um desses valores antes que conversas reais entrem nele.",

@@ -56,11 +56,11 @@ function codespaceUrls(target) {
   const urlFor = (port) => `https://${name}-${port}.${domain}`;
   return target === 'admin'
     ? {
-        BETTER_AUTH_URL: urlFor(3200),
+        APP_URL: urlFor(3200),
         NEXT_PUBLIC_APP_URL: urlFor(3200),
         RAGEN_APP_URL: urlFor(3000),
       }
-    : { BETTER_AUTH_URL: urlFor(3000), NEXT_PUBLIC_APP_URL: urlFor(3000) };
+    : { APP_URL: urlFor(3000), NEXT_PUBLIC_APP_URL: urlFor(3000) };
 }
 
 /** The first assignment of `key`, commented or not, or null when absent. */

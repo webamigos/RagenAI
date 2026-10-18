@@ -25,7 +25,7 @@ const deployed = {
   SECRET_KEY: 'k',
   SESSION_AUTH_SECRET: 's',
   BETTER_AUTH_SECRET: 'b',
-  BETTER_AUTH_URL: 'https://demo.example.com',
+  APP_URL: 'https://demo.example.com',
 };
 
 describe('the apps/web environment contract', () => {
@@ -62,13 +62,13 @@ describe('the apps/web environment contract', () => {
     // deployment refusing to start.
     const result = parseWebEnv({
       ...deployed,
-      BETTER_AUTH_URL: undefined,
+      APP_URL: undefined,
       NEXT_PUBLIC_APP_URL: undefined,
     });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.report).toContain('BETTER_AUTH_URL');
+      expect(result.report).toContain('APP_URL');
     }
   });
 
@@ -76,8 +76,18 @@ describe('the apps/web environment contract', () => {
     expect(
       parseWebEnv({
         ...deployed,
-        BETTER_AUTH_URL: undefined,
+        APP_URL: undefined,
         NEXT_PUBLIC_APP_URL: 'https://demo.example.com',
+      }).ok,
+    ).toBe(true);
+  });
+
+  it('accepts the deprecated BETTER_AUTH_URL alone, so an existing deployment still boots', () => {
+    expect(
+      parseWebEnv({
+        ...deployed,
+        APP_URL: undefined,
+        BETTER_AUTH_URL: 'https://demo.example.com',
       }).ok,
     ).toBe(true);
   });
