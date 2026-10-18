@@ -440,13 +440,41 @@ repeatable demo, and records the gaps as tests.
   B3 probe through `LlmGateway.missingModels`, cached for 30 seconds. A
   server that is down hides nothing, so a blip cannot empty the picker; the
   setup checklist reports it. Found by the 0.3 run (failure 6).
-- [ ] **A3.** `scripts/appliance-egress-check --profile local|hybrid`: an
-  internal-only network and a scripted ingest, chat, Brain and guardrail
-  pass. It fails on any outbound attempt outside the profile's allowance and
-  names the container and host. In hybrid mode it also proves that only
-  `llm-egress` has an external network, and that the proxy refuses any
-  host but the configured one. Both modes run in CI on CPU with a small
-  model, hybrid against a stub endpoint.
+- [x] **A3 (local).** `npm run appliance:egress-check` runs the appliance
+  on an `internal: true` network (`docker-compose.appliance.sealed.yml`),
+  signs up an account through Better Auth, ingests one document and asks one
+  question about it. tcpdump on the network's bridge sees every packet that
+  is not addressed to another container, and the check names the container
+  and the host it asked for. A canary that must be seen guards against a
+  capture that sees nothing. It runs from a temporary directory with an
+  environment generated from the appliance template, so no developer
+  `.env.local` reaches it, and it swaps every model for `qwen2.5:0.5b` and
+  `all-minilm` (`--full-models` keeps the real ones).
+
+  The first runs found seven things leaving a stack that had passed every
+  earlier check, plus a template that could not boot:
+  - qdrant: `telemetry.qdrant.io`
+  - Prisma, in api and in the migrate job: `checkpoint.prisma.io`
+  - Ollama: `ollama.com`, for cloud models and model recommendations
+  - Docling's Gradio UI: `api.gradio.app`, `raw.githubusercontent.com`
+  - Docling: `huggingface.co`
+  - onnxruntime inside Docling: `mobile.events.data.microsoft.com`
+  - `appliance.env.example` named three of the eight secrets the
+    installer generates, so api and the worker restart-looped.
+
+  Each leak is switched off in `docker-compose.appliance.yml`. The template
+  lists every secret, and
+  `the-appliance-env-names-every-generated-secret` reads the installer's
+  manifest to keep it complete. After that the check passes. It is
+  verified on Docker 24; on Docker 26 and later an internal network's
+  resolver may stop forwarding names, and the canary will say so.
+- [ ] **A3b.** Still to do from A3:
+  - Brain and the guardrail first pass in the scripted pass
+  - hybrid mode, once the `appliance-hybrid` profile exists: only
+    `llm-egress` on an external network, and the proxy refusing every host
+    but its one
+  - the check in CI on every change to the compose files, the route files
+    or the worker's ingest
 - [x] **A4.** Remove the known leaks, and make the rule a guard. What was
   found on a closer look:
   - Moderation in `apps/api` throws without a key, but the factory is lazy

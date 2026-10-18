@@ -7,7 +7,7 @@ call leaves it. The design, and what is still missing, is in
 ## Run it
 
 1. Copy [`appliance.env.example`](appliance.env.example) to the repository
-   root as `.env.local`, and fill in the three secrets. In this stack,
+   root as `.env.local`, and fill in the secrets. In this stack,
    `LLM_ROUTES_PATH` and `LLM_OLLAMA_BASE_URL` are set by the compose file, so
    their values in the template only matter when the apps run on the host.
 2. Start everything:
@@ -50,3 +50,51 @@ fails when the first two disagree.
 The sign-in page's setup checklist reports two problems: a model server
 that is not answering, and a model that was never pulled. It also gives the
 `ollama pull` command to run for each missing model.
+
+## Proving nothing leaves the machine
+
+```bash
+npm run appliance:egress-check
+```
+
+This runs the appliance on a Compose network with no route out
+([`docker-compose.appliance.sealed.yml`](../../docker-compose.appliance.sealed.yml)),
+signs up an account, ingests a document and asks a question about it. It
+fails if any container tried to reach anything off that network, and names
+the container and the host it asked for. It watches the network bridge with
+tcpdump rather than checking against a list of allowed domains, so a new call
+to a new service shows up the day it is added.
+
+- **It runs from a temporary directory** with an environment generated from
+  [`appliance.env.example`](appliance.env.example), in its own Compose
+  project. This checkout's `.env.local`, cloud keys included, never reaches
+  it. Every published port is a random one, so it does not collide with a
+  stack already running.
+- **By default it swaps every model for a small pair**: `qwen2.5:0.5b` and
+  `all-minilm` (384 dimensions). The check is about traffic, not answer
+  quality. `--full-models` runs the real route table, which needs the
+  hardware for it.
+- **Models are pulled before the network is sealed.** That is the one step
+  that needs the internet. The models volume is kept between runs, so the
+  second run pulls nothing.
+- **It checks that it can see before it trusts a clean result.** A canary
+  container makes one lookup and one connection that must fail. If the
+  capture missed either, the run fails. On Docker 26 and later, an internal
+  network's resolver may stop forwarding names, which would hide lookups.
+- `--keep` leaves the stack running for a look around, and `--version` pins
+  the image tag (the default is `latest`).
+
+Its first runs found seven services calling home. `docker-compose.appliance.yml`
+now switches each of them off, with a comment naming the host it asked for:
+
+| Service | Host | Switch |
+| --- | --- | --- |
+| qdrant | `telemetry.qdrant.io` | `QDRANT__TELEMETRY_DISABLED` |
+| api, worker, web, migrate | `checkpoint.prisma.io` | `CHECKPOINT_DISABLE` |
+| ollama | `ollama.com` | `OLLAMA_NO_CLOUD` |
+| docling | `api.gradio.app`, `raw.githubusercontent.com` | `DOCLING_SERVE_ENABLE_UI=false` |
+| docling | `huggingface.co` | `HF_HUB_OFFLINE` |
+| docling | `mobile.events.data.microsoft.com` | `ORT_DISABLE_TELEMETRY` |
+
+Not covered yet: Brain, the guardrail first pass, the hybrid profile and a
+CI job (A3b in the spec).

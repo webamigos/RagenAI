@@ -104,6 +104,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### security
 
+- [An "it stays on the machine" claim needs a sealed run, not a review — seven services called home past every earlier check](lessons/an-offline-claim-needs-a-sealed-run-not-a-review.md)
+
 - [A rewrite applied before the split misses what the splitter adds, and a per-document value copied by the splitter becomes every chunk's](lessons/a-rewrite-before-the-split-misses-what-the-splitter-adds.md)
 
 - [A feature gate on the internal thread route was described as covering the public one](lessons/a-gate-on-the-internal-route-is-not-a-gate-on-the-public-one.md)
