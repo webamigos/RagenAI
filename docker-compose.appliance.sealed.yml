@@ -1,0 +1,17 @@
+# The appliance with no way out: the compose network becomes `internal`, so
+# Docker gives it no route off the machine. Step A3 of
+# docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md.
+#
+# Used by `npm run appliance:egress-check`, on top of the three appliance
+# files. It is not a separate way to run an appliance: an install that runs
+# sealed needs its models already on the volume, because `ollama-models`
+# cannot pull through a network with no route out.
+#
+# The check reads the network's own refusal, not a list of allowed hosts: a
+# container that tries to leave sends a packet onto this network's bridge,
+# the packet goes nowhere, and the check reports the container and the
+# destination it asked for.
+
+networks:
+  ragen-network:
+    internal: true
