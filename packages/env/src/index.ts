@@ -74,8 +74,8 @@ export { guardrailsDisabled, isOnPremise } from './deployment';
 
 export {
   APP_URL_VARIABLE,
-  LEGACY_APP_URL_VARIABLE,
-  resetAppUrlWarningForTests,
+  appUrlRenameRule,
+  RENAMED_APP_URL_VARIABLE,
   resolveAppUrl,
 } from './app-url';
 

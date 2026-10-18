@@ -1,5 +1,6 @@
 import {
   allOrNone,
+  appUrlRenameRule,
   fieldGroupRules,
   blankAsUndefined,
   fragments,
@@ -39,6 +40,8 @@ export const adminEnvSchema = fragments.targetEnv
   .merge(fragments.llmGateway)
   .merge(fragments.connectorGuard)
   .merge(fragments.tokenVault)
+  // This panel's own public origin, read by lib/auth.ts and auth-origins.ts.
+  .merge(fragments.appOrigin)
   .extend({
     /**
      * Google sign-in for the panel. Optional, and `apps/admin/.env.example`
@@ -94,6 +97,8 @@ export const adminEnvSchema = fragments.targetEnv
     INTERNAL_API_SECRET: blankAsUndefined(z.string().optional()),
   })
   .superRefine((env, ctx) => {
+    appUrlRenameRule(env, ctx);
+
     /**
      * The defect #1115 fixed, expressed as the rule that already existed.
      *

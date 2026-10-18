@@ -1,4 +1,5 @@
 import {
+  appUrlRenameRule,
   blankAsUndefined,
   fragments,
   mcpServiceRules,
@@ -115,6 +116,7 @@ export const mcpEnvSchema = fragments.targetEnvRequired
     }
     mcpServiceRules(env, ctx);
     mcpOAuthRules(env, ctx);
+    appUrlRenameRule(env, ctx);
     requiredInDeployedEnvs(
       env,
       ctx,

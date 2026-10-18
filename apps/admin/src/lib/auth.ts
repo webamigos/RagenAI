@@ -29,10 +29,10 @@ export const auth = betterAuth({
     transaction: true,
   }),
   /**
-   * Passed explicitly so Better Auth never reads its own env var: left unset,
-   * the library falls back to `BETTER_AUTH_URL` by itself, which would keep
-   * the deprecated name load-bearing here after `APP_URL` replaced it.
-   * `undefined` when neither is set — the request origin, as before.
+   * Passed explicitly so `APP_URL` decides. When it is unset this is
+   * `undefined`, and Better Auth falls back to the request origin — or, by
+   * its own convention, to a leftover `BETTER_AUTH_URL`, which this code no
+   * longer reads. The env check reports that leftover (`appUrlRenameRule`).
    */
   baseURL: resolveAppUrl(),
   /**

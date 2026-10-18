@@ -1,6 +1,6 @@
 ---
 title: APP_URL replaces BETTER_AUTH_URL as the name for the installation's public origin
-status: in-progress
+status: implemented
 areas: [auth, config, admin, mcp, self-hosting]
 adrs: [37]
 ---
@@ -198,10 +198,14 @@ No Prisma, tenancy or RBAC change.
 
 - [ ] **B1.** `ragen-docs` PR (Q4).
 
-### Phase C — removal (later release, not now)
+### Phase C — removal
 
-- [ ] **C1.** Drop the fallback from `resolveAppUrl()`, flip the architecture
-  test to forbid `BETTER_AUTH_URL` everywhere.
+- [x] **C1.** Drop the fallback from `resolveAppUrl()`. The old name is still
+  declared in `fragments.appOrigin` and read only by `appUrlRenameRule`, which
+  every app's env check runs: an install that sets only `BETTER_AUTH_URL` is
+  told `BETTER_AUTH_URL was renamed to APP_URL` instead of silently losing its
+  origin. The architecture test keeps every other read out.
+- [x] **B1.** `ragen-docs` updated (webamigos/ragen-docs#42).
 
 ## Testing
 

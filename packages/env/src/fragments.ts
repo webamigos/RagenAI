@@ -496,12 +496,14 @@ export const mcpService = z.object({
 
 /**
  * Public origin of this installation — read it through `resolveAppUrl()`,
- * never field by field. `BETTER_AUTH_URL` is the deprecated name for the same
- * value, declared so a legacy install still validates (see `app-url.ts`).
+ * never field by field, and merge it with `appUrlRenameRule`.
+ * `BETTER_AUTH_URL` is the name `APP_URL` replaced: declared only so the rule
+ * can see it and report the rename (see `app-url.ts`). Any string, because a
+ * value that is not a url is still a value someone meant to rename.
  */
 export const appOrigin = z.object({
   APP_URL: blankAsUndefined(httpUrl().optional()),
-  BETTER_AUTH_URL: blankAsUndefined(httpUrl().optional()),
+  BETTER_AUTH_URL: blankAsUndefined(z.string().optional()),
 });
 
 /**

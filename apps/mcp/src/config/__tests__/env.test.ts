@@ -227,16 +227,17 @@ describe('MCP OAuth resource configuration', () => {
         .success,
     ).toBe(false);
   });
-  it('takes the issuer from the deprecated BETTER_AUTH_URL when APP_URL is unset', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('names the rename when only the old BETTER_AUTH_URL is set', () => {
     const parsed = mcpEnvSchema.safeParse({
       ...valid,
       APP_URL: undefined,
       BETTER_AUTH_URL: 'http://localhost:3000',
     });
 
-    expect(parsed.success).toBe(true);
-    expect(parsed.data?.APP_URL).toBe('http://localhost:3000');
+    expect(parsed.success).toBe(false);
+    expect(parsed.error?.issues.map((issue) => issue.message)).toContainEqual(
+      expect.stringContaining('BETTER_AUTH_URL was renamed to APP_URL'),
+    );
   });
   it('requires an issuer origin when OAuth is on', () => {
     expect(
