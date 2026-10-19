@@ -13,9 +13,12 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const targetDir = process.argv[2];
+// `--appliance`: the install was scaffolded with `--appliance` — local models,
+// no provider key — so the provider half below is replaced by its own.
+const appliance = process.argv.includes('--appliance');
 
 if (!targetDir) {
-  console.error('usage: assert-scaffolded-install.mjs <dir>');
+  console.error('usage: assert-scaffolded-install.mjs <dir> [--appliance]');
   process.exit(2);
 }
 
@@ -106,70 +109,169 @@ for (const [contents, file] of [
   );
 }
 
-// --- The provider the run configured -------------------------------------
-const chatModel = envValue(rootEnv, 'DEFAULT_MODEL');
-const embeddingsModel = envValue(rootEnv, 'EMBEDDINGS_MODEL');
-
-expectEnv(rootEnv, '.env.local', 'DEFAULT_MODEL_PROVIDER', nonEmpty, 'litellm');
-expectEnv(
-  rootEnv,
-  '.env.local',
-  'OPENAI_API_KEY',
-  nonEmpty,
-  'the key from the environment',
-);
-
-// Multi-query expansion runs on every turn, so a rephrase model the install
-// has no credentials for fails the chain before the chat model is reached.
-expectEnv(
-  rootEnv,
-  '.env.local',
-  'REPHRASE_MODEL',
-  (value) => value === chatModel,
-  `the configured chat model (${chatModel})`,
-);
-
-// EMBEDDINGS_MODEL and VECTOR_SIZE have to agree, or Qdrant rejects every
-// upsert without anything in the app noticing.
-expectEnv(
-  rootEnv,
-  '.env.local',
-  'EMBEDDINGS_MODEL',
-  (value) => value === 'text-embedding-3-small',
-  'the provider’s embedding model',
-);
-expectEnv(
-  rootEnv,
-  '.env.local',
-  'VECTOR_SIZE',
-  (value) => value === '1536',
-  "text-embedding-3-small's dimensionality",
-);
-
-// Every model named in .env.local has to have a route, or resolving it throws
-// UnknownModelError on the first question.
-for (const model of [chatModel, embeddingsModel]) {
-  if (model && !new RegExp(`^  ${model}:$`, 'm').test(routes)) {
-    failures.push(
-      `infra/llm-gateway/routes.yaml has no route for ${model}, which .env.local selects`,
-    );
-  }
+if (appliance) {
+  assertAppliance();
+} else {
+  assertProvider();
 }
 
-// The shipped table routes to Azure, Bedrock, Vertex and Scaleway. A scaffold
-// that left it in place would offer models this install has no keys for.
-if (routes.includes('provider: vertex')) {
-  failures.push(
-    'infra/llm-gateway/routes.yaml is still the shipped table — the scaffold should have replaced it',
-  );
-}
-
-// The wizard configured a provider, so the manual fallback should not be
+// The wizard configured the models, so the manual fallback should not be
 // there to contradict it.
 if (existsSync(join(targetDir, 'SETUP-LLM.md'))) {
   failures.push(
     'SETUP-LLM.md was written even though a provider was configured',
   );
+}
+
+// Every model named in .env.local has to have a route, or resolving it throws
+// UnknownModelError on the first question.
+for (const key of [
+  'DEFAULT_MODEL',
+  'REPHRASE_MODEL',
+  'SUMMARY_MODEL',
+  'SCORING_MODEL',
+  'EMBEDDINGS_MODEL',
+  ...(appliance ? ['MULTIMODAL_FALLBACK_MODEL'] : []),
+]) {
+  const model = envValue(rootEnv, key);
+  if (model && !new RegExp(`^  ${model}:$`, 'm').test(routes)) {
+    failures.push(
+      `infra/llm-gateway/routes.yaml has no route for ${model}, which .env.local selects as ${key}`,
+    );
+  }
+}
+
+/**
+ * An appliance: every model on this machine, nothing that can leave it.
+ * The installer checks the route table before writing it; this checks what
+ * it wrote, from the published package against this commit's files.
+ */
+function assertAppliance() {
+  for (const [key, expected] of [
+    ['DEFAULT_MODEL', 'local-chat'],
+    ['EMBEDDINGS_MODEL', 'local-embed'],
+    // bge-m3's dimensionality; anything else and Qdrant rejects every upsert.
+    ['VECTOR_SIZE', '1024'],
+    // Without it a failed Docling parse sends the file to a cloud model.
+    ['DOCLING_STRICT', '1'],
+    ['STORAGE_PROVIDER', 'local'],
+    ['ENCRYPTION_PROVIDER', 'local'],
+  ]) {
+    expectEnv(
+      rootEnv,
+      '.env.local',
+      key,
+      (value) => value === expected,
+      expected,
+    );
+  }
+
+  // No key was asked for, and none may arrive from the caller's environment:
+  // CI sets OPENAI_API_KEY for the provider run above this one.
+  for (const key of [
+    'OPENAI_API_KEY',
+    'ANTHROPIC_API_KEY',
+    'OPENROUTER_API_KEY',
+    'SCW_API_KEY',
+  ]) {
+    const value = envValue(rootEnv, key);
+    if (value) {
+      failures.push(`.env.local: ${key} is set in an appliance install`);
+    }
+  }
+
+  // Every route on the local model server. Read line by line, like the
+  // installer: two-space ids, four-space fields.
+  const routeIds = [...routes.matchAll(/^ {2}([^\s:#][^:]*):\s*$/gm)].map(
+    (match) => match[1],
+  );
+  if (routeIds.length === 0) {
+    failures.push('infra/llm-gateway/routes.yaml has no routes');
+  }
+  for (const match of routes.matchAll(/^ {4}provider:\s*(\S+)/gm)) {
+    if (match[1] !== 'openai-compatible') {
+      failures.push(
+        `infra/llm-gateway/routes.yaml has a provider: ${match[1]} route, which leaves the machine`,
+      );
+    }
+  }
+  for (const match of routes.matchAll(/^ {4}connection:\s*(\S+)/gm)) {
+    if (match[1] !== 'ollama') {
+      failures.push(
+        `infra/llm-gateway/routes.yaml has a connection: ${match[1]} route, not the local Ollama`,
+      );
+    }
+  }
+
+  // The profile: Compose reads COMPOSE_FILE from `.env`, so a plain
+  // `docker compose up -d` starts the appliance, model server included.
+  const composeFile = envValue(composeEnv, 'COMPOSE_FILE');
+  if (!composeFile?.split(/[:;]/).includes('docker-compose.appliance.yml')) {
+    failures.push(
+      `.env: COMPOSE_FILE=${composeFile ?? ''} does not include docker-compose.appliance.yml`,
+    );
+  } else {
+    for (const file of composeFile.split(/[:;]/)) {
+      if (!existsSync(join(targetDir, file))) {
+        failures.push(`.env: COMPOSE_FILE names ${file}, which does not exist`);
+      }
+    }
+  }
+}
+
+// --- The provider the run configured -------------------------------------
+function assertProvider() {
+  const chatModel = envValue(rootEnv, 'DEFAULT_MODEL');
+
+  expectEnv(
+    rootEnv,
+    '.env.local',
+    'DEFAULT_MODEL_PROVIDER',
+    nonEmpty,
+    'litellm',
+  );
+  expectEnv(
+    rootEnv,
+    '.env.local',
+    'OPENAI_API_KEY',
+    nonEmpty,
+    'the key from the environment',
+  );
+
+  // Multi-query expansion runs on every turn, so a rephrase model the install
+  // has no credentials for fails the chain before the chat model is reached.
+  expectEnv(
+    rootEnv,
+    '.env.local',
+    'REPHRASE_MODEL',
+    (value) => value === chatModel,
+    `the configured chat model (${chatModel})`,
+  );
+
+  // EMBEDDINGS_MODEL and VECTOR_SIZE have to agree, or Qdrant rejects every
+  // upsert without anything in the app noticing.
+  expectEnv(
+    rootEnv,
+    '.env.local',
+    'EMBEDDINGS_MODEL',
+    (value) => value === 'text-embedding-3-small',
+    'the provider’s embedding model',
+  );
+  expectEnv(
+    rootEnv,
+    '.env.local',
+    'VECTOR_SIZE',
+    (value) => value === '1536',
+    "text-embedding-3-small's dimensionality",
+  );
+
+  // The shipped table routes to Azure, Bedrock, Vertex and Scaleway. A scaffold
+  // that left it in place would offer models this install has no keys for.
+  if (routes.includes('provider: vertex')) {
+    failures.push(
+      'infra/llm-gateway/routes.yaml is still the shipped table — the scaffold should have replaced it',
+    );
+  }
 }
 
 // Compose reads `.env` from the project directory, so this line is what keeps

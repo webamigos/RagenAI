@@ -18,6 +18,7 @@ import { REQUIRED_NODE_VERSION, parseNodeVersion } from '../node-version';
 import {
   busyPublishedPorts,
   generatePrismaClient,
+  installDependencies,
   migrateDatabase,
   resolveComposeProjectName,
   seedDatabase,
@@ -1018,5 +1019,232 @@ describe('choosing RustFS', () => {
       cwd: '/tmp/ragen-test',
       profiles: ['pii'],
     });
+  });
+});
+
+/**
+ * The appliance (step C1 of the appliance spec): models on this machine, no
+ * API key, and a route table checked to keep every call on it.
+ */
+describe('run — appliance', () => {
+  const APPLIANCE_ROOT_TEMPLATE = [
+    ROOT_TEMPLATE,
+    // The keys the appliance tier writes on top of the provider ones. The real
+    // `.env.example` is held to the same list by the manifest-is-current test.
+    'MULTIMODAL_FALLBACK_MODEL=mistral-small-3.2',
+    '# LLM_OLLAMA_BASE_URL=http://localhost:11434/v1',
+    '# LLM_OLLAMA_API_KEY=ollama',
+    '# DOCUMENT_PARSER=docling',
+    '# DOCLING_STRICT=1        # fail the ingest instead of falling back off-site',
+  ].join('\n');
+
+  const APPLIANCE_ROUTES = [
+    'version: 1',
+    '',
+    'routes:',
+    ...['local-chat', 'local-small', 'local-vision', 'local-embed'].flatMap(
+      (id) => [
+        `  ${id}:`,
+        '    provider: openai-compatible',
+        '    connection: ollama',
+        `    model: ${id}-upstream`,
+      ],
+    ),
+    '',
+  ].join('\n');
+
+  const APPLIANCE_FILES = [
+    'infra/llm-gateway/routes.appliance.yaml',
+    'docker-compose.yml',
+    'docker-compose.fullapp.yml',
+    'docker-compose.appliance.yml',
+    'docker-compose.appliance.gpu.yml',
+  ];
+
+  /**
+   * A clone that has the appliance files. `existsSync` still answers false
+   * for the target directory itself, which is what lets `run` clone into it.
+   */
+  function mockApplianceTree(
+    routes = APPLIANCE_ROUTES,
+    present: readonly string[] = APPLIANCE_FILES,
+    dotEnv: string | undefined = undefined,
+  ): void {
+    mockTemplates(APPLIANCE_ROOT_TEMPLATE, dotEnv);
+    const templates = vi.mocked(readFileSync).getMockImplementation();
+    vi.mocked(readFileSync).mockImplementation((path, options) => {
+      if (String(path).endsWith('infra/llm-gateway/routes.appliance.yaml')) {
+        return routes;
+      }
+      return templates?.(path, options) as never;
+    });
+    vi.mocked(existsSync).mockImplementation((path) =>
+      present.some((file) => String(path) === `/tmp/ragen-test/${file}`),
+    );
+  }
+
+  function writtenTo(suffix: string): string | undefined {
+    const call = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith(suffix));
+    return call ? String(call[1]) : undefined;
+  }
+
+  it('offers the appliance in the provider question and asks for no key', async () => {
+    mockApplianceTree();
+    vi.mocked(clack.select).mockResolvedValueOnce('appliance' as never);
+    // The GPU question, then Docker: declined.
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);
+
+    expect(clack.password).not.toHaveBeenCalled();
+    // One select: the provider. Profile and tier have one answer each today,
+    // so they are announced rather than asked; storage, encryption and the
+    // worker runtime are answered by the appliance itself.
+    expect(clack.select).toHaveBeenCalledOnce();
+    const select = vi.mocked(clack.select).mock.calls[0]?.[0];
+    expect(select?.options.map((o) => o.value)).toContain('appliance');
+    expect(clack.log.info).toHaveBeenCalledWith(
+      expect.stringContaining('not available yet'),
+    );
+    expect(clack.log.warn).toHaveBeenCalledWith(
+      expect.stringContaining('not yet measured'),
+    );
+  });
+
+  it('writes the tier env: local models, VECTOR_SIZE, DOCLING_STRICT and no cloud model', async () => {
+    mockApplianceTree();
+
+    await expect(
+      run(['/tmp/ragen-test', '--appliance', '--yes', '--skip-docker']),
+    ).resolves.toBe(true);
+
+    const env = parseDotenv(writtenTo('/.env.local') ?? '');
+    expect(env).toMatchObject({
+      DEFAULT_MODEL: 'local-chat',
+      REPHRASE_MODEL: 'local-small',
+      SUMMARY_MODEL: 'local-small',
+      SCORING_MODEL: 'local-small',
+      MULTIMODAL_FALLBACK_MODEL: 'local-vision',
+      EMBEDDINGS_MODEL: 'local-embed',
+      VECTOR_SIZE: '1024',
+      LLM_OLLAMA_BASE_URL: 'http://localhost:11434/v1',
+      DOCUMENT_PARSER: 'docling',
+      DOCLING_STRICT: '1',
+      // Kept on the machine: the appliance answers these itself.
+      STORAGE_PROVIDER: 'local',
+      ENCRYPTION_PROVIDER: 'local',
+      WORKER_RUNTIME: 'bullmq',
+    });
+    // No cloud key was asked for, so none is written.
+    expect(env.OPENAI_API_KEY).toBe('');
+    expect(env.ANTHROPIC_API_KEY).toBe('');
+    expect(env.PRESIDIO_ANALYZER_URL).toBeUndefined();
+    expect(clack.select).not.toHaveBeenCalled();
+    expect(clack.confirm).not.toHaveBeenCalled();
+  });
+
+  it('installs the appliance table over routes.yaml, and writes no setup guide', async () => {
+    mockApplianceTree();
+
+    await run(['/tmp/ragen-test', '--appliance', '--yes', '--skip-docker']);
+
+    const routes = writtenTo('infra/llm-gateway/routes.yaml');
+    expect(routes).toContain('profile: local, tier: default');
+    expect(routes).toContain(APPLIANCE_ROUTES);
+    expect(writtenTo('SETUP-LLM.md')).toBeUndefined();
+  });
+
+  it('writes the profile as COMPOSE_FILE, and starts that stack with every -f', async () => {
+    mockApplianceTree();
+
+    await run(['/tmp/ragen-test', '--appliance', '--gpu', '--yes']);
+
+    const files = [
+      'docker-compose.yml',
+      'docker-compose.fullapp.yml',
+      'docker-compose.appliance.yml',
+      'docker-compose.appliance.gpu.yml',
+    ];
+    const composeEnv = parseDotenv(writtenTo('/.env') ?? '');
+    expect(composeEnv.COMPOSE_FILE?.split(/[:;]/)).toEqual(files);
+    expect(composeEnv.COMPOSE_PROJECT_NAME).toBe('ragen-test');
+    expect(startDockerServices).toHaveBeenCalledWith({
+      cwd: '/tmp/ragen-test',
+      profiles: [],
+      files,
+    });
+    // The containers migrate; nothing is installed on the host.
+    expect(installDependencies).not.toHaveBeenCalled();
+    expect(migrateDatabase).not.toHaveBeenCalled();
+    expect(clack.outro).toHaveBeenCalledWith(
+      expect.stringContaining('-f docker-compose.appliance.gpu.yml'),
+    );
+  });
+
+  it('keeps a COMPOSE_FILE the directory already has', async () => {
+    mockApplianceTree(
+      APPLIANCE_ROUTES,
+      APPLIANCE_FILES,
+      'COMPOSE_PROJECT_NAME=kept\nCOMPOSE_FILE=mine.yml\n',
+    );
+
+    await run(['/tmp/ragen-test', '--appliance', '--yes', '--skip-docker']);
+
+    expect(appendFileSync).not.toHaveBeenCalled();
+    expect(writtenTo('/.env')).toBeUndefined();
+  });
+
+  it('refuses a route table with a route that leaves the machine, before writing anything', async () => {
+    mockApplianceTree(
+      `${APPLIANCE_ROUTES}  gpt-4o:\n    provider: openai\n    model: gpt-4o\n`,
+    );
+
+    await expect(
+      run(['/tmp/ragen-test', '--appliance', '--yes']),
+    ).resolves.toBe(false);
+
+    expect(clack.cancel).toHaveBeenCalledWith(
+      expect.stringContaining('gpt-4o: provider openai is not a local server'),
+    );
+    expect(writeFileSync).not.toHaveBeenCalled();
+    expect(startDockerServices).not.toHaveBeenCalled();
+  });
+
+  it('refuses a clone older than the appliance, naming the missing files', async () => {
+    mockApplianceTree(APPLIANCE_ROUTES, ['docker-compose.yml']);
+
+    await expect(
+      run(['/tmp/ragen-test', '--appliance', '--yes']),
+    ).resolves.toBe(false);
+
+    expect(clack.cancel).toHaveBeenCalledWith(
+      expect.stringContaining('docker-compose.appliance.yml'),
+    );
+    expect(writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it('asks about the GPU interactively, and adds its compose file on yes', async () => {
+    mockApplianceTree();
+    vi.mocked(clack.select).mockResolvedValueOnce('appliance' as never);
+    vi.mocked(clack.confirm)
+      .mockResolvedValueOnce(true as never) // GPU
+      .mockResolvedValue(false as never); // Docker
+
+    await run(['/tmp/ragen-test']);
+
+    expect(writtenTo('/.env')).toContain('docker-compose.appliance.gpu.yml');
+  });
+
+  it('stops when the GPU question is cancelled', async () => {
+    mockApplianceTree();
+    vi.mocked(clack.select).mockResolvedValueOnce('appliance' as never);
+    vi.mocked(clack.confirm).mockResolvedValueOnce(CANCEL_TOKEN as never);
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
+
+    expect(writeFileSync).not.toHaveBeenCalled();
+    expect(clack.cancel).toHaveBeenCalledWith('Cancelled.');
   });
 });

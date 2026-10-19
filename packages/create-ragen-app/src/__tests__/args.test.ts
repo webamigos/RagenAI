@@ -76,4 +76,58 @@ describe('parseArgs', () => {
       /Unknown --provider/,
     );
   });
+
+  describe('--appliance', () => {
+    it('leaves the appliance, tier and GPU unset by default, so the CLI asks', () => {
+      const args = parseArgs(['app']);
+      expect(args.appliance).toBeUndefined();
+      expect(args.tier).toBeUndefined();
+      expect(args.gpu).toBe(false);
+    });
+
+    it('reads a bare --appliance as the local profile', () => {
+      expect(parseArgs(['app', '--appliance']).appliance).toBe('local');
+    });
+
+    it('reads --appliance=local', () => {
+      expect(parseArgs(['app', '--appliance=local']).appliance).toBe('local');
+    });
+
+    it('refuses hybrid with the reason, rather than installing local instead', () => {
+      expect(() => parseArgs(['app', '--appliance=hybrid'])).toThrow(
+        /not available yet: .*A1b/,
+      );
+    });
+
+    it('rejects an unknown profile', () => {
+      expect(() => parseArgs(['app', '--appliance=cloud'])).toThrow(
+        /Unknown --appliance=cloud. Expected one of: local, hybrid/,
+      );
+    });
+
+    it('refuses --provider alongside it, since the two answer one question', () => {
+      expect(() =>
+        parseArgs(['app', '--appliance', '--provider=openai']),
+      ).toThrow(/drop --provider/);
+    });
+
+    it('reads --tier and --gpu with it', () => {
+      const args = parseArgs(['app', '--appliance', '--tier=default', '--gpu']);
+      expect(args.tier).toBe('default');
+      expect(args.gpu).toBe(true);
+    });
+
+    it('rejects a tier that does not exist, naming the ones that do', () => {
+      expect(() => parseArgs(['app', '--appliance', '--tier=xl'])).toThrow(
+        /Unknown --tier=xl. Expected one of: default/,
+      );
+    });
+
+    it('rejects --tier or --gpu without --appliance instead of ignoring them', () => {
+      expect(() => parseArgs(['app', '--tier=default'])).toThrow(
+        /add --appliance/,
+      );
+      expect(() => parseArgs(['app', '--gpu'])).toThrow(/add --appliance/);
+    });
+  });
 });

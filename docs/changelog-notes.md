@@ -77,6 +77,8 @@ archive is the blog.
 
 ## Unreleased
 
+- [brief] *Thread: the on-premises appliance.* `npx create-ragen-app --appliance` (or "Models on this machine" in the provider question) scaffolds a Ragen whose models run on the same machine: no API key, a route table checked to keep every call local, `DOCLING_STRICT=1`, and the appliance compose stack ready to start with a plain `docker compose up -d`. Local profile and one model tier only, and that tier's sizing is not yet measured on real hardware; hybrid comes later. Needs the next create-ragen-app release.
+
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)

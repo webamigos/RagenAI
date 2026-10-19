@@ -92,6 +92,24 @@ jobs:
       - name: Assert the result is configured, not merely present
         run: node scripts/ci/assert-scaffolded-install.mjs /tmp/ragen-smoke
 
+      # The appliance: local models, no provider key, and a route table the
+      # installer checks keeps every call on the machine. It reads that table
+      # from the commit under review, so a cloud route added to
+      # routes.appliance.yaml fails here as well as in the architecture test.
+      # OPENAI_API_KEY is still set in this job's environment; the assertion
+      # checks that it does not reach the install.
+      - name: Scaffold an appliance from this commit
+        env:
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-appliance \
+            --ref="$COMMIT_SHA" \
+            --appliance \
+            --yes \
+            --skip-docker \
+            --skip-install
+          node scripts/ci/assert-scaffolded-install.mjs /tmp/ragen-appliance --appliance
+
       # A guard nothing exercises is a guard that stops working quietly. Node
       # 22 is a current LTS, so this is a real caller: npm only *warns* on an
       # engines mismatch and carries on, which is how 0.2.0 got published and
