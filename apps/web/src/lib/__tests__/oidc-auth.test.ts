@@ -18,6 +18,7 @@ vi.mock('better-auth/api', async (importOriginal) => ({
   getOAuthState,
 }));
 
+import type { BetterAuthPlugin } from 'better-auth';
 import { APIError } from 'better-auth/api';
 
 import {
@@ -64,7 +65,7 @@ describe('oidcPlugins', () => {
 
   it('runs the refusal redirect on the OIDC callback only', () => {
     configure();
-    const [, refusals] = oidcPlugins();
+    const [, refusals] = oidcPlugins() as BetterAuthPlugin[];
     const [hook] = refusals.hooks!.after!;
     expect(hook.matcher(callback as never)).toBe(true);
     expect(hook.matcher(passwordSignUp as never)).toBe(false);
