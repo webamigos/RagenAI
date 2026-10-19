@@ -1,10 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { test, expect } from '@playwright/test';
 import {
   REGISTRATION_ENABLED_KEY,
   registrationSettingValue,
 } from '@ragenai/platform-contracts';
 
-import pl from '../src/app/messages/pl.json';
 import { TEST_ORG_ID } from './constants';
 import { ROUTES } from './helpers';
 
@@ -20,6 +23,16 @@ import { ROUTES } from './helpers';
  */
 
 const ISSUER = 'http://localhost:4300';
+
+// The sign-in page under ROUTES.signIn is Polish. Read, not imported: this
+// suite is ESM, and a JSON import needs an import attribute Playwright's
+// loader does not add.
+const HERE = dirname(fileURLToPath(import.meta.url));
+const signInMessages = (
+  JSON.parse(
+    readFileSync(join(HERE, '..', 'src', 'app', 'messages', 'pl.json'), 'utf8'),
+  ) as { 'sign-in': Record<string, string> }
+)['sign-in'];
 
 async function nextIdentity(email: string, emailVerified = true) {
   const response = await fetch(`${ISSUER}/__identity`, {
@@ -116,7 +129,7 @@ test.describe('P0 — company sign-in (OIDC)', () => {
       'data-error',
       'oidc_domain_not_allowed',
     );
-    await expect(alert).toHaveText(pl['sign-in']['sso-error-domain']);
+    await expect(alert).toHaveText(signInMessages['sso-error-domain']);
 
     const user = await withPrisma((prisma) =>
       prisma.user.findUnique({ where: { email }, select: { id: true } }),
@@ -163,7 +176,7 @@ test.describe('P0 — company sign-in (OIDC)', () => {
         'oidc_email_not_verified',
       );
       await expect(alert).toHaveText(
-        pl['sign-in']['sso-error-email-not-verified'],
+        signInMessages['sso-error-email-not-verified'],
       );
     } finally {
       await setRegistration(true);

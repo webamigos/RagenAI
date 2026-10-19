@@ -144,13 +144,23 @@ function oidcCallbackRefusals(): BetterAuthPlugin {
           handler: createAuthMiddleware(async (ctx) => {
             const location = await refusalRedirect(ctx.context.returned);
             if (location) {
-              throw ctx.redirect(location);
+              // A `Response`, not `throw ctx.redirect()`: the dispatcher
+              // serialises an after-hook's APIError with the endpoint's own
+              // status, so a thrown redirect goes out as a 403 that carries a
+              // Location header the browser ignores. A Response keeps its
+              // status. Seen in p0-38, not in any unit test.
+              return redirectResponse(location);
             }
           }),
         },
       ],
     },
   };
+}
+
+/** A 302 to `location`, as the browser-facing response of the callback. */
+export function redirectResponse(location: string): Response {
+  return new Response(null, { status: 302, headers: { location } });
 }
 
 /** Where a callback's result should send the browser instead, or null. */

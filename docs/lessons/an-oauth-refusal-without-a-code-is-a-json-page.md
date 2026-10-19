@@ -19,6 +19,7 @@ The browser ended on `http://localhost:3000/api/auth/callback/oidc?code=…` sho
 
 - A refusal anywhere on an OAuth path is an `APIError` with a `code` (`refusalError()` in `src/lib/oidc-auth.ts`); the code is what the sign-in page reads from `?error=`.
 - Errors Better Auth does not route itself are caught by the `oidc-callback-refusals` after-hook, which reads the `errorURL` from `getOAuthState()`. It only changes the response, never the decision.
+- **An after-hook redirects by returning a `Response`, not by throwing `ctx.redirect()`.** `dispatchAuthEndpoint` serialises an after-hook's `APIError` through `toResponse(error, { status: <the endpoint's status> })`, and better-call prefers `init.status` over the error's own — so the thrown 302 left as a 403 carrying a `Location` header, which the browser does not follow. Every unit test passed; only p0-38 driving a real browser showed it.
 - An e2e refusal case must go through the path that refuses — the user-create hook needs registration closed, which the seed leaves open.
 
 ## Applies to

@@ -26,6 +26,7 @@ import {
   oidcPlugins,
   oidcSignUpAdmitted,
   oidcSignUpRefusal,
+  redirectResponse,
   refusalError,
   refusalRedirect,
 } from '../oidc-auth';
@@ -149,6 +150,20 @@ describe('refusalError', () => {
   it('keeps the registration-closed message the password form shows', () => {
     expect(refusalError('registration_disabled').body?.message).toBe(
       'Registration is disabled on this installation. Ask an administrator for an invitation.',
+    );
+  });
+});
+
+describe('redirectResponse', () => {
+  it('is a 302 the browser follows, not an error carrying a Location', () => {
+    // A thrown `ctx.redirect()` from an after-hook leaves with the endpoint's
+    // 403 (see the comment at the hook), which is what p0-38 caught.
+    const response = redirectResponse(
+      '/pl/sign-in?error=oidc_domain_not_allowed',
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe(
+      '/pl/sign-in?error=oidc_domain_not_allowed',
     );
   });
 });
