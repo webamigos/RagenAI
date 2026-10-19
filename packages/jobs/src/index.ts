@@ -26,6 +26,7 @@ export {
   type MemoryExtractResult,
   type MemoryExtractSkip,
   type MemoryPurgeResult,
+  type PruneExpiredThreadsResult,
   type SyncDocumentAccessPayload,
   type SyncDocumentAccessResult,
 } from './contract';
@@ -37,6 +38,8 @@ export {
   type JobSchedule,
   type ScheduledJobName,
 } from './runtime-contract';
+
+export { THREAD_RETENTION_SCHEDULE } from './schedules';
 
 export {
   type RetryPolicy,

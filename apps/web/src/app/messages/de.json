@@ -650,7 +650,8 @@
       "no-connectors": "Keine Connectors verfügbar. Kontaktiere den Administrator.",
       "hint": "Nicht ausgewählte Connectors übernehmen die Standardeinstellungen der Anwendung. Es werden nur die vom Administrator aktivierten Connectors angezeigt.",
       "read-only": "Die Konnektor-Einstellungen sind für diese Organisation schreibgeschützt."
-    }
+    },
+    "data-retention": "Datenaufbewahrung"
   },
   "settings-page": {
     "title": "Einstellungen",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Aufbewahrung von Threads",
+    "description": "Unterhaltungen automatisch löschen, wenn eine festgelegte Zeit lang niemand etwas hinzugefügt hat. Standardmäßig aus: Threads bleiben erhalten, bis jemand sie löscht.",
+    "what-is-deleted": "Das Löschen ist endgültig. Ein Thread wird mit seinen Nachrichten, deren Quellen, seinen Freigaben, dem öffentlichen Link und den persönlichen Erinnerungen entfernt, die er zuletzt aktualisiert hat. Er kann nicht wiederhergestellt werden.",
+    "which-threads": "Gilt für jeden Thread in dieser Organisation, auch für geteilte, markierte, Chatbot- und API-Unterhaltungen. Dokumente in der Wissensdatenbank sind nicht betroffen.",
+    "when": "Ein Thread wird gelöscht, sobald er für die gewählte Anzahl von Tagen keine neue Nachricht erhalten hat. Die Prüfung läuft einmal täglich.",
+    "current-off": "Derzeit aus: Threads bleiben erhalten, bis jemand sie löscht.",
+    "current-on": "Derzeit an: Threads werden nach {days} Tagen ohne neue Nachricht gelöscht.",
+    "option-off": "Aus",
+    "option-off-description": "Threads behalten, bis jemand sie löscht",
+    "option-days": "{days} Tage",
+    "option-days-description": "Thread nach {days} Tagen ohne neue Nachricht löschen",
+    "save": "Aufbewahrungsdauer speichern",
+    "saving": "Wird gespeichert…",
+    "confirm-title": "Threads nach {days} Tagen löschen?",
+    "confirm-description": "Beim nächsten täglichen Lauf wird jeder Thread dieser Organisation ohne neue Nachricht in den letzten {days} Tagen endgültig gelöscht, mit seinen Nachrichten, Quellen, Freigaben und dem öffentlichen Link. Dies kann nicht rückgängig gemacht werden.",
+    "confirm-action": "Nach {days} Tagen löschen",
+    "saved-off": "Aufbewahrung von Threads deaktiviert. Es werden keine Threads automatisch gelöscht.",
+    "saved-on": "Gespeichert. Threads ohne neue Nachricht seit {days} Tagen werden beim nächsten täglichen Lauf gelöscht.",
+    "error-invalid-period": "Nicht gespeichert — dieser Zeitraum ist nicht verfügbar. Wählen Sie eine der aufgeführten Optionen und speichern Sie erneut.",
+    "error-forbidden": "Nicht gespeichert — nur Inhaber oder Administratoren der Organisation können dies ändern.",
+    "error-settings-locked": "Nicht gespeichert — die Einstellungen dieser Organisation sind gesperrt. Bitten Sie Ihren Plattformadministrator, sie freizugeben.",
+    "error-schedule-unavailable": "Nicht gespeichert — der tägliche Löschauftrag konnte nicht registriert werden, daher würde nichts laufen. Prüfen Sie, ob die Hintergrund-Warteschlange (Redis) erreichbar ist, und versuchen Sie es erneut.",
+    "error-save-failed": "Nicht gespeichert — etwas ist schiefgelaufen. Versuchen Sie es gleich noch einmal."
   }
 }

@@ -650,7 +650,8 @@
       "no-connectors": "Nessun connettore disponibile. Contatta l'amministratore.",
       "hint": "I connettori non selezionati ereditano le impostazioni predefinite dell'applicazione. Vengono mostrati solo i connettori attivati dall'amministratore.",
       "read-only": "Le impostazioni dei connettori sono in sola lettura per questa organizzazione."
-    }
+    },
+    "data-retention": "Conservazione dei dati"
   },
   "settings-page": {
     "title": "Impostazioni",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Conservazione delle conversazioni",
+    "description": "Elimina automaticamente le conversazioni a cui nessuno ha aggiunto nulla per un periodo stabilito. Disattivato per impostazione predefinita: le conversazioni restano finché qualcuno non le elimina.",
+    "what-is-deleted": "L’eliminazione è definitiva. Una conversazione viene rimossa con i suoi messaggi, le relative fonti, le condivisioni, il link pubblico e i ricordi personali che ha aggiornato per ultima. Non può essere recuperata.",
+    "which-threads": "Si applica a tutte le conversazioni di questa organizzazione, comprese quelle condivise, con stella, del chatbot e tramite API. I documenti della knowledge base non vengono toccati.",
+    "when": "Una conversazione viene eliminata quando non riceve nuovi messaggi per il numero di giorni scelto. Il controllo viene eseguito una volta al giorno.",
+    "current-off": "Attualmente disattivato: le conversazioni restano finché qualcuno non le elimina.",
+    "current-on": "Attualmente attivo: le conversazioni vengono eliminate dopo {days} giorni senza nuovi messaggi.",
+    "option-off": "Disattivato",
+    "option-off-description": "Conserva le conversazioni finché qualcuno non le elimina",
+    "option-days": "{days} giorni",
+    "option-days-description": "Elimina una conversazione dopo {days} giorni senza nuovi messaggi",
+    "save": "Salva periodo di conservazione",
+    "saving": "Salvataggio…",
+    "confirm-title": "Eliminare le conversazioni dopo {days} giorni?",
+    "confirm-description": "Alla prossima esecuzione giornaliera, ogni conversazione di questa organizzazione senza nuovi messaggi negli ultimi {days} giorni verrà eliminata definitivamente, con messaggi, fonti, condivisioni e link pubblico. L’operazione non può essere annullata.",
+    "confirm-action": "Elimina dopo {days} giorni",
+    "saved-off": "Conservazione delle conversazioni disattivata. Nessuna conversazione verrà eliminata automaticamente.",
+    "saved-on": "Salvato. Le conversazioni senza nuovi messaggi da {days} giorni verranno eliminate alla prossima esecuzione giornaliera.",
+    "error-invalid-period": "Non salvato: questo periodo non è disponibile. Scegli una delle opzioni elencate e salva di nuovo.",
+    "error-forbidden": "Non salvato: solo il proprietario o un amministratore dell’organizzazione può modificarlo.",
+    "error-settings-locked": "Non salvato: le impostazioni di questa organizzazione sono bloccate. Chiedi all’amministratore della piattaforma di sbloccarle.",
+    "error-schedule-unavailable": "Non salvato: non è stato possibile registrare l’attività giornaliera di eliminazione, quindi non verrebbe eseguito nulla. Verifica che la coda delle attività in background (Redis) sia raggiungibile e riprova.",
+    "error-save-failed": "Non salvato: qualcosa è andato storto. Riprova tra un momento."
   }
 }

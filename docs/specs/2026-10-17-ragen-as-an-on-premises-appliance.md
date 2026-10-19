@@ -540,9 +540,57 @@ repeatable demo, and records the gaps as tests.
   credentials, which the env check already reads. The reranker probe and
   the admin health view are left for later; there is no local reranker yet
   (A1).
-- [ ] **B4.** Per-organization retention for threads and messages (default
+- [x] **B4.** Per-organization retention for threads and messages (default
   off), because the first data-protection question is "how long do you keep
-  it".
+  it". Decided 2026-10-19:
+  - **What expires: a whole thread, after inactivity.** A thread with no new
+    message for N days is permanently deleted. Last activity is the newest
+    message's `createdAt`, falling back to the thread's own `createdAt`
+    (`threads` has no `updatedAt`). Messages are never pruned out of a live
+    thread.
+  - **What goes with it**, in one transaction per batch of 100, through the
+    worker's `deleteStaleThreads` (the demo cleanup's function, given a
+    `limit`): messages, deleted explicitly because `messages_thread_id_fkey`
+    is `ON DELETE SET NULL`; by cascade from messages, `document_citations`
+    and `document_retrievals` (whose snippets are thread-encrypted); thread
+    documents (explicit); by cascade from the thread, `thread_shares`,
+    `thread_public_links`, `user_memories` and `user_memory_changes` whose
+    source is the thread; and explicitly, two plain-column references
+    nothing else would remove — `visitor_messages` naming its messages, and
+    the `THREAD_SHARED_NEW_MESSAGE` notifications, whose body is the thread
+    title and whose link is the thread. The thread's DEK goes with its row.
+    Kept on purpose: knowledge-base files a thread referred to,
+    `ai_usage` (the usage ledger: a thread id and counts, no text), the audit
+    log and security events. The candidates are locked `FOR UPDATE` and
+    re-checked under the lock, so a message arriving mid-run saves its
+    thread.
+  - **Which threads: all of the organization's.** Chat, shared, starred,
+    publicly linked, chatbot-widget (a returning visitor gets a new thread
+    from get-or-create), API-created, and Ragen Brain's `BRAIN_OPERATOR`
+    conversations. A star or a share is not a legal hold, and an exemption a
+    member can set would let anyone defeat the organization's rule. The
+    demo organization is covered too; its 24-hour cleanup runs regardless.
+    Threads with no `organizationId` (legacy) have no setting and are not
+    touched.
+  - **Who: an owner or admin, from presets.** Off (default) / 30 / 90 / 180 /
+    365 days on the organization's Settings page in apps/web (per-org, so
+    ADR-35 puts it there), asked as `canManageOrg` through `requireOrgAdmin`,
+    with the organization from the session and the `manageOrganizationSettings`
+    gate. Stored as `OrganizationSettings.threadRetentionDays` (one nullable
+    column, null = off); the presets are `THREAD_RETENTION_DAYS_OPTIONS` in
+    `@ragenai/platform-contracts`, and the worker skips any other value. The
+    panel states what is deleted and when, and enabling or shortening asks
+    for confirmation. Every change goes to the audit log, old and new value.
+  - **Enforcement: a daily job in apps/worker**, `pruneExpiredThreads` on the
+    maintenance queue, at 04:30 Europe/Warsaw after the other three nightly
+    deletes, up to 50 batches (5,000 threads) per organization per run; the
+    cutoff comes from the clock, so a backlog is finished by later runs. Logs
+    ids and counts, never a title. The schedule is `THREAD_RETENTION_SCHEDULE`
+    in `@ragenai/jobs`, registered by `ensure-thread-retention-schedule.ts`
+    and also upserted by apps/web when retention is turned on, so "runs
+    daily" is true on an install where nobody ran the script; if the job
+    runtime cannot be reached the period is not saved.
+  - **One PR, no feature key** (ADR-50): the setting itself defaults to off.
 
 ### Phase C: something that can be installed and maintained
 

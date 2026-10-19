@@ -650,7 +650,8 @@
       "no-connectors": "Aucun connecteur disponible. Contacte l'administrateur.",
       "hint": "Les connecteurs non cochés héritent des valeurs par défaut de l'application. Seuls les connecteurs activés par l'administrateur sont affichés.",
       "read-only": "Les paramètres des connecteurs sont en lecture seule pour cette organisation."
-    }
+    },
+    "data-retention": "Conservation des données"
   },
   "settings-page": {
     "title": "Paramètres",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Conservation des fils",
+    "description": "Supprimez automatiquement les conversations auxquelles personne n’a rien ajouté pendant une durée définie. Désactivé par défaut : les fils sont conservés jusqu’à ce que quelqu’un les supprime.",
+    "what-is-deleted": "La suppression est définitive. Un fil est supprimé avec ses messages, leurs sources, ses partages, son lien public et les souvenirs personnels qu’il a mis à jour en dernier. Il ne peut pas être récupéré.",
+    "which-threads": "S’applique à tous les fils de cette organisation, y compris les conversations partagées, favorites, du chatbot et de l’API. Les documents de la base de connaissances ne sont pas concernés.",
+    "when": "Un fil est supprimé dès qu’il n’a reçu aucun nouveau message pendant le nombre de jours choisi. La vérification a lieu une fois par jour.",
+    "current-off": "Actuellement désactivé : les fils sont conservés jusqu’à ce que quelqu’un les supprime.",
+    "current-on": "Actuellement activé : les fils sont supprimés après {days} jours sans nouveau message.",
+    "option-off": "Désactivé",
+    "option-off-description": "Conserver les fils jusqu’à ce que quelqu’un les supprime",
+    "option-days": "{days} jours",
+    "option-days-description": "Supprimer un fil après {days} jours sans nouveau message",
+    "save": "Enregistrer la durée de conservation",
+    "saving": "Enregistrement…",
+    "confirm-title": "Supprimer les fils après {days} jours ?",
+    "confirm-description": "Lors de la prochaine exécution quotidienne, tous les fils de cette organisation sans nouveau message depuis {days} jours seront supprimés définitivement, avec leurs messages, sources, partages et lien public. Cette action est irréversible.",
+    "confirm-action": "Supprimer après {days} jours",
+    "saved-off": "Conservation des fils désactivée. Aucun fil ne sera supprimé automatiquement.",
+    "saved-on": "Enregistré. Les fils sans nouveau message depuis {days} jours seront supprimés lors de la prochaine exécution quotidienne.",
+    "error-invalid-period": "Non enregistré : cette durée n’est pas disponible. Choisissez l’une des options proposées et enregistrez à nouveau.",
+    "error-forbidden": "Non enregistré : seul un propriétaire ou un administrateur de l’organisation peut modifier ce réglage.",
+    "error-settings-locked": "Non enregistré : les paramètres de cette organisation sont verrouillés. Demandez à votre administrateur de plateforme de les déverrouiller.",
+    "error-schedule-unavailable": "Non enregistré : la tâche de suppression quotidienne n’a pas pu être enregistrée, donc rien ne s’exécuterait. Vérifiez que la file de tâches en arrière-plan (Redis) est joignable, puis réessayez.",
+    "error-save-failed": "Non enregistré : une erreur s’est produite. Réessayez dans un instant."
   }
 }

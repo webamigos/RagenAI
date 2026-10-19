@@ -650,7 +650,8 @@
       "no-connectors": "Ei käytettävissä olevia liittimiä. Ota yhteyttä ylläpitäjään.",
       "hint": "Valitsemattomat liittimet perivät sovelluksen oletusasetukset. Vain ylläpitäjän käyttöön ottamat liittimet näytetään.",
       "read-only": "Liitinasetukset ovat tässä organisaatiossa vain luettavissa."
-    }
+    },
+    "data-retention": "Tietojen säilytys"
   },
   "settings-page": {
     "title": "Asetukset",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Keskustelujen säilytys",
+    "description": "Poista keskustelut automaattisesti, kun kukaan ei ole lisännyt niihin mitään tietyn ajan kuluessa. Oletuksena pois päältä: keskustelut säilyvät, kunnes joku poistaa ne.",
+    "what-is-deleted": "Poisto on pysyvä. Keskustelu poistetaan viesteineen, niiden lähteineen, jakoineen, julkisine linkkeineen ja henkilökohtaisine muistoineen, jotka se viimeksi päivitti. Sitä ei voi palauttaa.",
+    "which-threads": "Koskee kaikkia tämän organisaation keskusteluja, myös jaettuja, tähdellä merkittyjä, chatbot- ja API-keskusteluja. Tietokannan dokumentteihin se ei vaikuta.",
+    "when": "Keskustelu poistetaan, kun siihen ei ole tullut uutta viestiä valittuna päivien määränä. Tarkistus tehdään kerran päivässä.",
+    "current-off": "Pois päältä: keskustelut säilyvät, kunnes joku poistaa ne.",
+    "current-on": "Päällä: keskustelut poistetaan {days} päivän jälkeen ilman uutta viestiä.",
+    "option-off": "Pois",
+    "option-off-description": "Säilytä keskustelut, kunnes joku poistaa ne",
+    "option-days": "{days} päivää",
+    "option-days-description": "Poista keskustelu {days} päivän jälkeen ilman uutta viestiä",
+    "save": "Tallenna säilytysaika",
+    "saving": "Tallennetaan…",
+    "confirm-title": "Poistetaanko keskustelut {days} päivän jälkeen?",
+    "confirm-description": "Seuraavalla päivittäisellä ajolla jokainen tämän organisaation keskustelu, johon ei ole tullut uutta viestiä viimeisten {days} päivän aikana, poistetaan pysyvästi viesteineen, lähteineen, jakoineen ja julkisine linkkeineen. Toimintoa ei voi perua.",
+    "confirm-action": "Poista {days} päivän jälkeen",
+    "saved-off": "Keskustelujen säilytys poistettu käytöstä. Keskusteluja ei poisteta automaattisesti.",
+    "saved-on": "Tallennettu. Keskustelut, joihin ei ole tullut uutta viestiä {days} päivään, poistetaan seuraavalla päivittäisellä ajolla.",
+    "error-invalid-period": "Ei tallennettu — tämä aika ei ole käytettävissä. Valitse jokin luettelon vaihtoehdoista ja tallenna uudelleen.",
+    "error-forbidden": "Ei tallennettu — vain organisaation omistaja tai ylläpitäjä voi muuttaa tätä.",
+    "error-settings-locked": "Ei tallennettu — tämän organisaation asetukset on lukittu. Pyydä alustan ylläpitäjää avaamaan ne.",
+    "error-schedule-unavailable": "Ei tallennettu — päivittäistä poistotehtävää ei voitu rekisteröidä, joten mitään ei ajettaisi. Tarkista, että taustatehtävien jono (Redis) on tavoitettavissa, ja yritä uudelleen.",
+    "error-save-failed": "Ei tallennettu — jokin meni pieleen. Yritä hetken kuluttua uudelleen."
   }
 }

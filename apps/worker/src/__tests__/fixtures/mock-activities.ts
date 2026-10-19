@@ -264,6 +264,13 @@ export function createMockActivities() {
       changesDeleted: 0,
       changesOlderThan: '2026-01-01T00:00:00.000Z',
     }),
+    pruneExpiredThreads: vi.fn().mockResolvedValue({
+      organizationsWithRetention: 0,
+      threadsDeleted: 0,
+      messagesDeleted: 0,
+      organizationsFailed: 0,
+      organizationsCapped: 0,
+    }),
     runMemoryExtraction: vi.fn().mockResolvedValue({
       skipped: null,
       added: 0,

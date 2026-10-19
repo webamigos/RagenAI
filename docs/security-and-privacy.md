@@ -222,6 +222,35 @@ apply to the rest of your deployment.
 and via the admin interface; shipping them to Splunk or Sentinel today means
 reading those tables or the application's structured logs.
 
+## Conversation retention
+
+**Off by default: conversations are kept until someone deletes them.** An
+organization owner or admin can set a retention period on the organization's
+settings page — 30, 90, 180 or 365 days. Once set, a daily job in the worker
+(`pruneExpiredThreads`, 04:30 Europe/Warsaw) permanently deletes every thread
+in that organization that has had no new message for that long. "Last
+activity" is the newest message, or the thread's creation when it has none.
+
+What goes with a thread, in one transaction per batch of 100: its messages
+(and with them their citations and the retrieval rows, including the encrypted
+snippets), its document links, shares and public link, the personal memories
+it last updated and the memory change rows its turns produced, the visitor rows naming its
+messages, and the "shared with you" notifications that carry its title. The
+thread's data key goes with the thread row, so nothing that was encrypted under
+it remains readable anywhere.
+
+What stays, deliberately: knowledge-base documents a thread referred to (they
+have their own lifecycle), the usage ledger (`ai_usage`, which holds a thread
+id and token counts, not text), and the audit and security logs above, which
+are records of what happened rather than conversation content.
+
+It applies to every thread of the organization — shared, starred, publicly
+linked, chatbot-widget, API-created and Ragen Brain's operator conversations
+alike; a star or a share is not a legal hold. There is no undo. Changing the
+period is written to the audit log with the old and new value. Detail and the
+decisions behind it: B4 in
+[the appliance spec](specs/2026-10-17-ragen-as-an-on-premises-appliance.md).
+
 ## Prompt injection and personal data
 
 Document content is treated as data, not as instructions. The system prompt
@@ -250,8 +279,9 @@ definition. What the _application_ offers is narrower than that, and worth
 stating precisely:
 
 - **Organization owners and admins** can delete files and revoke document
-  permissions within their own organization, and manage users, models and
-  limits.
+  permissions within their own organization, manage users, models and
+  limits, and set how long conversations are kept (see
+  [Conversation retention](#conversation-retention)).
 - **Application-level admins** additionally have the encryption actions
   (encrypt-all-threads).
 - **Thread export is per-thread**, scoped to one organization and requiring

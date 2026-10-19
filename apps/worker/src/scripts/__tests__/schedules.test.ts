@@ -126,12 +126,58 @@ describe('ensure-memory-purge-schedule', () => {
   });
 });
 
+describe('ensure-thread-retention-schedule', () => {
+  const script = '../ensure-thread-retention-schedule.js';
+
+  it('registers the daily retention run after the other nightly deletes', async () => {
+    await run(script);
+    expect(upsertSchedule).toHaveBeenCalledWith({
+      id: 'thread-retention',
+      job: 'pruneExpiredThreads',
+      cron: '30 4 * * *',
+      timezone: 'Europe/Warsaw',
+    });
+  });
+
+  // apps/web upserts the same schedule when retention is turned on. The two
+  // must be one definition, or the panel's upsert makes a second schedule
+  // instead of a no-op.
+  it('registers exactly the schedule apps/web registers', async () => {
+    const { THREAD_RETENTION_SCHEDULE } = await import('@ragenai/jobs');
+    await run(script);
+    expect(upsertSchedule).toHaveBeenCalledWith(THREAD_RETENTION_SCHEDULE);
+  });
+
+  it('fires in the zone every other schedule fires in', async () => {
+    const { SCHEDULE_TIMEZONE } = await import('../schedule-timezone.js');
+    await run(script);
+    expect(upsertSchedule.mock.calls[0]?.[0]).toMatchObject({
+      timezone: SCHEDULE_TIMEZONE,
+    });
+  });
+
+  it('shares no minute with the other three deletes', async () => {
+    await run(script);
+    expect(['0 3 * * *', '30 3 * * *', '0 4 * * *']).not.toContain(
+      upsertSchedule.mock.calls[0]?.[0].cron,
+    );
+  });
+
+  it('deletes the schedule with --delete', async () => {
+    process.argv = ['node', 'script', '--delete'];
+    await run(script);
+    expect(deleteSchedule).toHaveBeenCalledWith('thread-retention');
+    expect(upsertSchedule).not.toHaveBeenCalled();
+  });
+});
+
 // An open queue connection keeps the process alive after the last line, so
 // each script releases the runtime whether it registered, deleted or failed.
 describe.each([
   '../ensure-demo-cleanup-schedule.js',
   '../ensure-analytics-retention-schedule.js',
   '../ensure-memory-purge-schedule.js',
+  '../ensure-thread-retention-schedule.js',
 ])('%s', (script) => {
   it('closes the job runtime before it ends', async () => {
     await run(script);

@@ -23,6 +23,7 @@ import { memoryExtract } from './handlers/memory-extract.js';
 import { memoryPurge } from './handlers/memory-purge.js';
 import { optimizeDocument } from './handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from './handlers/prune-analytics-retrievals.js';
+import { pruneExpiredThreads } from './handlers/prune-expired-threads.js';
 import { reindexDocumentVersion } from './handlers/reindex-document-version.js';
 import { runFileEmbeddings } from './handlers/parse-and-embed.js';
 import { scrapeWebsite } from './handlers/scrape-website.js';
@@ -57,6 +58,7 @@ const handlers: JobHandlers = {
   memoryExtract,
   memoryPurge,
   syncDocumentAccess,
+  pruneExpiredThreads,
 };
 
 /**

@@ -650,7 +650,8 @@
       "no-connectors": "No hay conectores disponibles. Contacta con el administrador.",
       "hint": "Los conectores no marcados heredan los valores predeterminados de la aplicación. Solo se muestran los conectores activados por el administrador.",
       "read-only": "La configuración de conectores es de solo lectura para esta organización."
-    }
+    },
+    "data-retention": "Retención de datos"
   },
   "settings-page": {
     "title": "Configuración",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Retención de hilos",
+    "description": "Elimina automáticamente las conversaciones a las que nadie ha añadido nada durante un tiempo determinado. Desactivado por defecto: los hilos se conservan hasta que alguien los elimina.",
+    "what-is-deleted": "La eliminación es permanente. Un hilo se elimina con sus mensajes, sus fuentes, sus elementos compartidos, su enlace público y los recuerdos personales que actualizó por última vez. No se puede recuperar.",
+    "which-threads": "Se aplica a todos los hilos de esta organización, incluidos los compartidos, destacados, del chatbot y de la API. Los documentos de la base de conocimiento no se ven afectados.",
+    "when": "Un hilo se elimina cuando lleva el número de días elegido sin ningún mensaje nuevo. La comprobación se ejecuta una vez al día.",
+    "current-off": "Actualmente desactivado: los hilos se conservan hasta que alguien los elimina.",
+    "current-on": "Actualmente activado: los hilos se eliminan tras {days} días sin un mensaje nuevo.",
+    "option-off": "Desactivado",
+    "option-off-description": "Conservar los hilos hasta que alguien los elimine",
+    "option-days": "{days} días",
+    "option-days-description": "Eliminar un hilo tras {days} días sin un mensaje nuevo",
+    "save": "Guardar periodo de retención",
+    "saving": "Guardando…",
+    "confirm-title": "¿Eliminar hilos tras {days} días?",
+    "confirm-description": "En la próxima ejecución diaria, todos los hilos de esta organización sin mensajes nuevos en los últimos {days} días se eliminarán de forma permanente, con sus mensajes, fuentes, elementos compartidos y enlace público. Esta acción no se puede deshacer.",
+    "confirm-action": "Eliminar tras {days} días",
+    "saved-off": "Retención de hilos desactivada. No se eliminará ningún hilo automáticamente.",
+    "saved-on": "Guardado. Los hilos sin mensajes nuevos durante {days} días se eliminarán en la próxima ejecución diaria.",
+    "error-invalid-period": "No se ha guardado: ese periodo no está disponible. Elige una de las opciones de la lista y vuelve a guardar.",
+    "error-forbidden": "No se ha guardado: solo el propietario o un administrador de la organización puede cambiarlo.",
+    "error-settings-locked": "No se ha guardado: la configuración de esta organización está bloqueada. Pide a tu administrador de la plataforma que la desbloquee.",
+    "error-schedule-unavailable": "No se ha guardado: no se pudo registrar la tarea diaria de eliminación, así que no se ejecutaría nada. Comprueba que la cola de tareas en segundo plano (Redis) está accesible e inténtalo de nuevo.",
+    "error-save-failed": "No se ha guardado: algo ha fallado. Inténtalo de nuevo en un momento."
   }
 }

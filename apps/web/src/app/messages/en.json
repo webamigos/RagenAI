@@ -650,7 +650,8 @@
       "no-connectors": "No connectors are available. Contact the administrator.",
       "hint": "Unchecked connectors inherit the application defaults. Only connectors enabled by the administrator are shown.",
       "read-only": "Connector settings are read-only for this organization."
-    }
+    },
+    "data-retention": "Data retention"
   },
   "settings-page": {
     "title": "Settings",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Thread retention",
+    "description": "Delete conversations automatically once nobody has added to them for a set time. Off by default: threads are kept until someone deletes them.",
+    "what-is-deleted": "Deletion is permanent. A thread is removed with its messages, their sources, its shares and public link, and the personal memories it last updated. It cannot be recovered.",
+    "which-threads": "It applies to every thread in this organization, including shared, starred, chatbot and API conversations. Documents in the knowledge base are not affected.",
+    "when": "A thread is deleted once it has had no new message for the chosen number of days. The check runs once a day.",
+    "current-off": "Currently off: threads are kept until someone deletes them.",
+    "current-on": "Currently on: threads are deleted after {days} days without a new message.",
+    "option-off": "Off",
+    "option-off-description": "Keep threads until someone deletes them",
+    "option-days": "{days} days",
+    "option-days-description": "Delete a thread after {days} days without a new message",
+    "save": "Save retention period",
+    "saving": "Saving…",
+    "confirm-title": "Delete threads after {days} days?",
+    "confirm-description": "At the next daily run, every thread in this organization with no new message in the last {days} days will be permanently deleted, with its messages, sources, shares and public link. This cannot be undone.",
+    "confirm-action": "Delete after {days} days",
+    "saved-off": "Thread retention turned off. No threads will be deleted automatically.",
+    "saved-on": "Saved. Threads with no new message for {days} days will be deleted at the next daily run.",
+    "error-invalid-period": "Retention not saved — that period is not available. Choose one of the listed options and save again.",
+    "error-forbidden": "Retention not saved — only an organization owner or admin can change it.",
+    "error-settings-locked": "Retention not saved — this organization's settings are locked. Ask your platform administrator to unlock them.",
+    "error-schedule-unavailable": "Retention not saved — the daily deletion job could not be registered, so nothing would run. Check that the background job queue (Redis) is reachable and try again.",
+    "error-save-failed": "Retention not saved — something went wrong. Try again in a moment."
   }
 }

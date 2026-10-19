@@ -54,9 +54,13 @@ describe('the queue a job goes to', () => {
 
   // They take no payload, run nightly, and must not overlap. Sharing a queue
   // is what lets one global concurrency cover both.
-  it('puts both scheduled jobs on the maintenance queue', () => {
-    expect(queueNameFor('cleanupDemoThreads')).toBe(MAINTENANCE_QUEUE);
-    expect(queueNameFor('pruneAnalyticsRetrievals')).toBe(MAINTENANCE_QUEUE);
+  it.each([
+    'cleanupDemoThreads',
+    'pruneAnalyticsRetrievals',
+    'memoryPurge',
+    'pruneExpiredThreads',
+  ] as const)('puts the scheduled %s on the maintenance queue', (job) => {
+    expect(queueNameFor(job)).toBe(MAINTENANCE_QUEUE);
   });
 
   it('lists each queue once, so producer and consumer open the same set', () => {

@@ -415,6 +415,12 @@ model OrganizationSettings {
   piiIngestionMode         String?  @default("destructive") @map("pii_ingestion_mode")
   encryptedPiiDek          String?  @map("encrypted_pii_dek")
   featureOverrides         Json?    @map("feature_overrides")
+  /// Days a thread may go without a new message before the daily
+  /// `pruneExpiredThreads` job deletes it, with its messages and everything
+  /// hanging off them. Null is off, the default. Always one of
+  /// `THREAD_RETENTION_DAYS_OPTIONS` (`@ragenai/platform-contracts`); the job
+  /// skips any other value rather than guessing what it meant.
+  threadRetentionDays      Int?     @map("thread_retention_days")
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

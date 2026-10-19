@@ -7,6 +7,7 @@ export * from './get-file-record.js';
 export * from './is-ingest-cancelled.js';
 export * from './merge-file-metadata.js';
 export * from './prune-document-retrievals.js';
+export * from './prune-expired-threads.js';
 export * from './restore-demo-organization-restrictions.js';
 export * from './sync-rag-score-to-version.js';
 export * from './update-binary-info.js';

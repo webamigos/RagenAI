@@ -650,7 +650,8 @@
       "no-connectors": "Žádné dostupné konektory. Kontaktujte administrátora.",
       "hint": "Neoznačené konektory dědí výchozí nastavení aplikace. Zobrazují se pouze konektory aktivované administrátorem.",
       "read-only": "Nastavení konektorů je pro tuto organizaci pouze pro čtení."
-    }
+    },
+    "data-retention": "Uchovávání dat"
   },
   "settings-page": {
     "title": "Nastavení",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Uchovávání konverzací",
+    "description": "Automaticky mazat konverzace, do kterých po stanovenou dobu nikdo nic nepřidal. Ve výchozím stavu vypnuto: konverzace zůstávají, dokud je někdo nesmaže.",
+    "what-is-deleted": "Smazání je trvalé. Konverzace se odstraní i se svými zprávami, jejich zdroji, sdíleními, veřejným odkazem a osobními vzpomínkami, které naposledy aktualizovala. Nelze ji obnovit.",
+    "which-threads": "Platí pro každou konverzaci v této organizaci, včetně sdílených, označených hvězdičkou, konverzací s chatbotem a přes API. Dokumentů ve znalostní bázi se to netýká.",
+    "when": "Konverzace se smaže, jakmile do ní po zvolený počet dní nepřišla žádná nová zpráva. Kontrola probíhá jednou denně.",
+    "current-off": "Nyní vypnuto: konverzace zůstávají, dokud je někdo nesmaže.",
+    "current-on": "Nyní zapnuto: konverzace se mažou po {days} dnech bez nové zprávy.",
+    "option-off": "Vypnuto",
+    "option-off-description": "Uchovávat konverzace, dokud je někdo nesmaže",
+    "option-days": "{days} dní",
+    "option-days-description": "Smazat konverzaci po {days} dnech bez nové zprávy",
+    "save": "Uložit dobu uchovávání",
+    "saving": "Ukládání…",
+    "confirm-title": "Mazat konverzace po {days} dnech?",
+    "confirm-description": "Při příštím denním běhu bude každá konverzace v této organizaci bez nové zprávy za posledních {days} dní trvale smazána i se zprávami, zdroji, sdíleními a veřejným odkazem. Tuto akci nelze vrátit.",
+    "confirm-action": "Mazat po {days} dnech",
+    "saved-off": "Uchovávání konverzací vypnuto. Žádné konverzace se nebudou mazat automaticky.",
+    "saved-on": "Uloženo. Konverzace bez nové zprávy po dobu {days} dní budou smazány při příštím denním běhu.",
+    "error-invalid-period": "Neuloženo — toto období není k dispozici. Vyberte jednu z uvedených možností a uložte znovu.",
+    "error-forbidden": "Neuloženo — změnit to může pouze vlastník nebo administrátor organizace.",
+    "error-settings-locked": "Neuloženo — nastavení této organizace je uzamčeno. Požádejte administrátora platformy o odemčení.",
+    "error-schedule-unavailable": "Neuloženo — denní úlohu mazání se nepodařilo zaregistrovat, takže by nic neproběhlo. Zkontrolujte, zda je fronta úloh na pozadí (Redis) dostupná, a zkuste to znovu.",
+    "error-save-failed": "Neuloženo — něco se pokazilo. Zkuste to za chvíli znovu."
   }
 }

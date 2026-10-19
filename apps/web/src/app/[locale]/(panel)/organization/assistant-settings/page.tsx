@@ -5,6 +5,8 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
 import db from '@ragenai/prisma-client';
 import { OrganizationProfileForm } from '../profile/components/OrganizationProfileForm';
+import { ThreadRetentionSetting } from '@/app/components/settings/ThreadRetentionSetting';
+import { getThreadRetentionDays } from '@/features/organizations/services/organization-settings';
 
 import PromptManagementPage from './PromptManagementPageWrapper';
 
@@ -21,10 +23,13 @@ export default async function SettingsPage() {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
 
-  const org = await db.organization.findUnique({
-    where: { id: orgId },
-    select: { id: true, name: true },
-  });
+  const [org, threadRetentionDays] = await Promise.all([
+    db.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, name: true },
+    }),
+    getThreadRetentionDays(orgId),
+  ]);
 
   const t = await getTranslations('organization-page');
 
@@ -38,6 +43,13 @@ export default async function SettingsPage() {
       </section>
       <hr className="border-border" />
       <PromptManagementPage />
+      <hr className="border-border" />
+      <section data-testid="data-retention-section">
+        <h2 className="mb-4 text-base font-semibold text-foreground">
+          {t('data-retention')}
+        </h2>
+        <ThreadRetentionSetting initialDays={threadRetentionDays} />
+      </section>
     </div>
   );
 }

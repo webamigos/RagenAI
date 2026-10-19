@@ -650,7 +650,8 @@
       "no-connectors": "Er zijn geen connectors beschikbaar. Neem contact op met de beheerder.",
       "hint": "Niet-aangevinkte connectors volgen de standaardinstellingen van de applicatie. Alleen connectors die de beheerder heeft ingeschakeld, worden getoond.",
       "read-only": "Connectorinstellingen zijn alleen-lezen voor deze organisatie."
-    }
+    },
+    "data-retention": "Gegevensbewaring"
   },
   "settings-page": {
     "title": "Instellingen",
@@ -3481,5 +3482,30 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Bewaring van gesprekken",
+    "description": "Verwijder gesprekken automatisch zodra niemand er een bepaalde tijd iets aan heeft toegevoegd. Standaard uit: gesprekken blijven bewaard tot iemand ze verwijdert.",
+    "what-is-deleted": "Verwijderen is definitief. Een gesprek wordt verwijderd met zijn berichten, hun bronnen, deelacties, openbare link en de persoonlijke herinneringen die het als laatste heeft bijgewerkt. Het kan niet worden hersteld.",
+    "which-threads": "Geldt voor elk gesprek in deze organisatie, ook gedeelde, met ster gemarkeerde, chatbot- en API-gesprekken. Documenten in de kennisbank blijven ongemoeid.",
+    "when": "Een gesprek wordt verwijderd zodra het gedurende het gekozen aantal dagen geen nieuw bericht heeft gekregen. De controle draait één keer per dag.",
+    "current-off": "Nu uit: gesprekken blijven bewaard tot iemand ze verwijdert.",
+    "current-on": "Nu aan: gesprekken worden na {days} dagen zonder nieuw bericht verwijderd.",
+    "option-off": "Uit",
+    "option-off-description": "Gesprekken bewaren tot iemand ze verwijdert",
+    "option-days": "{days} dagen",
+    "option-days-description": "Een gesprek verwijderen na {days} dagen zonder nieuw bericht",
+    "save": "Bewaartermijn opslaan",
+    "saving": "Opslaan…",
+    "confirm-title": "Gesprekken verwijderen na {days} dagen?",
+    "confirm-description": "Bij de volgende dagelijkse run wordt elk gesprek in deze organisatie zonder nieuw bericht in de afgelopen {days} dagen definitief verwijderd, met berichten, bronnen, deelacties en openbare link. Dit kan niet ongedaan worden gemaakt.",
+    "confirm-action": "Verwijderen na {days} dagen",
+    "saved-off": "Bewaring van gesprekken uitgeschakeld. Er worden geen gesprekken automatisch verwijderd.",
+    "saved-on": "Opgeslagen. Gesprekken zonder nieuw bericht in {days} dagen worden bij de volgende dagelijkse run verwijderd.",
+    "error-invalid-period": "Niet opgeslagen — die termijn is niet beschikbaar. Kies een van de vermelde opties en sla opnieuw op.",
+    "error-forbidden": "Niet opgeslagen — alleen een eigenaar of beheerder van de organisatie kan dit wijzigen.",
+    "error-settings-locked": "Niet opgeslagen — de instellingen van deze organisatie zijn vergrendeld. Vraag je platformbeheerder om ze te ontgrendelen.",
+    "error-schedule-unavailable": "Niet opgeslagen — de dagelijkse verwijdertaak kon niet worden geregistreerd, dus er zou niets draaien. Controleer of de achtergrondwachtrij (Redis) bereikbaar is en probeer het opnieuw.",
+    "error-save-failed": "Niet opgeslagen — er ging iets mis. Probeer het zo meteen opnieuw."
   }
 }

@@ -65,6 +65,10 @@ describe('the public entry point', () => {
     ['isNotificationType', 'function'],
     ['parseNotificationDetails', 'function'],
     ['notificationDetails', 'function'],
+    ['THREAD_RETENTION_DAYS_OPTIONS', 'object'],
+    ['isThreadRetentionDays', 'function'],
+    ['isThreadRetentionTightening', 'function'],
+    ['threadRetentionCutoff', 'function'],
   ])('exports %s as a %s', (name, kind) => {
     expect(name in contracts).toBe(true);
     expect(typeof (contracts as Record<string, unknown>)[name]).toBe(kind);
