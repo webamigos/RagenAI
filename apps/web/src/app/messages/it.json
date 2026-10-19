@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Accedi con {name}",
     "sso-or": "oppure",
-    "sso-failed": "L'accesso aziendale non è riuscito. Usa un account del dominio della tua organizzazione o chiedi a un amministratore."
+    "sso-failed": "L'accesso aziendale non è riuscito. Usa un account del dominio della tua organizzazione o chiedi a un amministratore.",
+    "sso-error-registration-disabled": "Il tuo account aziendale non ha ancora accesso a questa installazione. Chiedi un invito a un amministratore.",
+    "sso-error-domain": "Non puoi accedere qui con questo account. Usa un account del dominio della tua azienda.",
+    "sso-error-hosted-domain": "Accedi con l'account Google Workspace della tua azienda, non con un account personale.",
+    "sso-error-email-not-verified": "Il tuo provider di identità non ha confermato il tuo indirizzo email, quindi non è stato creato alcun account. Rivolgiti a un amministratore.",
+    "sso-error-join-organization-unset": "Il tuo account aziendale non ha ancora accesso a questa installazione. Chiedi un invito a un amministratore.",
+    "sso-error-join-organization-not-found": "L'accesso aziendale non è configurato correttamente. Rivolgiti a un amministratore.",
+    "sso-error-email-missing": "Il tuo provider di identità non ha inviato alcun indirizzo email. Rivolgiti a un amministratore.",
+    "sso-error-account-not-linked": "Esiste già un account con questo indirizzo, ma il tuo provider di identità non ha confermato l'indirizzo, quindi non sono stati collegati. Accedi con la password.",
+    "sso-error-cancelled": "L'accesso aziendale è stato annullato."
   },
   "Forgot-password": {
     "Forgot-password": "Password dimenticata?",

@@ -10,7 +10,8 @@ import { mcpOAuthPlugins } from './mcp-oauth-config';
 import {
   joinOidcOrganization,
   oidcPlugins,
-  oidcSignUpAdmitted,
+  oidcSignUpRefusal,
+  refusalError,
 } from './oidc-auth';
 import { oauthScalarListsExtension } from './oauth-prisma-extension';
 import { betterAuth } from 'better-auth';
@@ -487,7 +488,8 @@ export const auth = betterAuth({
          * Throwing rather than returning `false`: Better Auth reads `false`
          * as "skip the create" and hands the caller a null user, which
          * surfaces as an opaque failure. An `APIError` reaches the client as
-         * a 403 that says what happened.
+         * a 403 that says what happened, and the OAuth callback as a redirect
+         * to the sign-in page with its code.
          */
         before: async (user, context) => {
           if (await isRegistrationOpen()) {
@@ -497,8 +499,11 @@ export const auth = betterAuth({
           // A company sign-in into the organization the install names. The
           // identity provider is the gate here: it vouched for an address in
           // an allowed domain, and the user joins as a member rather than
-          // creating anything. See `oidcSignUpAdmitted`.
-          if (await oidcSignUpAdmitted(user, context)) {
+          // creating anything. Otherwise this is the reason it was not, which
+          // the refusal below carries back to the sign-in page. See
+          // `oidcSignUpRefusal`.
+          const refusal = await oidcSignUpRefusal(user, context);
+          if (refusal === null) {
             return;
           }
 
@@ -517,10 +522,9 @@ export const auth = betterAuth({
             return;
           }
 
-          throw new APIError('FORBIDDEN', {
-            message:
-              'Registration is disabled on this installation. Ask an administrator for an invitation.',
-          });
+          // With a `code`, which the OAuth callback turns into a redirect to
+          // the sign-in page (`?error=<code>`) instead of a JSON body.
+          throw refusalError(refusal);
         },
         after: async (user, context) => {
           try {

@@ -11,6 +11,8 @@
  * — the two parts that decide who gets in — can be tested on their own.
  */
 
+import { SIGN_IN_REFUSAL, type SignInRefusal } from './oidc-errors';
+
 /** The Better Auth provider id. Part of the callback URL the IdP is given. */
 export const OIDC_PROVIDER_ID = 'oidc';
 
@@ -155,6 +157,34 @@ export function isAllowedEmail(
   }
   const domain = email.slice(at + 1).toLowerCase();
   return allowedDomains.includes(domain);
+}
+
+/**
+ * Why `gateProfile` would refuse this profile, or null when it would not.
+ *
+ * The plugin throws on a refusal, with this as the code the sign-in page reads,
+ * so the user is told which of these it was rather than one generic sentence.
+ * `gateProfile` keeps its own empty-email refusal underneath, so the gate does
+ * not depend on the throw.
+ */
+export function profileRefusal(
+  profile: { email?: string | null; hostedDomain?: string | null },
+  allowedDomains: readonly string[],
+  options: { requireHostedDomain?: boolean } = {},
+): SignInRefusal | null {
+  if (!profile.email) {
+    return SIGN_IN_REFUSAL.EMAIL_NOT_FOUND;
+  }
+  if (!isAllowedEmail(profile.email, allowedDomains)) {
+    return SIGN_IN_REFUSAL.DOMAIN_NOT_ALLOWED;
+  }
+  if (
+    options.requireHostedDomain &&
+    !allowedDomains.includes(profile.hostedDomain?.toLowerCase() ?? '')
+  ) {
+    return SIGN_IN_REFUSAL.HOSTED_DOMAIN_MISMATCH;
+  }
+  return null;
 }
 
 /**

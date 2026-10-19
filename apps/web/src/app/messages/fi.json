@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Kirjaudu palvelulla {name}",
     "sso-or": "tai",
-    "sso-failed": "Yrityskirjautuminen epäonnistui. Käytä organisaatiosi verkkotunnuksen tiliä tai pyydä apua ylläpitäjältä."
+    "sso-failed": "Yrityskirjautuminen epäonnistui. Käytä organisaatiosi verkkotunnuksen tiliä tai pyydä apua ylläpitäjältä.",
+    "sso-error-registration-disabled": "Yritystililläsi ei ole vielä pääsyä tähän asennukseen. Pyydä kutsu ylläpitäjältä.",
+    "sso-error-domain": "Tällä tilillä ei voi kirjautua tänne. Käytä yrityksesi verkkotunnuksen tiliä.",
+    "sso-error-hosted-domain": "Kirjaudu yrityksesi Google Workspace -tilillä, älä henkilökohtaisella tilillä.",
+    "sso-error-email-not-verified": "Identiteetintarjoajasi ei vahvistanut sähköpostiosoitettasi, joten tiliä ei luotu. Ota yhteyttä ylläpitäjään.",
+    "sso-error-join-organization-unset": "Yritystililläsi ei ole vielä pääsyä tähän asennukseen. Pyydä kutsu ylläpitäjältä.",
+    "sso-error-join-organization-not-found": "Yrityskirjautuminen on määritetty väärin. Ota yhteyttä ylläpitäjään.",
+    "sso-error-email-missing": "Identiteetintarjoajasi ei lähettänyt sähköpostiosoitetta. Ota yhteyttä ylläpitäjään.",
+    "sso-error-account-not-linked": "Tällä osoitteella on jo tili, mutta identiteetintarjoajasi ei vahvistanut osoitetta, joten niitä ei yhdistetty. Kirjaudu salasanallasi.",
+    "sso-error-cancelled": "Yrityskirjautuminen peruttiin."
   },
   "Forgot-password": {
     "Forgot-password": "Unohditko salasanasi?",
