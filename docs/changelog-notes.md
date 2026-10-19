@@ -77,6 +77,8 @@ archive is the blog.
 
 ## Unreleased
 
+- [brief] An install can carry its own product name, logo and colour palette, set once by a platform administrator on the admin panel's new Branding page and shown in the panel, on the sign-in pages, in page titles and in emails. The palette is picked from a short list checked for readable contrast in light and dark mode. Off by default while it settles: switch on *Instance branding* in the platform defaults to show it, and off again to go back to Ragen's branding. (Appliance programme, B2.)
+
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)

@@ -403,6 +403,89 @@
   --chart-4: var(--color-signal-lift);
   --chart-5: var(--color-paper-500);
 }
+/*
+  Instance palettes (spec 2026-10-17-ragen-as-an-on-premises-appliance, B2).
+
+  A palette replaces the brand ramp and nothing else. Every semantic token
+  that is built from the ramp (`--primary`, `--ring`, `--accent`, the
+  sidebar's, `--chart-1`) follows it in both themes, so no component names a
+  colour and the panel's colour rules hold: crimson stays the destructive
+  colour and the `--marker`, green and amber stay document state, the paper
+  neutrals stay as they are.
+
+  Applied with `:root:has(...)`: `InstanceBrandingProvider` renders a hidden
+  `[data-palette]` marker, and the document root picks up the ramp from it.
+  That reaches dialogs portalled to <body> and is in the server-rendered HTML,
+  so there is no flash of navy. The default palette (`ragen`) has no block:
+  the ramp in `@theme` is it.
+
+  Each ramp keeps the navy's lightness at every step, which is what keeps the
+  contrast where the default has it. `text-tokens-meet-contrast.test.ts`
+  measures every block below with the default's pairs, in both themes, and
+  fails if these blocks and `INSTANCE_PALETTES` in platform-contracts
+  disagree.
+*/
+
+/* ocean: a brighter blue than the navy, hue ~245 */
+:root:has([data-palette='ocean']) {
+  --color-brand-50: #f0f6fb;
+  --color-brand-100: #dceaf7;
+  --color-brand-200: #bad5ed;
+  --color-brand-300: #84b4dd;
+  --color-brand-400: #448ec8;
+  --color-brand-500: #036ba9;
+  --color-brand-600: #02598e;
+  --color-brand-700: #014874;
+  --color-brand-800: #01395d;
+  --color-brand-900: #002e4d;
+  --color-brand-950: #012a47;
+}
+
+/* petrol: blue-green, kept on the blue side of teal so it never reads as "Ready" */
+:root:has([data-palette='petrol']) {
+  --color-brand-50: #f0f7f9;
+  --color-brand-100: #daecf0;
+  --color-brand-200: #b7d8e1;
+  --color-brand-300: #7cb9c8;
+  --color-brand-400: #2c96ac;
+  --color-brand-500: #047286;
+  --color-brand-600: #045f70;
+  --color-brand-700: #014d5b;
+  --color-brand-800: #003d49;
+  --color-brand-900: #00313b;
+  --color-brand-950: #022e36;
+}
+
+/* violet: purple, clear of crimson */
+:root:has([data-palette='violet']) {
+  --color-brand-50: #f6f4fb;
+  --color-brand-100: #eae5f6;
+  --color-brand-200: #d5cbeb;
+  --color-brand-300: #b5a3d9;
+  --color-brand-400: #9277c3;
+  --color-brand-500: #744dac;
+  --color-brand-600: #613f92;
+  --color-brand-700: #4e3377;
+  --color-brand-800: #3e285e;
+  --color-brand-900: #32204c;
+  --color-brand-950: #2e1e46;
+}
+
+/* graphite: near-neutral slate, for a brand with no colour of its own */
+:root:has([data-palette='graphite']) {
+  --color-brand-50: #f5f5f6;
+  --color-brand-100: #e6e8eb;
+  --color-brand-200: #cfd1d7;
+  --color-brand-300: #aaaeb7;
+  --color-brand-400: #818895;
+  --color-brand-500: #5e6676;
+  --color-brand-600: #4e5562;
+  --color-brand-700: #3f4450;
+  --color-brand-800: #32363f;
+  --color-brand-900: #282b33;
+  --color-brand-950: #25282e;
+}
+
 /* Allow specific panel pages to break out of the default max-w-6xl content cap
    set by SidebarLayout. A child marks itself with [data-panel-fullwidth] and
    we expand the wrapper. Used by table-heavy pages — the knowledge base list.

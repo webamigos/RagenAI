@@ -1,5 +1,6 @@
 import { Button, Hr, Text } from '@react-email/components';
 import { ORG_ADMIN_ROLE } from '@ragenai/platform-contracts';
+import type { EmailBranding } from '@/features/branding/contracts/branding.types';
 import { EmailLayout } from './components/email-layout';
 import { strong, type EmailTranslator } from './utils/email-translator';
 import { previewTranslator } from './utils/preview-translator';
@@ -13,6 +14,8 @@ type Props = {
   locale: string;
   /** The `emails.invitation` strings in `locale`, shared with the other invitation. */
   t: EmailTranslator;
+  /** The install's branding; absent is Ragen's (spec B2). */
+  branding?: EmailBranding;
 };
 
 const MagicLinkInvitationEmail = ({
@@ -23,6 +26,7 @@ const MagicLinkInvitationEmail = ({
   magicLinkUrl,
   locale,
   t,
+  branding,
 }: Props) => {
   const roleLabel =
     role === ORG_ADMIN_ROLE ? t('role-admin') : t('role-member');
@@ -30,6 +34,7 @@ const MagicLinkInvitationEmail = ({
   return (
     <EmailLayout
       locale={locale}
+      branding={branding}
       preview={t('preview', { organization: organizationName })}
     >
       <Text className="text-base leading-6 text-[#525f7f]">

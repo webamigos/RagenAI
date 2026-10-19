@@ -129,6 +129,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [An encrypted DEK does not record which provider wrapped it, so changing ENCRYPTION_PROVIDER silently orphans every existing thread](lessons/an-encrypted-dek-does-not-record-which-provider-wrapped-it.md)
 - [A customer security document promised "the system will not start without a configured key provider" — the code has never done that](lessons/a-security-doc-promised-a-boot-check-the-code-never-had.md)
 - [A URL validator cannot see DNS rebinding — the check has to run where the socket opens, and the library has to let you in](lessons/a-url-validator-cannot-see-dns-rebinding.md)
+- [In a content filter, an optional quote before a negative lookahead can match nothing, so `href=["']?(?!#)` refuses `href="#g"`](lessons/an-optional-quote-before-a-lookahead-matches-nothing.md)
 
 ### dependencies
 

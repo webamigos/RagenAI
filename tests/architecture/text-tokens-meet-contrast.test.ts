@@ -1,5 +1,10 @@
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import {
+  DEFAULT_INSTANCE_PALETTE,
+  INSTANCE_PALETTES,
+  INSTANCE_PALETTE_OPTIONS,
+} from '../../packages/platform-contracts/src/branding/instance-branding';
 import { readSource } from './tracked-files';
 
 /**
@@ -101,6 +106,7 @@ function resolve(
   value: string | undefined,
   roles: Map<string, string>,
   depth = 0,
+  theme: Map<string, string> = ramp,
 ): Rgb {
   if (value === undefined) {
     throw new Error('Token is not declared');
@@ -112,7 +118,7 @@ function resolve(
   const reference = /^var\(--([a-z0-9-]+)(?:,.*)?\)$/.exec(value);
   if (reference) {
     const name = reference[1];
-    return resolve(roles.get(name) ?? ramp.get(name), roles, depth + 1);
+    return resolve(roles.get(name) ?? theme.get(name), roles, depth + 1, theme);
   }
 
   if (value.startsWith('#')) {
@@ -177,6 +183,80 @@ describe.each([
       ratio,
       `--${text} on --${surface} is ${ratio.toFixed(2)}:1`,
     ).toBeGreaterThanOrEqual(MINIMUM_RATIO);
+  });
+});
+
+/**
+ * Instance palettes (spec 2026-10-17-ragen-as-an-on-premises-appliance, B2).
+ *
+ * A palette swaps the brand ramp under `:root:has([data-palette='<id>'])`, so
+ * it is measured the same way as the default: its ramp laid over `@theme`,
+ * then every pair above, in both themes. An operator picks a palette from a
+ * list and never sees a ratio, so a palette that only looks fine is exactly
+ * what this has to catch.
+ */
+function paletteRamp(id: string): Map<string, string> {
+  const opening = `:root:has([data-palette='${id}']) {`;
+  if (!css.includes(opening)) {
+    throw new Error(`No \`${opening}\` block in global.css`);
+  }
+  const overrides = declarationsIn(opening);
+  return new Map([...ramp, ...overrides]);
+}
+
+const CUSTOM_PALETTES = INSTANCE_PALETTES.filter(
+  (id) => id !== DEFAULT_INSTANCE_PALETTE,
+);
+
+describe('instance palettes', () => {
+  it('has a block for every palette the admin panel offers, and no others', () => {
+    const blocks = [
+      ...css.matchAll(/:root:has\(\[data-palette='([a-z-]+)'\]\) \{/g),
+    ].map((match) => match[1]);
+
+    // The default has no block on purpose: the ramp in `@theme` is it.
+    expect(blocks.sort()).toEqual([...CUSTOM_PALETTES].sort());
+  });
+
+  it.each(INSTANCE_PALETTES)(
+    '%s: the swatch the admin panel shows is the ramp step it describes',
+    (id) => {
+      const theme = id === DEFAULT_INSTANCE_PALETTE ? ramp : paletteRamp(id);
+      expect(theme.get('color-brand-600')).toBe(
+        INSTANCE_PALETTE_OPTIONS[id].swatch,
+      );
+    },
+  );
+
+  it.each(CUSTOM_PALETTES)(
+    '%s replaces the brand ramp and nothing else',
+    (id) => {
+      const opening = `:root:has([data-palette='${id}']) {`;
+      const names = [...declarationsIn(opening).keys()];
+      expect(names.every((name) => name.startsWith('color-brand-'))).toBe(true);
+      expect(names).toHaveLength(11);
+    },
+  );
+
+  describe.each(
+    CUSTOM_PALETTES.flatMap((id) => [
+      [id, 'light', lightRoles] as const,
+      [id, 'dark', darkRoles] as const,
+    ]),
+  )('%s palette, %s', (id, _mode, roles) => {
+    const theme = paletteRamp(id);
+
+    it.each(PAIRS)('%s on %s reaches AA', (text, surface) => {
+      const ratio = contrastRatio(
+        resolve(roles.get(text), roles, 0, theme),
+        resolve(roles.get(surface), roles, 0, theme),
+      );
+
+      expect(
+        ratio,
+        `--${text} on --${surface} is ${ratio.toFixed(2)}:1 with ${id}`,
+      ).toBeGreaterThanOrEqual(MINIMUM_RATIO);
+    });
   });
 });
 
