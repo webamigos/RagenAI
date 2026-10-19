@@ -578,6 +578,14 @@ repeatable demo, and records the gaps as tests.
   storage, and a first-line checklist that first-line support works through
   with its role in C3 before escalating to us.
 
+  Partly done: [the runbook](../appliance-runbook.md) covers the manual
+  install, the egress check, backup and restore, online upgrade, rollback
+  with the additive-migrations rule, model swap with a full re-index, and
+  troubleshooting per failure mode. Still to do:
+  - the offline upgrade, once C2 exists
+  - the first-line checklist as a role, once C3 exists (a draft is there)
+  - the install through `create-ragen-app`, once C1 lands
+
 ## Testing
 
 - **Unit:**

@@ -44,6 +44,7 @@ const INSTRUCTION_FILES = [
   'AGENTS.md',
   'CONTRIBUTING.md',
   'docs/testing-conventions.md',
+  'docs/appliance-runbook.md',
   '.claude/skills/ragen-e2e-triage/SKILL.md',
   '.claude/skills/ragen-upgrade-dependency/SKILL.md',
   '.claude/skills/ragen-tenant-scope-audit/SKILL.md',

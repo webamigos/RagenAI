@@ -77,6 +77,8 @@ archive is the blog.
 
 ## Unreleased
 
+- [brief] Thread: on-premises appliance. An operations runbook for the appliance (`docs/appliance-runbook.md`): install, proving nothing leaves the machine, backup and restore of Postgres, Qdrant and documents, upgrade and rollback, and swapping a model — including the full re-index an embedding change needs. Offline upgrades and the first-line support role follow with the offline bundle and the support channel.
+
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)
