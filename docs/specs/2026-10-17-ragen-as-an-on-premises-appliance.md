@@ -553,7 +553,7 @@ repeatable demo, and records the gaps as tests.
     "Ragen AI" / "Ragen Assistant" in page titles and email copy, and the
     email masthead and signature. The bare word "Ragen" elsewhere in copy is
     not renamed yet.
-  - **Tests.** Unit and component tests; `smoke-21` for the panel.
+  - **Tests.** Unit and component tests; `smoke-22` for the panel.
 - [x] **B3.** Model probes on the setup page: one free `GET /models` per
   `openai-compatible` server behind `DEFAULT_MODEL`, `REPHRASE_MODEL`,
   `SUMMARY_MODEL` and `EMBEDDINGS_MODEL`, cached for 30 seconds. A server

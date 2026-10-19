@@ -58,7 +58,7 @@ for (const [name, value] of Object.entries(E2E_LLM_ENV)) {
 }
 
 /**
- * The secret apps/web's internal endpoints check, so `smoke-21` can save
+ * The secret apps/web's internal endpoints check, so `smoke-22` can save
  * instance branding the way `apps/admin` does — through
  * `/api/internal/instance-branding`, the only writer, and the only path that
  * clears the branding cache at once. Writing the row with Prisma instead would
