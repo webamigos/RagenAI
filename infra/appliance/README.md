@@ -6,6 +6,38 @@ call leaves it. The design, and what is still missing, is in
 
 ## Run it
 
+### With the script (NVIDIA DGX Spark, or any Linux host with an NVIDIA GPU)
+
+```bash
+bash infra/appliance/install-spark.sh --host <address users open>
+# or, with no checkout yet:
+curl -fsSL https://raw.githubusercontent.com/webamigos/RagenAI/main/infra/appliance/install-spark.sh | bash -s -- --host <address>
+```
+
+[`install-spark.sh`](install-spark.sh) does the manual steps below and checks
+what they assume:
+
+- Docker Compose 2.24+, a GPU visible inside containers, enough disk;
+- every image is for the host's architecture. A missing arm64 image is not an
+  error anywhere — Docker emulates the amd64 one, slowly — so the script warns;
+- `.env.local` from the template, with every empty secret generated. A re-run
+  keeps the secrets that are there;
+- `--host` becomes the web app's `APP_URL`. That needs an overlay,
+  `docker-compose.spark.local.yml` (ignored by git), because
+  `docker-compose.fullapp.yml` sets `APP_URL` to localhost in `environment:`,
+  which wins over `.env.local`;
+- `COMPOSE_FILE` in `.env`, so a bare `docker compose ps`, `logs` or `down` in
+  the checkout addresses the whole appliance;
+- after the model pull, one prompt to the small model and `ollama ps`, which
+  must say `100% GPU`. If it does not, the pinned Ollama image probably does
+  not support the GPU; it warns rather than fails;
+- it waits for the web app to answer.
+
+`--cpu` skips the GPU check and overlay, `--version` pins the image tag,
+`--dir` and `--ref` choose where and what to clone.
+
+### By hand
+
 1. Copy [`appliance.env.example`](appliance.env.example) to the repository
    root as `.env.local`, and fill in the secrets. In this stack,
    `LLM_ROUTES_PATH` and `LLM_OLLAMA_BASE_URL` are set by the compose file, so
