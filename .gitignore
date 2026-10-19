@@ -107,10 +107,6 @@ apps/*/data/
 # so committing it would only preserve a stale copy.
 .devcontainer/docker-compose.volumes.yml
 
-# The browser-facing address of one appliance install, written by
-# infra/appliance/install-spark.sh on that machine.
-docker-compose.spark.local.yml
-
 # Regression-pass screenshots. Kept locally and cited by the reports in
 # docs/; git would hold every PNG for ever (the 2026-09-21 passes alone are
 # 11 MB across two directories).

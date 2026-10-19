@@ -7,7 +7,7 @@ import { MANIFEST } from '../../packages/create-ragen-app/src/manifest';
 
 /**
  * `infra/appliance/install-spark.sh` generates every secret a fresh install
- * needs, and runs the compose files that exist.
+ * needs, leaves encryption opt-in, and runs the compose files that exist.
  *
  * The script fills `.env.local` from the appliance template and generates the
  * secrets itself, from a list written in bash. A secret added to
@@ -43,26 +43,19 @@ describe('install-spark.sh', () => {
     expect(generated.filter((key) => !named.has(key))).toEqual([]);
   });
 
-  it('generates the local encryption key the appliance template selects', () => {
-    expect(scriptSecrets()).toContain('ENCRYPTION_MASTER_KEY');
+  it('leaves the encryption key to --encrypt, never to the default run', () => {
+    // A test install should not leave a key behind that must be kept for
+    // ever; the key is generated only when asked for.
+    expect(scriptSecrets()).not.toContain('ENCRYPTION_MASTER_KEY');
+    expect(SCRIPT).toMatch(/--encrypt\) ENCRYPT=1/);
   });
 
   it('names only compose files that exist', () => {
     const files = SCRIPT.match(/docker-compose[\w.]*\.yml/g) ?? [];
-    const local = 'docker-compose.spark.local.yml';
 
     expect(files.length).toBeGreaterThan(0);
     for (const file of new Set(files)) {
-      if (file === local) {
-        continue;
-      }
       expect(() => readFileSync(join(ROOT, file))).not.toThrow();
     }
-  });
-
-  it('keeps the overlay it writes out of git', () => {
-    const gitignore = readFileSync(join(ROOT, '.gitignore'), 'utf8');
-
-    expect(gitignore).toMatch(/^docker-compose\.spark\.local\.yml$/m);
   });
 });

@@ -22,10 +22,14 @@ what they assume:
   error anywhere — Docker emulates the amd64 one, slowly — so the script warns;
 - `.env.local` from the template, with every empty secret generated. A re-run
   keeps the secrets that are there;
-- `--host` becomes the web app's `APP_URL`. That needs an overlay,
-  `docker-compose.spark.local.yml` (ignored by git), because
-  `docker-compose.fullapp.yml` sets `APP_URL` to localhost in `environment:`,
-  which wins over `.env.local`;
+- **no encryption key by default**, so a test install leaves nothing that has
+  to be kept. The provider is cleared and messages are stored in plaintext,
+  which the containers allow because they run with `TARGET_ENV=local`.
+  `--encrypt` generates `ENCRYPTION_MASTER_KEY`; a key already in `.env.local`
+  is always kept;
+- `--host` becomes `APP_URL`, written to `.env` as well as `.env.local`:
+  web's `environment:` reads it from `.env` (Compose's own file), and
+  `environment:` wins over `.env.local`;
 - `COMPOSE_FILE` in `.env`, so a bare `docker compose ps`, `logs` or `down` in
   the checkout addresses the whole appliance;
 - after the model pull, one prompt to the small model and `ollama ps`, which
@@ -33,7 +37,8 @@ what they assume:
   not support the GPU; it warns rather than fails;
 - it waits for the web app to answer.
 
-`--cpu` skips the GPU check and overlay, `--version` pins the image tag,
+`--cpu` skips the GPU check and overlay, `--encrypt` turns on message
+encryption, `--version` pins the image tag,
 `--dir` and `--ref` choose where and what to clone.
 
 ### By hand

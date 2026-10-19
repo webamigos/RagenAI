@@ -15,6 +15,9 @@
 #   --ref <ref>        branch, tag or sha to clone (RAGEN_REF, default main)
 #   --version <tag>    image tag to run (RAGEN_VERSION, default latest)
 #   --cpu              skip the GPU check and the GPU overlay
+#   --encrypt          encrypt thread messages with a generated local key
+#                      (RAGEN_ENCRYPT=1). Off by default: a test install
+#                      should not leave behind a key that must be kept
 #
 # Safe to re-run: secrets already in .env.local are kept, models already on
 # the volume are not pulled again. What it does, and why each step exists:
@@ -28,6 +31,7 @@ RAGEN_REF="${RAGEN_REF:-main}"
 RAGEN_VERSION="${RAGEN_VERSION:-latest}"
 WEB_PORT="${WEB_PORT:-3000}"
 USE_GPU=1
+ENCRYPT="${RAGEN_ENCRYPT:-0}"
 REPO_URL="https://github.com/webamigos/RagenAI.git"
 # The small model the GPU check loads; it is in the appliance's default set.
 SMOKE_MODEL="${SMOKE_MODEL:-qwen2.5:7b-instruct}"
@@ -35,7 +39,8 @@ SMOKE_MODEL="${SMOKE_MODEL:-qwen2.5:7b-instruct}"
 DISK_WARN_GB=60
 DISK_MIN_GB=35
 
-# The secrets create-ragen-app generates, plus the local encryption key.
+# The secrets create-ragen-app generates. The encryption key is not one of
+# them here: it is opt-in, see --encrypt.
 # tests/architecture/install-spark-generates-every-appliance-secret.test.ts
 # keeps this list in step with the installer's manifest.
 SECRETS=(
@@ -46,13 +51,7 @@ SECRETS=(
   WORKER_SECRET_KEY
   PUBLIC_LINK_TOKEN_SECRET
   MCP_SERVICE_SECRET
-  ENCRYPTION_MASTER_KEY
 )
-
-# Written into the checkout, ignored by git: the browser-facing address. It
-# has to be an overlay, because docker-compose.fullapp.yml sets web's APP_URL
-# in `environment:`, which wins over .env.local.
-LOCAL_OVERLAY=docker-compose.spark.local.yml
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mUWAGA:\033[0m %s\n' "$*" >&2; }
@@ -68,7 +67,8 @@ while [ $# -gt 0 ]; do
     --ref) RAGEN_REF="${2:?--ref needs a value}"; shift 2 ;;
     --version) RAGEN_VERSION="${2:?--version needs a value}"; shift 2 ;;
     --cpu) USE_GPU=0; shift ;;
-    -h | --help) sed -n "2,21p" "${BASH_SOURCE[0]:-}" 2>/dev/null | sed "s/^# \{0,1\}//" || echo "Zobacz nagłówek: infra/appliance/install-spark.sh"; exit 0 ;;
+    --encrypt) ENCRYPT=1; shift ;;
+    -h | --help) sed -n "2,24p" "${BASH_SOURCE[0]:-}" 2>/dev/null | sed "s/^# \{0,1\}//" || echo "Zobacz nagłówek: infra/appliance/install-spark.sh"; exit 0 ;;
     *) die "nieznana opcja: $1 (--help pokazuje listę)" ;;
   esac
 done
@@ -163,29 +163,39 @@ for key in "${SECRETS[@]}"; do
 done
 log "Wygenerowane sekrety: $generated (istniejące zostawione bez zmian)"
 
+# Thread-message encryption. A key already in .env.local is kept whatever
+# the flag says: dropping it would leave every message written with it
+# unreadable. Without one, the provider is cleared rather than left at the
+# template's `local`, which with no key fails the apps' env check. The
+# containers run with TARGET_ENV=local, where encryption is not required.
+existing_key="$(grep -E '^ENCRYPTION_MASTER_KEY=' .env.local | tail -n1 | cut -d= -f2- || true)"
+if [ -n "$existing_key" ]; then
+  set_env .env.local ENCRYPTION_PROVIDER local
+  log "Szyfrowanie: włączone (klucz już był w .env.local, zostawiam go)"
+elif [ "$ENCRYPT" = 1 ]; then
+  set_env .env.local ENCRYPTION_PROVIDER local
+  set_env .env.local ENCRYPTION_MASTER_KEY "$(openssl rand -hex 32)"
+  log "Szyfrowanie: włączone, wygenerowany ENCRYPTION_MASTER_KEY"
+else
+  set_env .env.local ENCRYPTION_PROVIDER ""
+  log "Szyfrowanie: wyłączone, wiadomości w bazie jawnym tekstem (włączysz je flagą --encrypt)"
+fi
+
 app_url="http://${RAGEN_HOST}:${WEB_PORT}"
 set_env .env.local APP_URL "$app_url"
 set_env .env.local NEXT_PUBLIC_APP_URL "$app_url"
-
-cat >"$LOCAL_OVERLAY" <<EOF
-# Written by infra/appliance/install-spark.sh; re-running it rewrites this.
-services:
-  web:
-    environment:
-      APP_URL: ${app_url}
-      NEXT_PUBLIC_APP_URL: ${app_url}
-EOF
 
 compose_files="docker-compose.yml:docker-compose.fullapp.yml:docker-compose.appliance.yml"
 if [ "$USE_GPU" = 1 ]; then
   compose_files="$compose_files:docker-compose.appliance.gpu.yml"
 fi
-compose_files="$compose_files:$LOCAL_OVERLAY"
 
-# COMPOSE_FILE in .env makes a bare `docker compose ps|logs|down` in this
-# directory address the whole appliance — no five -f flags to remember.
+# .env is the file Compose itself reads. COMPOSE_FILE makes a bare
+# `docker compose ps|logs|down` here address the whole appliance; APP_URL
+# reaches web's `environment:`, which a value in .env.local cannot.
 touch .env
 set_env .env COMPOSE_FILE "$compose_files"
+set_env .env APP_URL "$app_url"
 set_env .env RAGEN_VERSION "$RAGEN_VERSION"
 set_env .env WEB_PORT "$WEB_PORT"
 
@@ -253,8 +263,21 @@ $(printf '\033[1;32m')Ragen działa.$(printf '\033[0m')
   Zarządzanie: cd ${root} && docker compose ps | logs -f | down
 
 Zanim oddasz instalację klientowi:
+EOF
+
+if grep -qE '^ENCRYPTION_MASTER_KEY=.' .env.local; then
+  cat <<EOF
   - Zrób kopię ENCRYPTION_MASTER_KEY z ${root}/.env.local razem z backupem
     bazy. Bez tego klucza wiadomości w wątkach są nie do odczytania.
+EOF
+else
+  cat <<EOF
+  - Szyfrowanie wiadomości jest wyłączone. Na produkcję uruchom skrypt
+    ponownie z --encrypt.
+EOF
+fi
+
+cat <<EOF
   - Porty ${WEB_PORT} (web), 3001 (API) i 3200 (panel admina) są otwarte w
     sieci. Postaw przed web reverse proxy z TLS, a 3001/3200 zamknij
     firewallem, jeśli nie mają być dostępne z zewnątrz.

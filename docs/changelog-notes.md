@@ -78,6 +78,7 @@ archive is the blog.
 ## Unreleased
 
 - [brief] The fully local appliance installs on an NVIDIA DGX Spark (or any Linux box with an NVIDIA GPU) with one script, `infra/appliance/install-spark.sh`: it checks the GPU, the disk and the image architectures, generates the secrets, pulls the models, confirms Ollama runs them on the GPU and waits for the web app. Nothing is built on the machine.
+- [brief] The container stack (`docker-compose.fullapp.yml`) now takes `APP_URL` from `.env` or the shell. It was fixed to localhost, so links and the sign-in origin check pointed at localhost whatever `.env.local` said.
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)
