@@ -33,9 +33,16 @@ export function rebrandText(text: string, productName: string): string {
  * arguments, which is returned without being parsed.
  */
 export function escapeIcuText(text: string): string {
-  return text
-    .replace(/'(?=[{}<>])/g, "''")
-    .replace(/[{}<>]/g, (char) => `'${char}'`);
+  // One pass, one quoted section per run of syntax characters: quoting
+  // each character separately puts `''` between neighbours (`'{''}'`),
+  // which inside a quote is a literal apostrophe. Apostrophes within a run
+  // are doubled once; one just before a run is doubled so it stays literal
+  // rather than opening the quote itself.
+  return text.replace(
+    /('?)([{}<>][{}<>']*)/g,
+    (_, before: string, run: string) =>
+      `${before ? "''" : ''}'${run.replace(/'/g, "''")}'`,
+  );
 }
 
 type Messages = { [key: string]: string | Messages };

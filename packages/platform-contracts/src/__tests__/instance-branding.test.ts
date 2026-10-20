@@ -96,6 +96,10 @@ describe('findUnsafeSvgConstruct', () => {
     ['<svg><a href=" https://evil.example">x</a></svg>', 'outside'],
     ["<svg><a href='https://evil.example'>x</a></svg>", 'outside'],
     ['<svg><a xlink:href="https://evil.example">x</a></svg>', 'outside'],
+    [
+      '<svg xmlns:q="http://www.w3.org/1999/xlink"><use q:href="https://evil.example/a.svg#x"/></svg>',
+      'outside',
+    ],
     ['<svg><image href="https://track.example/p.png"/></svg>', 'image'],
     ['<svg><use href="data:image/svg+xml,…"/></svg>', 'outside'],
     ['<svg><style>@import "https://x";</style></svg>', 'import'],

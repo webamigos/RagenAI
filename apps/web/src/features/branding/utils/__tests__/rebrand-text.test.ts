@@ -61,17 +61,22 @@ describe('rebrandMessages', () => {
     expect(renamed.Metadata['sign-in'].title).toBe('Sign In | Globex');
   });
 
-  it.each(['Acme {AI}', 'Acme <b>', "O'Brien's", "Acme'{x}"])(
-    'formats a name with ICU syntax in it literally: %s',
-    (name) => {
-      const t = createTranslator({
-        locale: 'en',
-        messages: rebrandMessages(en, name),
-        onError: (err) => {
-          throw err;
-        },
-      });
-      expect(t('Metadata.sign-in.title')).toBe(`Sign In | ${name}`);
-    },
-  );
+  it.each([
+    'Acme {AI}',
+    'Acme <b>',
+    "O'Brien's",
+    "Acme'{x}",
+    'Acme {}',
+    '<<Acme>>',
+    "{'{",
+  ])('formats a name with ICU syntax in it literally: %s', (name) => {
+    const t = createTranslator({
+      locale: 'en',
+      messages: rebrandMessages(en, name),
+      onError: (err) => {
+        throw err;
+      },
+    });
+    expect(t('Metadata.sign-in.title')).toBe(`Sign In | ${name}`);
+  });
 });

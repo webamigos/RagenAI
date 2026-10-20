@@ -179,7 +179,9 @@ const UNSAFE_SVG: ReadonlyArray<readonly [RegExp, string]> = [
   // and `href= "#g"` were refused as external.
   [/url\((?!\s*['"]?\s*#)/i, 'an external url() reference'],
   [
-    /\s(?:xlink:)?href\s*=(?!\s*['"]?\s*#)/i,
+    // Any prefix, not only `xlink:`: a document may bind any prefix to the
+    // XLink namespace.
+    /\s(?:[\w.-]+:)?href\s*=(?!\s*['"]?\s*#)/i,
     'a link to something outside the file',
   ],
 ];
