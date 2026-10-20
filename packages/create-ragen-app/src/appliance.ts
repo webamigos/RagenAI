@@ -201,6 +201,11 @@ export interface ParsedRoute {
  * gateway's own schema says so, and the package has no YAML dependency to
  * spend on a check this narrow. A table it cannot read yields no routes, and
  * `findOffMachineRoutes` treats that as a failure rather than a pass.
+ *
+ * An entry under `routes:` in any other shape — flow style
+ * (`cloud: { provider: openai }`), another indent — comes back as a route
+ * with no provider, so the check refuses it. Skipping it would let the
+ * gateway, which does read it, send that model off the machine.
  */
 export function parseRouteTable(yaml: string): ParsedRoute[] {
   const routes: ParsedRoute[] = [];
@@ -229,6 +234,16 @@ export function parseRouteTable(yaml: string): ParsedRoute[] {
         connection: undefined,
       };
       routes.push(current);
+      continue;
+    }
+
+    if (!/^ {4}/.test(line)) {
+      routes.push({
+        name: line.trim(),
+        provider: undefined,
+        connection: undefined,
+      });
+      current = undefined;
       continue;
     }
 

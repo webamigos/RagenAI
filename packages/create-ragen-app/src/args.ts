@@ -69,7 +69,11 @@ export function parseArgs(argv: string[]): CliArgs {
     );
   }
 
-  const appliance = parseAppliance(hasFlag('appliance'), valueOf('appliance'));
+  const appliance = parseAppliance(
+    hasFlag('appliance'),
+    argv.some((arg) => arg.startsWith('--appliance=')),
+    valueOf('appliance'),
+  );
   if (appliance && provider) {
     // Two answers to one question. Picking either silently would scaffold an
     // install the caller did not ask for — a cloud one, in the worse case.
@@ -113,9 +117,18 @@ export function parseArgs(argv: string[]): CliArgs {
  */
 function parseAppliance(
   bare: boolean,
+  withEquals: boolean,
   value: string | undefined,
 ): ApplianceProfileId | undefined {
-  if (!bare && value === undefined) {
+  // `--appliance=` with nothing after it is usually `--appliance=$PROFILE`
+  // with the variable unset. Reading it as "no flag" would scaffold a cloud
+  // install for a caller who asked for one that sends nothing out.
+  if (withEquals && value === undefined) {
+    throw new Error(
+      `--appliance= needs a profile. Expected one of: ${APPLIANCE_PROFILES.map((p) => p.id).join(', ')}, or a bare --appliance.`,
+    );
+  }
+  if (!bare && !withEquals) {
     return undefined;
   }
   const id = value ?? DEFAULT_APPLIANCE_PROFILE;

@@ -137,6 +137,13 @@ describe('findOffMachineRoutes', () => {
     ]);
   });
 
+  it('refuses an entry it cannot read rather than skipping it', () => {
+    const table = `${LOCAL_TABLE}\n  cloud: { provider: openai, model: gpt-4o }\n`;
+    expect(findOffMachineRoutes(table, ['ollama'])).toEqual([
+      'cloud: { provider: openai, model: gpt-4o }: provider (none) is not a local server',
+    ]);
+  });
+
   it('treats a table it cannot read as a failure, not a pass', () => {
     expect(findOffMachineRoutes('', ['ollama'])).toEqual([
       'no routes could be read from the table',

@@ -99,6 +99,12 @@ describe('parseArgs', () => {
       );
     });
 
+    it('rejects --appliance= with no profile instead of reading it as absent', () => {
+      expect(() => parseArgs(['app', '--appliance=', '--yes'])).toThrow(
+        /--appliance= needs a profile/,
+      );
+    });
+
     it('rejects an unknown profile', () => {
       expect(() => parseArgs(['app', '--appliance=cloud'])).toThrow(
         /Unknown --appliance=cloud. Expected one of: local, hybrid/,
