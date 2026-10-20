@@ -20,21 +20,37 @@ type CacheEntry = {
 };
 
 /**
- * Module scope, deliberately, like the guardrail loader's cache.
+ * Process scope, deliberately, like the guardrail loader's cache.
  *
  * The answer is the same for every request on the install, so `React.cache`
  * — one read per request — would be the wrong scope: it would put two
  * queries on every panel render and every sign-in page for a value that
  * changes perhaps once.
+ *
+ * On `globalThis` rather than in a module variable: Next bundles route
+ * handlers and server components separately, so a module variable exists
+ * once per bundle. The save arrives through a route handler, and clearing
+ * only that copy left the panel, rendered by the other, on the old branding
+ * for the rest of the window.
  */
-let entry: CacheEntry | null = null;
+const CACHE = Symbol.for('ragen.instance-branding.cache');
+
+type CacheHolder = { entry: CacheEntry | null };
+
+function holder(): CacheHolder {
+  const scope = globalThis as typeof globalThis & {
+    [CACHE]?: CacheHolder;
+  };
+  scope[CACHE] ??= { entry: null };
+  return scope[CACHE];
+}
 
 /**
  * Drops the cached branding. The save command calls it, so the process that
  * handled a save shows it on the very next request; tests call it too.
  */
 export function clearInstanceBrandingCache(): void {
-  entry = null;
+  holder().entry = null;
 }
 
 /**
@@ -59,9 +75,10 @@ export async function getInstanceBrandingQuery(): Promise<InstanceBranding> {
     return DEFAULT_INSTANCE_BRANDING;
   }
 
+  const cache = holder();
   const now = Date.now();
-  if (entry && entry.expiresAt > now) {
-    return entry.value;
+  if (cache.entry && cache.entry.expiresAt > now) {
+    return cache.entry.value;
   }
 
   try {
@@ -79,12 +96,12 @@ export async function getInstanceBrandingQuery(): Promise<InstanceBranding> {
       : null;
 
     const value = toInstanceBranding(row);
-    entry = { value, expiresAt: now + BRANDING_CACHE_TTL_MS };
+    cache.entry = { value, expiresAt: now + BRANDING_CACHE_TTL_MS };
     return value;
   } catch (error) {
     logger.warn({ err: error }, 'Could not read instance branding');
-    const value = entry?.value ?? DEFAULT_INSTANCE_BRANDING;
-    entry = { value, expiresAt: now + BRANDING_FAILURE_TTL_MS };
+    const value = cache.entry?.value ?? DEFAULT_INSTANCE_BRANDING;
+    cache.entry = { value, expiresAt: now + BRANDING_FAILURE_TTL_MS };
     return value;
   }
 }

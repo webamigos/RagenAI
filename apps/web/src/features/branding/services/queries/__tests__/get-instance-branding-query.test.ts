@@ -101,6 +101,19 @@ describe('getInstanceBrandingQuery', () => {
     expect((await getInstanceBrandingQuery()).productName).toBe('Globex');
   });
 
+  it('shares one cache across module copies, so a save clears what the panel reads', async () => {
+    // Next bundles route handlers and server components separately: the
+    // save's copy of this module is not the panel's.
+    await getInstanceBrandingQuery();
+    vi.resetModules();
+    const other = await import('../get-instance-branding-query');
+    findUnique.mockResolvedValue({ ...ROW, productName: 'Globex' });
+
+    other.clearInstanceBrandingCache();
+
+    expect((await getInstanceBrandingQuery()).productName).toBe('Globex');
+  });
+
   it('falls back to the default when the read fails, and says so', async () => {
     featureEnabled.mockRejectedValue(new Error('connection refused'));
 
