@@ -21,6 +21,23 @@ export function rebrandText(text: string, productName: string): string {
   return text.replace(PRODUCT_PHRASES, () => productName);
 }
 
+/**
+ * The name as literal text inside an ICU message. The catalogues are ICU
+ * syntax, so a name such as `Acme {AI}` would otherwise be read as an
+ * argument (or `<b>` as a rich-text tag) and make every rebranded message
+ * fail to format.
+ *
+ * Only the characters that start syntax are quoted. A lone apostrophe is
+ * literal in ICU unless a syntax character follows it, so `O'Brien` is left
+ * as it is — doubling it would show `O''Brien` in a message that has no
+ * arguments, which is returned without being parsed.
+ */
+export function escapeIcuText(text: string): string {
+  return text
+    .replace(/'(?=[{}<>])/g, "''")
+    .replace(/[{}<>]/g, (char) => `'${char}'`);
+}
+
 type Messages = { [key: string]: string | Messages };
 
 /**
@@ -51,13 +68,14 @@ export function rebrandMessages<T extends object>(
     return cached.copy as T;
   }
 
+  // Catalogue strings are ICU messages; `rebrandText` callers outside this
+  // walk (page metadata) take the raw name.
+  const icuName = escapeIcuText(productName);
   const walk = (node: Messages): Messages => {
     const out: Messages = {};
     for (const [key, value] of Object.entries(node)) {
       out[key] =
-        typeof value === 'string'
-          ? rebrandText(value, productName)
-          : walk(value);
+        typeof value === 'string' ? rebrandText(value, icuName) : walk(value);
     }
     return out;
   };

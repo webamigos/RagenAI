@@ -32,6 +32,7 @@ const fetchMock = vi.fn();
 
 const { getInstanceBrandingAction, saveInstanceBrandingAction } =
   await import('../actions');
+const { revalidatePath } = await import('next/cache');
 
 const ADMIN = { id: 'admin-1', email: 'a@b.c', name: 'A' };
 const PNG = new Uint8Array([
@@ -243,5 +244,14 @@ describe('saveInstanceBrandingAction', () => {
       reason: 'Could not reach apps/web: ECONNREFUSED',
     });
     expect(recordAdminAction).toHaveBeenCalled();
+  });
+
+  it('still reports a completed save when the audit write fails', async () => {
+    recordAdminAction.mockRejectedValueOnce(new Error('db down'));
+
+    const outcome = await saveInstanceBrandingAction(form());
+
+    expect(outcome).toEqual({ ok: true });
+    expect(revalidatePath).toHaveBeenCalledWith('/branding');
   });
 });

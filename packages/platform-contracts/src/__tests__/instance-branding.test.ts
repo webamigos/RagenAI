@@ -75,8 +75,20 @@ describe('findUnsafeSvgConstruct', () => {
   });
 
   it.each([
+    '<svg><use href= "#g"/></svg>',
+    '<svg><rect fill="url( \'#g\')"/></svg>',
+  ])('lets an internal reference with whitespace through: %s', (svg) => {
+    expect(findUnsafeSvgConstruct(svg)).toBeNull();
+  });
+
+  it.each([
     ['<svg><script>alert(1)</script></svg>', 'script'],
     ['<svg><SCRIPT >alert(1)</SCRIPT></svg>', 'script'],
+    [
+      '<svg xmlns:s="http://www.w3.org/2000/svg"><s:script>x</s:script></svg>',
+      'script',
+    ],
+    ['<svg><x:foreignObject><div/></x:foreignObject></svg>', 'foreignObject'],
     ['<svg onload="alert(1)"></svg>', 'event-handler'],
     ['<svg><rect onclick = "x()"/></svg>', 'event-handler'],
     ['<svg><foreignObject><div/></foreignObject></svg>', 'foreignObject'],

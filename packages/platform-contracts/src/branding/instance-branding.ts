@@ -155,22 +155,31 @@ export function detectLogoType(bytes: Uint8Array): LogoType | null {
  * serves it.
  */
 const UNSAFE_SVG: ReadonlyArray<readonly [RegExp, string]> = [
-  [/<\s*script/i, 'a <script> element'],
-  [/<\s*foreignObject/i, 'a <foreignObject> element'],
-  [/<\s*(iframe|embed|object|audio|video)\b/i, 'an embedded document'],
-  [/<\s*image\b/i, 'an embedded image'],
-  [/<\s*(animate|set|animateMotion|animateTransform)\b/i, 'an animation'],
+  // `(?:[\w.-]+:)?` because XML allows a namespace prefix: `<s:script>` with
+  // `xmlns:s` bound to SVG is a script element too.
+  [/<\s*(?:[\w.-]+:)?script/i, 'a <script> element'],
+  [/<\s*(?:[\w.-]+:)?foreignObject/i, 'a <foreignObject> element'],
+  [
+    /<\s*(?:[\w.-]+:)?(iframe|embed|object|audio|video)\b/i,
+    'an embedded document',
+  ],
+  [/<\s*(?:[\w.-]+:)?image\b/i, 'an embedded image'],
+  [
+    /<\s*(?:[\w.-]+:)?(animate|set|animateMotion|animateTransform)\b/i,
+    'an animation',
+  ],
   [/<!\s*(ENTITY|DOCTYPE)/i, 'a DTD or entity declaration'],
   [/\son[a-z]+\s*=/i, 'an event-handler attribute'],
   [/(javascript|vbscript)\s*:/i, 'a script URL'],
   [/data\s*:\s*text\/html/i, 'an HTML data URL'],
   [/@import/i, 'a stylesheet import'],
-  // The lookahead takes the optional quote inside it. Outside, `['"]?` can
-  // match nothing and leave the quote for the lookahead to see, which is not
-  // `#` — so `href="#g"` was refused as external.
-  [/url\(\s*(?!['"]?\s*#)/i, 'an external url() reference'],
+  // The lookahead takes the optional quote, and the whitespace before it,
+  // inside it. Outside, `['"]?` or `\s*` can match nothing and leave a quote
+  // or a space for the lookahead to see, which is not `#` — so `href="#g"`
+  // and `href= "#g"` were refused as external.
+  [/url\((?!\s*['"]?\s*#)/i, 'an external url() reference'],
   [
-    /\s(?:xlink:)?href\s*=\s*(?!['"]?\s*#)/i,
+    /\s(?:xlink:)?href\s*=(?!\s*['"]?\s*#)/i,
     'a link to something outside the file',
   ],
 ];

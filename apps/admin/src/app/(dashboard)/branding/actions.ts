@@ -173,23 +173,35 @@ export async function saveInstanceBrandingAction(
   // thing somebody asks about later. The branding belongs to the install,
   // not to an organization, so it is filed as a security event — without
   // one `AuditLog` cannot hold the row and the call throws.
-  await recordAdminAction({
-    admin,
-    action: ADMIN_ACTIONS.instanceBrandingChanged,
-    entityType: 'instance_branding',
-    entityId: 'instance',
-    before: previous,
-    after: stored ?? {
-      requested: {
-        productName: parsed.data.productName,
-        palette: parsed.data.palette,
-        removeLogo: parsed.data.removeLogo,
-        newLogo: Boolean(logo),
+  // The save has already happened in apps/web by now, so a failed audit
+  // write must not turn it into a reported failure.
+  try {
+    await recordAdminAction({
+      admin,
+      action: ADMIN_ACTIONS.instanceBrandingChanged,
+      entityType: 'instance_branding',
+      entityId: 'instance',
+      before: previous,
+      after: stored ?? {
+        requested: {
+          productName: parsed.data.productName,
+          palette: parsed.data.palette,
+          removeLogo: parsed.data.removeLogo,
+          newLogo: Boolean(logo),
+        },
+        outcome,
       },
-      outcome,
-    },
-    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED', severity: 'info' },
-  });
+      securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED', severity: 'info' },
+    });
+  } catch (error) {
+    logger.error(
+      {
+        err: error instanceof Error ? error.message : String(error),
+        outcome,
+      },
+      'Could not audit the instance branding save',
+    );
+  }
 
   revalidatePath('/branding');
   return outcome;
