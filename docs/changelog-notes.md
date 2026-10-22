@@ -99,6 +99,12 @@ archive is the blog.
 
 ### Self-hosting
 
+- `[brief]` **Nightly maintenance now runs on every install without a manual
+  step.** The worker registers its own schedules when it starts — pruning old
+  retrieval analytics and purging expired personal memories — where before
+  they ran only if someone had run a setup script, which a container install
+  or the appliance never did. `WORKER_DISABLED_SCHEDULES` turns one off.
+
 - `[brief]` **The published images stop Prisma's update check on their own.**
   The web, API, worker and admin images now set `CHECKPOINT_DISABLE=1`, so a
   deployment that runs them directly (Railway, a plain `docker run`) no longer

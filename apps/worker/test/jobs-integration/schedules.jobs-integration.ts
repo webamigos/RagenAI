@@ -2,6 +2,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { JobSchedule } from '@ragenai/jobs';
 
+import {
+  RECURRING_SCHEDULES,
+  registerRecurringSchedules,
+} from '../../src/schedules.js';
+
 import { startHarness, traits, type JobRuntimeHarness } from './harness.js';
 
 /**
@@ -89,6 +94,37 @@ describe('schedules', () => {
     // The ensure-scripts are run by hand and re-run without thinking. Three
     // registrations, one schedule.
     await expect(harness.listScheduleIds()).resolves.toEqual([SCHEDULE.id]);
+  });
+
+  /**
+   * The worker registers `RECURRING_SCHEDULES` on every boot, and replicas
+   * boot together on a deploy. Three replicas reconciling at once, then a
+   * fourth restarting later, must leave one scheduler per id — and the
+   * production specs, not this suite's seconds-cadence, are what is sent.
+   */
+  it('several replicas registering the boot list at once leave one schedule per id', async () => {
+    harness = await startHarness();
+    const env = { DEMO_ORGANIZATION_ID: 'org-demo' };
+    const log = { info: () => {}, warn: () => {}, error: () => {} };
+    const ids = RECURRING_SCHEDULES.map((entry) => entry.schedule.id).sort();
+
+    try {
+      const boots = await Promise.all(
+        [1, 2, 3].map(() =>
+          registerRecurringSchedules({ runtime: harness.jobs, log, env }),
+        ),
+      );
+      await registerRecurringSchedules({ runtime: harness.jobs, log, env });
+
+      expect(boots.map((boot) => boot.failed)).toEqual([[], [], []]);
+      await expect(
+        harness.listScheduleIds().then((found) => found.sort()),
+      ).resolves.toEqual(ids);
+    } finally {
+      for (const id of ids) {
+        await harness.jobs.deleteSchedule(id).catch(() => undefined);
+      }
+    }
   });
 
   it('stops firing once the schedule is deleted', async () => {

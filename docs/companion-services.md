@@ -43,6 +43,14 @@ It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 - `runFileEmbeddings` — fetch from storage → parse → chunk → embed → store in Qdrant
 - `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
 
+**Nightly schedules** are registered by the worker itself on every boot under
+BullMQ — `RECURRING_SCHEDULES` in `apps/worker/src/schedules.ts` (the
+analytics retrieval prune, the personal-memory purge, and the demo cleanup
+where `DEMO_ORGANIZATION_ID` is set). Nothing to run on a fresh install;
+`WORKER_DISABLED_SCHEDULES=<id,…>` opts one out, and boot then deletes it. The
+`ensure-*-schedule.ts` scripts in `apps/worker/src/scripts/` remain for
+Temporal deployments and for doing it by hand.
+
 ### ragen-token-vault
 
 Centralized token vault — stores OAuth tokens and API keys with AES-256-GCM encryption. All external connector tokens (Google, ClickUp, HubSpot, etc.) are stored here, not in apps/web.

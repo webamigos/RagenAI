@@ -6,8 +6,8 @@ import type * as activities from '../activities/index.js';
  * Nightly purge of expired personal memories and change rows past the undo
  * window (spec 2026-09-27-personal-memory-across-threads, C4).
  *
- * The schedule that drives it is created by
- * `src/scripts/ensure-memory-purge-schedule.ts`, not here — a schedule is
+ * The schedule that drives it is an entry of `RECURRING_SCHEDULES`
+ * (`src/schedules.ts`), registered at worker boot, not here — a schedule is
  * engine state that outlives the code, as the analytics prune's comment
  * explains. A failed night costs nothing the next night does not recover:
  * the cutoffs come from the clock.

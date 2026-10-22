@@ -21,11 +21,11 @@ import {
  * `getJobRuntime()` without importing this file would get the seam's "no
  * adapter registered" error instead of a client.
  *
- * This app is the one that *runs* jobs, so it barely needs a producer — the
- * two schedule scripts are the whole of it. They need it for the reason the
- * scripts exist at all: a schedule is state in the engine, and which engine
- * that is now follows `WORKER_RUNTIME` rather than being Temporal by
- * construction.
+ * This app is the one that *runs* jobs, so it barely needs a producer —
+ * registering the recurring schedules (`schedules-at-boot.ts`, and the
+ * `ensure-*-schedule.ts` scripts) is the whole of it. A schedule is state in
+ * the engine, and which engine that is follows `WORKER_RUNTIME` rather than
+ * being Temporal by construction.
  *
  * **This is the only application that can load the Temporal adapter at all**,
  * which is the difference from `apps/web` and `apps/api`. Both of those

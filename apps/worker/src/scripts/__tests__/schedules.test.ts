@@ -1,3 +1,7 @@
+import { readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -10,7 +14,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  */
 
 const upsertSchedule = vi.hoisted(() =>
-  vi.fn(async (_schedule: { cron: string }) => undefined),
+  vi.fn(async (_schedule: { id: string; cron: string }) => undefined),
 );
 const deleteSchedule = vi.hoisted(() =>
   vi.fn(async (_id: string) => undefined),
@@ -145,5 +149,105 @@ describe.each([
     await run(script);
     expect(closeJobs).toHaveBeenCalledTimes(1);
     process.exitCode = exitCode;
+  });
+});
+
+const SCRIPTS = readdirSync(join(dirname(fileURLToPath(import.meta.url)), '..'))
+  .filter((file) => /^ensure-.+-schedule\.ts$/.test(file))
+  .map((file) => `../${file.replace(/\.ts$/, '.js')}`)
+  .sort();
+
+/**
+ * The worker registers `RECURRING_SCHEDULES` at boot, so a script whose
+ * schedule is not in that list is the bug the list was made to fix: a
+ * schedule that exists only where somebody ran a script. Each script must
+ * register exactly one entry of the list — and each entry must have a script,
+ * so an operator can always register or roll one back by hand.
+ */
+describe('ensure-*-schedule scripts and the boot list', () => {
+  it('finds the scripts', () => {
+    expect(SCRIPTS.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(SCRIPTS)(
+    '%s registers an entry of RECURRING_SCHEDULES',
+    async (script) => {
+      const { RECURRING_SCHEDULES } = await import('../../schedules.js');
+
+      await run(script);
+
+      expect(upsertSchedule).toHaveBeenCalledTimes(1);
+      expect(RECURRING_SCHEDULES.map((entry) => entry.schedule)).toContainEqual(
+        upsertSchedule.mock.calls[0]?.[0],
+      );
+    },
+  );
+
+  it('has a script for every entry of the list', async () => {
+    const registered: string[] = [];
+    for (const script of SCRIPTS) {
+      vi.clearAllMocks();
+      vi.resetModules();
+      await run(script);
+      const schedule = upsertSchedule.mock.calls[0]?.[0];
+      if (schedule) {
+        registered.push(schedule.id);
+      }
+    }
+    const { RECURRING_SCHEDULES } = await import('../../schedules.js');
+    expect(registered.sort()).toEqual(
+      RECURRING_SCHEDULES.map((entry) => entry.schedule.id).sort(),
+    );
+  });
+});
+
+describe('ensure-demo-cleanup-schedule without DEMO_ORGANIZATION_ID', () => {
+  // The boot list skips it for the same reason; the script refuses outright,
+  // since an operator running it asked for something that cannot work.
+  it('refuses rather than registering', async () => {
+    delete process.env.DEMO_ORGANIZATION_ID;
+    const exitCode = process.exitCode;
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await run('../ensure-demo-cleanup-schedule.js');
+
+    expect(upsertSchedule).not.toHaveBeenCalled();
+    expect(process.exitCode).toBe(1);
+    process.exitCode = exitCode;
+    error.mockRestore();
+  });
+});
+
+describe('--delete and the boot list', () => {
+  /**
+   * Boot re-registers every schedule in the list, so a bare `--delete` lasts
+   * until the next restart. The script says so, and names the opt-out.
+   */
+  it('says the worker re-creates the schedule unless it is opted out', async () => {
+    process.argv = ['node', 'script', '--delete'];
+    delete process.env.WORKER_DISABLED_SCHEDULES;
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await run('../ensure-memory-purge-schedule.js');
+
+    expect(log.mock.calls.flat().join('\n')).toContain(
+      'WORKER_DISABLED_SCHEDULES',
+    );
+    log.mockRestore();
+  });
+
+  it('says nothing more once the opt-out names it', async () => {
+    process.argv = ['node', 'script', '--delete'];
+    process.env.WORKER_DISABLED_SCHEDULES = 'personal-memory-purge';
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await run('../ensure-memory-purge-schedule.js');
+
+    expect(deleteSchedule).toHaveBeenCalledWith('personal-memory-purge');
+    expect(log.mock.calls.flat().join('\n')).not.toContain(
+      'registers it again',
+    );
+    log.mockRestore();
+    delete process.env.WORKER_DISABLED_SCHEDULES;
   });
 });
