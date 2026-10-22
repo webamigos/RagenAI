@@ -78,6 +78,7 @@ archive is the blog.
 ## Unreleased
 
 - [major] Organizations can now decide how long conversations are kept. On the organization's Settings page an owner or admin picks 30, 90, 180 or 365 days, and a daily job permanently deletes every thread with no new message for that long — with its messages, sources, shares and public link. Off by default, so nothing changes until someone chooses a period, and enabling or shortening it asks for confirmation first. Thread: Ragen as an on-premises appliance — "how long do you keep it" is the first data-protection question.
+- [brief] Running Ragen in containers: `APP_URL` in `.env.local` now reaches the web container, so invitation links, emails and the company sign-in callback can name the real host instead of always `localhost`. PII masking works in containers too: add `-f docker-compose.pii.yml`, which starts Presidio and points the apps at it. Before, the container stack overwrote both settings, and masking an operator had turned on was silently off. Masking stays opt-in, and the appliance template no longer turns it on by default. Thread: on-premises appliance. ([PR #1670](https://github.com/webamigos/RagenAI/pull/1670))
 
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
