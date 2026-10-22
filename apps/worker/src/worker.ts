@@ -68,9 +68,27 @@ async function runBullMq(): Promise<void> {
     await dashboard?.close();
   });
 
+  // After the drain is registered, so a registration stuck on a Redis blip
+  // can never stand between a SIGTERM and the workers closing.
+  await registerSchedulesAtBoot();
+
   // Nothing left to await. The workers hold their connections, so the process
   // stays alive, and shutdown belongs to the owner above.
   await new Promise<never>(() => {});
+}
+
+/**
+ * Register every recurring schedule the worker owns (`schedules.ts`). Never
+ * fatal, like the Docling status below — see `schedules-at-boot.ts`.
+ */
+async function registerSchedulesAtBoot(): Promise<void> {
+  try {
+    const { registerSchedulesAtBoot: register } =
+      await import('./schedules-at-boot.js');
+    await register();
+  } catch (err) {
+    logger.error({ err }, 'recurring schedules were not registered');
+  }
 }
 
 async function run() {
