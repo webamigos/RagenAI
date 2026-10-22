@@ -843,7 +843,9 @@ async function main(): Promise<void> {
     ...generatedSecrets(),
     INTERNAL_API_SECRET: secret,
     ENCRYPTION_MASTER_KEY: randomBytes(32).toString('hex'),
-    // Not in this pass: Presidio is a profile of its own (`--profile pii`).
+    // Not in this pass: PII masking is opt-in (`-f docker-compose.pii.yml`),
+    // and Presidio's own traffic is not checked yet. Pinned off, so an
+    // example that someday turns it on does not change what this pass covers.
     FEATURE_FLAG_PII_MASKING: '0',
     PRESIDIO_ANALYZER_URL: '',
     PRESIDIO_ANONYMIZER_URL: '',

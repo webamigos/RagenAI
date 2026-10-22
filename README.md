@@ -291,6 +291,12 @@ admin), migrates and seeds the database itself, and starts them alongside
 Postgres, Qdrant, Redis and Docling. Already have the repo cloned and a
 `.env.local`? `npm run ragen:up:everything` on its own does the same.
 
+Set `APP_URL` in `.env.local` to the address people will use; invitation
+links and emails are built from it. PII masking is opt-in: in containers, add
+`-f docker-compose.pii.yml` to `docker compose -f docker-compose.yml -f
+docker-compose.fullapp.yml up`, which starts Presidio and points the apps at
+it ([details](docs/companion-services.md#everything-in-containers-ragenupeverything)).
+
 Each image carries four tags — the full version, the minor series, the exact
 commit (`sha-…`) and `latest`, which is what the stack pulls unless
 `RAGEN_VERSION` in `.env` names another. Pin production to the `sha-` tag; the

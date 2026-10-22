@@ -40,6 +40,7 @@ import {
 import {
   resolvePiiMaskingSelection,
   PII_COMPOSE_PROFILE,
+  PII_CONTAINER_COMPOSE_FILE,
   type PiiMaskingSelection,
 } from './pii-masking';
 import { generateSecret } from './secrets';
@@ -360,7 +361,10 @@ export async function run(argv: string[]): Promise<boolean> {
         '` profile, so start the stack with `' +
         composeUpCommand(composeProfiles) +
         '` — a plain `up` skips those two containers and the app would ' +
-        'point at services nobody started.',
+        'point at services nobody started. With the apps in containers, add `-f ' +
+        PII_CONTAINER_COMPOSE_FILE +
+        '` to the full-app command instead: the Presidio URLs in .env.local ' +
+        'are localhost ones, for apps on the host.',
     );
   }
 
@@ -393,7 +397,9 @@ export async function run(argv: string[]): Promise<boolean> {
   }
 
   clack.outro(
-    args.skipInstall ? containerOutro(targetDir) : hostOutro(targetDir),
+    args.skipInstall
+      ? containerOutro(targetDir, piiMasking.enabled)
+      : hostOutro(targetDir),
   );
 
   return true;
@@ -405,11 +411,17 @@ export async function run(argv: string[]): Promise<boolean> {
  * full-app stack is the path that needs neither: its `migrate` service does
  * both, and its containers read the `.env.local` just written.
  */
-function containerOutro(targetDir: string): string {
+function containerOutro(targetDir: string, piiMasking: boolean): string {
+  // With masking on, the overlay is part of the command: `ragen:up:everything`
+  // alone starts no Presidio, and the localhost URLs in .env.local point at
+  // nothing inside a container, so chat would fail closed.
+  const start = piiMasking
+    ? `docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f ${PII_CONTAINER_COMPOSE_FILE} up`
+    : 'npm run ragen:up:everything';
   return [
     'Done. Start everything in containers:',
     `  cd ${targetDir}`,
-    '  npm run ragen:up:everything',
+    `  ${start}`,
     '',
     'It pulls the release images, migrates the database itself and reads',
     'the .env.local written here.',

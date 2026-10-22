@@ -77,6 +77,8 @@ archive is the blog.
 
 ## Unreleased
 
+- [brief] Running Ragen in containers: `APP_URL` in `.env.local` now reaches the web container, so invitation links, emails and the company sign-in callback can name the real host instead of always `localhost`. PII masking works in containers too: add `-f docker-compose.pii.yml`, which starts Presidio and points the apps at it. Before, the container stack overwrote both settings, and masking an operator had turned on was silently off. Masking stays opt-in, and the appliance template no longer turns it on by default. Thread: on-premises appliance. ([PR #1670](https://github.com/webamigos/RagenAI/pull/1670))
+
 - [brief] Thread: on-premises appliance. An operations runbook for the appliance (`docs/appliance-runbook.md`): install, proving nothing leaves the machine, backup and restore of Postgres, Qdrant and documents, upgrade and rollback, and swapping a model — including the full re-index an embedding change needs. Offline upgrades and the first-line support role follow with the offline bundle and the support channel.
 
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
