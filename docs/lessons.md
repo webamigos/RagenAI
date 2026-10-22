@@ -165,6 +165,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [A structured-output schema with length limits and array bounds is refused by Vertex, and every unit test passes](lessons/a-structured-output-schema-with-limits-is-refused-by-vertex.md)
 - [`Agent.close()` waits for the response body, so closing a guarded dispatcher before the caller reads it hangs on anything bigger than the socket buffer](lessons/closing-a-dispatcher-waits-for-a-body-nobody-is-reading.md)
 - [A connector manifest with no `authType` takes the popup OAuth branch, so moving it into data as `SERVER_SIDE` removes its authorization step](lessons/an-unset-auth-type-is-oauth-not-server-side.md)
+- [Better Auth redirects a refused OAuth callback only when the APIError carries a code — without one the browser is left on a JSON page](lessons/an-oauth-refusal-without-a-code-is-a-json-page.md)
 
 - [A file extension can be a TLD, so linkify turns a cited filename into an external link](lessons/a-file-extension-can-be-a-tld.md)
 

@@ -1,4 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { test, expect } from '@playwright/test';
+import {
+  REGISTRATION_ENABLED_KEY,
+  registrationSettingValue,
+} from '@ragenai/platform-contracts';
 
 import { TEST_ORG_ID } from './constants';
 import { ROUTES } from './helpers';
@@ -16,11 +24,25 @@ import { ROUTES } from './helpers';
 
 const ISSUER = 'http://localhost:4300';
 
-async function nextIdentity(email: string) {
+// The sign-in page under ROUTES.signIn is Polish. Read, not imported: this
+// suite is ESM, and a JSON import needs an import attribute Playwright's
+// loader does not add.
+const HERE = dirname(fileURLToPath(import.meta.url));
+const signInMessages = (
+  JSON.parse(
+    readFileSync(join(HERE, '..', 'src', 'app', 'messages', 'pl.json'), 'utf8'),
+  ) as { 'sign-in': Record<string, string> }
+)['sign-in'];
+
+async function nextIdentity(email: string, emailVerified = true) {
   const response = await fetch(`${ISSUER}/__identity`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, email_verified: true, name: 'SSO Tester' }),
+    body: JSON.stringify({
+      email,
+      email_verified: emailVerified,
+      name: 'SSO Tester',
+    }),
   });
   expect(response.ok).toBe(true);
 }
@@ -94,8 +116,71 @@ test.describe('P0 — company sign-in (OIDC)', () => {
     await page.goto(ROUTES.signIn);
     await page.getByTestId('sign-in-sso').click();
 
-    await expect(page).toHaveURL(/sign-in.*error=/, { timeout: 30_000 });
-    await expect(page.getByTestId('sign-in-sso-error')).toBeVisible();
+    // Back on the sign-in page — not on the callback URL showing JSON — with
+    // the sentence for this refusal rather than a generic one.
+    await expect(page).toHaveURL(
+      /\/pl\/sign-in\?.*error=oidc_domain_not_allowed/,
+      {
+        timeout: 30_000,
+      },
+    );
+    const alert = page.getByTestId('sign-in-sso-error');
+    await expect(alert).toHaveAttribute(
+      'data-error',
+      'oidc_domain_not_allowed',
+    );
+    await expect(alert).toHaveText(signInMessages['sso-error-domain']);
+
+    const user = await withPrisma((prisma) =>
+      prisma.user.findUnique({ where: { email }, select: { id: true } }),
+    );
+    expect(user).toBeNull();
+  });
+
+  test('with registration closed, an address the issuer did not verify is refused on the sign-in page and no account is created', async ({
+    page,
+  }) => {
+    // The path found against a real Entra tenant on 2026-10-19: the refusal
+    // comes from the user-create hook, which Better Auth used to answer with
+    // a JSON body on /api/auth/callback/oidc. Closed registration is what puts
+    // the hook in the way; the suite seeds it open, so this test closes it and
+    // puts it back. Workers are 1 and the suite is not parallel, so no other
+    // spec sees it closed.
+    const email = `unverified-${Date.now()}@oidc-e2e.test`;
+    await nextIdentity(email, false);
+
+    const setRegistration = (enabled: boolean) =>
+      withPrisma((prisma) =>
+        prisma.settings.upsert({
+          where: { key: REGISTRATION_ENABLED_KEY },
+          create: {
+            key: REGISTRATION_ENABLED_KEY,
+            value: registrationSettingValue(enabled),
+          },
+          update: { value: registrationSettingValue(enabled) },
+        }),
+      );
+
+    await setRegistration(false);
+    try {
+      await page.goto(ROUTES.signIn);
+      await page.getByTestId('sign-in-sso').click();
+
+      await expect(page).toHaveURL(
+        /\/pl\/sign-in\?.*error=oidc_email_not_verified/,
+        { timeout: 30_000 },
+      );
+      const alert = page.getByTestId('sign-in-sso-error');
+      await expect(alert).toHaveAttribute(
+        'data-error',
+        'oidc_email_not_verified',
+      );
+      await expect(alert).toHaveText(
+        signInMessages['sso-error-email-not-verified'],
+      );
+    } finally {
+      await setRegistration(true);
+    }
 
     const user = await withPrisma((prisma) =>
       prisma.user.findUnique({ where: { email }, select: { id: true } }),

@@ -7,11 +7,24 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { basename, delimiter, join, resolve } from 'node:path';
 
 import * as clack from '@clack/prompts';
 import { parse as parseDotenv } from 'dotenv';
 
+import {
+  APPLIANCE_PROFILES,
+  APPLIANCE_TIERS,
+  availableApplianceProfiles,
+  composeFileValue,
+  DEFAULT_APPLIANCE_TIER,
+  findOffMachineRoutes,
+  findUnroutedModels,
+  renderApplianceRouteTable,
+  resolveApplianceSelection,
+  type ApplianceProfileId,
+  type ApplianceSelection,
+} from './appliance';
 import { DEFAULT_TARGET_DIR, parseArgs, type CliArgs } from './args';
 import { cloneRagenApp } from './clone';
 import { writeRagenConfig } from './config-file';
@@ -91,7 +104,12 @@ const ENV_PATHS: Record<EnvTarget, { example: string; local: string }> = {
  */
 type LlmProviderPromptResult =
   | { cancelled: true }
-  | { cancelled: false; choice: LlmProviderChoiceResult | undefined };
+  | {
+      cancelled: false;
+      choice: LlmProviderChoiceResult | undefined;
+      /** Set instead of `choice` when the answer was "models on this machine". */
+      appliance?: ApplianceSelection;
+    };
 
 /**
  * Returns whether the install ran to completion, so `index.ts` can exit
@@ -109,7 +127,7 @@ export async function run(argv: string[]): Promise<boolean> {
   // check is to cost nothing when it fails.
   const nodeVersion = checkNodeVersion({
     version: process.version,
-    willRunSetup: !args.skipInstall,
+    willRunSetup: !args.skipInstall && !args.appliance,
   });
 
   if (nodeVersion.kind === 'refuse') {
@@ -155,11 +173,35 @@ export async function run(argv: string[]): Promise<boolean> {
     Object.assign(rootOverrides, llmChoice.envUpdates);
   }
 
+  // Checked before anything is written. The route file comes from whatever
+  // `--ref` cloned, and the appliance's promise is that nothing leaves the
+  // machine — so the table is read and judged here, not trusted.
+  const appliance = llmPrompt.appliance;
+  let applianceRouteTable: string | undefined;
+  if (appliance) {
+    const prepared = prepareAppliance(targetDir, appliance);
+    if (!prepared.ok) {
+      clack.cancel(prepared.message);
+      return false;
+    }
+    applianceRouteTable = prepared.routeTable;
+    Object.assign(rootOverrides, appliance.envUpdates);
+  }
+
+  // An appliance answers the remaining questions itself, with the answers
+  // that keep it on the machine: files on local disk and a local encryption
+  // key (the alternatives offered are cloud services), and BullMQ on the
+  // stack's own Redis (Temporal is a server somewhere else). PII masking
+  // stays off, as for any unattended install: turning it on in the container
+  // stack means adding `docker-compose.pii.yml` to the profile, which this
+  // wizard does not do yet.
+  const unattended = isUnattended(args) || appliance !== undefined;
+
   // Storage and encryption were skipped by every earlier version of this
   // wizard, and both are worse to answer later than now: turning encryption on
   // afterwards leaves everything already written in plaintext, because nothing
   // re-encrypts history, and moving storage strands the files already uploaded.
-  const storagePrompt = await resolveStorage(args);
+  const storagePrompt = await resolveStorage(unattended);
   if (storagePrompt.cancelled) {
     clack.cancel('Cancelled.');
     return false;
@@ -175,13 +217,13 @@ export async function run(argv: string[]): Promise<boolean> {
     existingComposeEnv,
   );
 
-  const encryptionPrompt = await resolveEncryption(args);
+  const encryptionPrompt = await resolveEncryption(unattended);
   if (encryptionPrompt.cancelled) {
     clack.cancel('Cancelled.');
     return false;
   }
 
-  const piiPrompt = await resolvePiiMasking(args);
+  const piiPrompt = await resolvePiiMasking(unattended);
   if (piiPrompt.cancelled) {
     clack.cancel('Cancelled.');
     return false;
@@ -193,7 +235,7 @@ export async function run(argv: string[]): Promise<boolean> {
   // also what configures the queue dashboard — and an install that picked the
   // runtime but not the dashboard would have no view of its own queues, which
   // is what the Temporal UI gave away for free.
-  const runtimePrompt = await resolveWorkerRuntime(args);
+  const runtimePrompt = await resolveWorkerRuntime(unattended);
   if (runtimePrompt.cancelled) {
     clack.cancel('Cancelled.');
     return false;
@@ -241,6 +283,7 @@ export async function run(argv: string[]): Promise<boolean> {
   const composeEnvWritten = await writeComposeEnv(
     targetDir,
     storage.composeEnv,
+    appliance?.composeFiles,
   );
 
   if (storage.choice === 'rustfs' && composeEnvWritten) {
@@ -284,7 +327,9 @@ export async function run(argv: string[]): Promise<boolean> {
     );
   }
 
-  if (llmChoice) {
+  if (applianceRouteTable !== undefined) {
+    writeFileSync(join(targetDir, ROUTE_TABLE_PATH), applianceRouteTable);
+  } else if (llmChoice) {
     // The route table is the whole of it now: B6 removed the proxy, so there
     // is no second file to keep in step and no rollback that needs one.
     writeRouteTable(targetDir, llmChoice.routes);
@@ -326,10 +371,15 @@ export async function run(argv: string[]): Promise<boolean> {
       targetDir,
       args.yes,
       composeProfiles,
+      appliance,
     ));
   }
 
-  if (!args.skipInstall) {
+  // An appliance runs every app in containers: the stack's `migrate` service
+  // migrates the database, and nothing needs a toolchain on the host. Running
+  // the host setup as well would install the monorepo for processes nobody
+  // starts.
+  if (!args.skipInstall && !appliance) {
     // prisma.config.ts reads DATABASE_URL from process.env directly, and
     // unlike `npm run db:seed` (tsx --env-file=.env.local), plain
     // `npm run generate:types` / `npx prisma migrate deploy` don't load
@@ -397,12 +447,25 @@ export async function run(argv: string[]): Promise<boolean> {
   }
 
   clack.outro(
-    args.skipInstall
-      ? containerOutro(targetDir, piiMasking.enabled)
-      : hostOutro(targetDir),
+    outroFor(targetDir, args, appliance, composeProfiles, piiMasking.enabled),
   );
 
   return true;
+}
+
+function outroFor(
+  targetDir: string,
+  args: CliArgs,
+  appliance: ApplianceSelection | undefined,
+  profiles: readonly string[],
+  piiMasking: boolean,
+): string {
+  if (appliance) {
+    return applianceOutro(targetDir, appliance, profiles);
+  }
+  return args.skipInstall
+    ? containerOutro(targetDir, piiMasking)
+    : hostOutro(targetDir);
 }
 
 /**
@@ -425,6 +488,37 @@ function containerOutro(targetDir: string, piiMasking: boolean): string {
     '',
     'It pulls the release images, migrates the database itself and reads',
     'the .env.local written here.',
+    '',
+    'App:   http://localhost:3000',
+    'Admin: http://localhost:3200',
+  ].join('\n');
+}
+
+/**
+ * The appliance's next steps. The command names every compose file even
+ * though `.env` carries them as `COMPOSE_FILE`: it is the one that works
+ * whether or not that write succeeded.
+ */
+function applianceOutro(
+  targetDir: string,
+  appliance: ApplianceSelection,
+  profiles: readonly string[],
+): string {
+  const { profile, tier } = appliance;
+  return [
+    'Done. Start the appliance:',
+    `  cd ${targetDir}`,
+    `  ${composeUpCommand(profiles, appliance.composeFiles)}`,
+    '',
+    `The first start pulls about ${tier.firstPullGb} GB of models into the`,
+    'ollama_models volume, which needs the internet once. Later starts need',
+    'none. The apps wait for the pull, so the first start takes a while.',
+    '',
+    `Profile: ${profile.id} — every model runs on this machine.`,
+    `Tier:    ${tier.id}${tier.measured ? '' : ' — sizing not yet measured on real hardware'}`,
+    '',
+    'To prove nothing leaves the machine: npm run appliance:egress-check',
+    'How it is put together: infra/appliance/README.md',
     '',
     'App:   http://localhost:3000',
     'Admin: http://localhost:3200',
@@ -557,6 +651,7 @@ function overridesForTarget(
 async function writeComposeEnv(
   targetDir: string,
   composeEnv: Record<string, string>,
+  composeFiles?: readonly string[],
 ): Promise<boolean> {
   const path = join(targetDir, '.env');
   const file = readComposeEnv(targetDir);
@@ -588,6 +683,23 @@ async function writeComposeEnv(
       '# the same pair from .env.local as S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY,',
       '# so change both files or neither.',
       ...missing.map(([key, value]) => `${key}=${value}`),
+    ]);
+  }
+
+  // The appliance's compose files, so `docker compose ps`, `logs` and `down`
+  // typed next month address the same stack — Ollama included — without a
+  // `-f` anyone has to remember. Kept when already set, like everything else
+  // in this file.
+  const composeFile =
+    composeFiles && !file.values.COMPOSE_FILE?.trim()
+      ? composeFileValue(composeFiles, delimiter)
+      : undefined;
+  if (composeFile) {
+    blocks.push([
+      '# The appliance (create-ragen-app). Compose reads this on every command',
+      '# run in this directory, so a plain `docker compose up -d` starts the',
+      '# whole appliance stack, the local model server included.',
+      `COMPOSE_FILE=${composeFile}`,
     ]);
   }
 
@@ -627,6 +739,12 @@ async function writeComposeEnv(
               "compose's public defaults and refuses the keys in .env.local —",
               'copy S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY from there into .env',
               'under those two names.',
+            ]
+          : []),
+        ...(composeFile
+          ? [
+              'Without COMPOSE_FILE, a plain `docker compose` addresses the',
+              'standard stack, not the appliance — pass every -f by hand.',
             ]
           : []),
         'Add the lines by hand before starting the stack.',
@@ -722,9 +840,15 @@ type EncryptionPromptResult =
  *
  * A person who would rather not type an API key into a CLI, and does want to
  * be asked about storage, omits the flag and exports the key instead.
+ *
+ * `--appliance` is the same kind of flag for the same reason. An appliance
+ * chosen at the prompt is unattended past that point too, but by `run`, not
+ * here: it answers the later questions with the on-machine choices.
  */
 function isUnattended(args: CliArgs): boolean {
-  return args.yes || args.provider !== undefined;
+  return (
+    args.yes || args.provider !== undefined || args.appliance !== undefined
+  );
 }
 
 /**
@@ -736,8 +860,10 @@ function isUnattended(args: CliArgs): boolean {
  * the wizard writes itself — where the cost of not having it is that every
  * message written before someone thinks to turn it on stays readable forever.
  */
-async function resolveStorage(args: CliArgs): Promise<StoragePromptResult> {
-  if (isUnattended(args)) {
+async function resolveStorage(
+  unattended: boolean,
+): Promise<StoragePromptResult> {
+  if (unattended) {
     return { cancelled: false, selection: resolveStorageSelection('local') };
   }
   return promptStorage();
@@ -754,8 +880,10 @@ type PiiPromptResult =
  * for anyone who passed `--yes` would nearly double what a trial install needs
  * to run, for a feature most evaluations never reach.
  */
-async function resolvePiiMasking(args: CliArgs): Promise<PiiPromptResult> {
-  if (isUnattended(args)) {
+async function resolvePiiMasking(
+  unattended: boolean,
+): Promise<PiiPromptResult> {
+  if (unattended) {
     return { cancelled: false, selection: resolvePiiMaskingSelection(false) };
   }
 
@@ -776,9 +904,9 @@ async function resolvePiiMasking(args: CliArgs): Promise<PiiPromptResult> {
 }
 
 async function resolveEncryption(
-  args: CliArgs,
+  unattended: boolean,
 ): Promise<EncryptionPromptResult> {
-  if (isUnattended(args)) {
+  if (unattended) {
     return { cancelled: false, selection: resolveEncryptionSelection('local') };
   }
   return promptEncryption();
@@ -798,9 +926,9 @@ type WorkerRuntimePromptResult =
  * answers the prompt, and brings its own address with it.
  */
 async function resolveWorkerRuntime(
-  args: CliArgs,
+  unattended: boolean,
 ): Promise<WorkerRuntimePromptResult> {
-  if (isUnattended(args)) {
+  if (unattended) {
     return {
       cancelled: false,
       selection: resolveWorkerRuntimeSelection('bullmq'),
@@ -999,20 +1127,23 @@ async function promptEncryption(): Promise<EncryptionPromptResult> {
 }
 
 /**
- * Three ways to arrive at a provider, in precedence order: named on the
- * command line with the key in the environment, declined wholesale by
- * `--yes`, or asked for.
+ * Four ways to arrive at a provider, in precedence order: an appliance named
+ * on the command line, a provider named there with the key in the
+ * environment, declined wholesale by `--yes`, or asked for.
  */
 async function resolveLlmProvider(
   args: CliArgs,
 ): Promise<LlmProviderPromptResult> {
+  if (args.appliance) {
+    return applianceFromFlags(args.appliance, args);
+  }
   if (args.provider) {
     return providerFromEnvironment(args.provider);
   }
   if (args.yes) {
     return { cancelled: false, choice: undefined };
   }
-  return promptLlmProvider();
+  return promptLlmProvider(args);
 }
 
 /**
@@ -1063,7 +1194,9 @@ function providerFromEnvironment(
   };
 }
 
-async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
+async function promptLlmProvider(
+  args: CliArgs,
+): Promise<LlmProviderPromptResult> {
   const choice = await clack.select({
     message: 'Which LLM provider should power chat?',
     // Ordered by how far one key gets a new install, not by vendor fame. The
@@ -1074,6 +1207,10 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
       { value: 'scaleway' as const, label: LLM_PROVIDERS.scaleway.label },
       { value: 'openai' as const, label: LLM_PROVIDERS.openai.label },
       { value: 'anthropic' as const, label: LLM_PROVIDERS.anthropic.label },
+      {
+        value: 'appliance' as const,
+        label: 'Models on this machine — an on-premises appliance, no API key',
+      },
       { value: 'skip' as const, label: 'I will configure the routes myself' },
     ],
   });
@@ -1083,6 +1220,9 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
   }
   if (choice === 'skip') {
     return { cancelled: false, choice: undefined };
+  }
+  if (choice === 'appliance') {
+    return promptAppliance(args);
   }
 
   const config = LLM_PROVIDERS[choice as LlmProviderChoice];
@@ -1125,6 +1265,190 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
       baseUrl,
     ),
   };
+}
+
+/**
+ * `--appliance` answers the whole model question: the profile from the flag,
+ * the tier from `--tier` or the default, the GPU from `--gpu`. Nothing is
+ * asked, for the reason `--provider` asks nothing — CI cannot answer.
+ */
+function applianceFromFlags(
+  profile: ApplianceProfileId,
+  args: CliArgs,
+): LlmProviderPromptResult {
+  const selection = resolveApplianceSelection(
+    profile,
+    args.tier ?? DEFAULT_APPLIANCE_TIER,
+    { gpu: args.gpu },
+  );
+  warnIfUnmeasured(selection);
+  return { cancelled: false, choice: undefined, appliance: selection };
+}
+
+/**
+ * Local or hybrid, then the tier, then the GPU. A question with one possible
+ * answer is not asked — it is said — so today the profile and the tier are
+ * both announced rather than chosen. They stay questions in the code: a
+ * second available profile or tier is a row in `appliance.ts`, and the
+ * select appears by itself.
+ */
+async function promptAppliance(
+  args: CliArgs,
+): Promise<LlmProviderPromptResult> {
+  for (const profile of APPLIANCE_PROFILES) {
+    if (!profile.available) {
+      clack.log.info(
+        `${profile.label}: not available yet — ${profile.unavailableReason}.`,
+      );
+    }
+  }
+
+  const profileId = await chooseOne(
+    'Which appliance profile?',
+    availableApplianceProfiles(),
+    'Appliance profile',
+  );
+  if (profileId === undefined) {
+    return { cancelled: true };
+  }
+
+  const tierId = await chooseOne(
+    'Which model tier?',
+    APPLIANCE_TIERS,
+    'Model tier',
+  );
+  if (tierId === undefined) {
+    return { cancelled: true };
+  }
+
+  let gpu = args.gpu;
+  if (!gpu) {
+    // Off unless said otherwise: Compose refuses to start a service whose GPU
+    // reservation the host cannot meet, so a wrong "yes" is a stack that does
+    // not start, and a wrong "no" is one that runs slowly on the CPU.
+    const answer = await clack.confirm({
+      message:
+        'Does this machine have an NVIDIA GPU with the NVIDIA Container Toolkit installed?',
+      initialValue: false,
+    });
+    if (clack.isCancel(answer)) {
+      return { cancelled: true };
+    }
+    gpu = answer === true;
+  }
+
+  const selection = resolveApplianceSelection(profileId, tierId, { gpu });
+  warnIfUnmeasured(selection);
+  return { cancelled: false, choice: undefined, appliance: selection };
+}
+
+/**
+ * A select over `options`, or — when there is only one — a line saying which
+ * it is. Undefined means the person cancelled.
+ */
+async function chooseOne<Id extends string>(
+  message: string,
+  options: ReadonlyArray<{ id: Id; label: string }>,
+  name: string,
+): Promise<Id | undefined> {
+  const [only] = options;
+  if (options.length === 1 && only) {
+    clack.log.info(`${name}: ${only.label}.`);
+    return only.id;
+  }
+  // `string`, not `Id`: clack's `Option<Value>` is a conditional type that a
+  // generic parameter cannot be checked against. The values are the ids.
+  const answer = await clack.select<string>({
+    message,
+    options: options.map((option) => ({
+      value: option.id as string,
+      label: option.label,
+    })),
+  });
+  if (clack.isCancel(answer)) {
+    return undefined;
+  }
+  return answer as Id;
+}
+
+/**
+ * Said every time, because the spec offers no tier without measured numbers
+ * (A5) and this one has none: whether the machine is big enough is a guess
+ * until then, and the person installing should know it is one.
+ */
+function warnIfUnmeasured(selection: ApplianceSelection): void {
+  if (selection.tier.measured) {
+    return;
+  }
+  clack.log.warn(
+    [
+      `The ${selection.tier.id} tier is not yet measured on real hardware, so`,
+      'nobody can yet say which machine it needs or how many people it serves.',
+      'It is the configuration the appliance ships today; the sizing table',
+      'comes with step A5 of the appliance spec.',
+    ].join(' '),
+  );
+}
+
+type PreparedAppliance =
+  { ok: true; routeTable: string } | { ok: false; message: string };
+
+/**
+ * Reads the cloned tree's appliance files and decides whether this install
+ * can be an appliance at all.
+ *
+ * Three ways it cannot, each a stop rather than a warning: a `--ref` older
+ * than the appliance (the files are not there), a route table with a route
+ * that leaves the machine, and one that does not route a model the env is
+ * about to select. The second is the one that matters — scaffolding it would
+ * be an appliance that sends model calls somewhere, which is the one thing
+ * it promises not to do.
+ */
+function prepareAppliance(
+  targetDir: string,
+  selection: ApplianceSelection,
+): PreparedAppliance {
+  const { tier } = selection;
+  const missing = [tier.routeFile, ...selection.composeFiles].filter(
+    (file) => !existsSync(join(targetDir, file)),
+  );
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      message: `This checkout has no appliance files (${missing.join(', ')} missing). The --ref you cloned is probably older than the appliance; use a newer one.`,
+    };
+  }
+
+  let source: string;
+  try {
+    source = readFileSync(join(targetDir, tier.routeFile), 'utf8');
+  } catch (error) {
+    return {
+      ok: false,
+      message: `Could not read ${tier.routeFile}: ${String(error)}`,
+    };
+  }
+
+  const offMachine = findOffMachineRoutes(source, tier.localConnections);
+  if (offMachine.length > 0) {
+    return {
+      ok: false,
+      message: [
+        `${tier.routeFile} has routes that would leave this machine, so it cannot be installed as an appliance:`,
+        ...offMachine.map((problem) => `  - ${problem}`),
+      ].join('\n'),
+    };
+  }
+
+  const unrouted = findUnroutedModels(source, selection.envUpdates);
+  if (unrouted.length > 0) {
+    return {
+      ok: false,
+      message: `${tier.routeFile} does not route ${unrouted.join(', ')}, which the ${tier.id} tier selects — every call to it would fail.`,
+    };
+  }
+
+  return { ok: true, routeTable: renderApplianceRouteTable(source, selection) };
 }
 
 /**
@@ -1180,8 +1504,10 @@ async function maybeStartDocker(
   targetDir: string,
   yes: boolean,
   profiles: string[] = [],
+  appliance?: ApplianceSelection,
 ): Promise<{ failed: boolean }> {
-  const composeUp = composeUpCommand(profiles);
+  const files = appliance?.composeFiles ?? [];
+  const composeUp = composeUpCommand(profiles, files);
 
   // Before the confirm, not after: starting a stack onto ports something else
   // already answers on is the kind of thing to decline, and you can only
@@ -1232,7 +1558,9 @@ async function maybeStartDocker(
   }
 
   const proceed = await confirmOrSkip(
-    'Start the backing services now? (Postgres, Qdrant, Redis, …)',
+    appliance
+      ? `Start the appliance now? The first start pulls the release images and about ${appliance.tier.firstPullGb} GB of models.`
+      : 'Start the backing services now? (Postgres, Qdrant, Redis, …)',
     yes,
   );
   if (!proceed) {
@@ -1247,11 +1575,21 @@ async function maybeStartDocker(
   }
 
   const spinner = clack.spinner();
-  spinner.start('Starting docker compose (Postgres, Qdrant, Redis, …)');
+  spinner.start(
+    appliance
+      ? 'Starting the appliance (apps, model server, Postgres, Qdrant, Redis, …)'
+      : 'Starting docker compose (Postgres, Qdrant, Redis, …)',
+  );
 
   try {
-    await startDockerServices({ cwd: targetDir, profiles });
-    spinner.stop('Backing services started.');
+    await startDockerServices({
+      cwd: targetDir,
+      profiles,
+      ...(appliance ? { files } : {}),
+    });
+    spinner.stop(
+      appliance ? 'Appliance started.' : 'Backing services started.',
+    );
   } catch (error) {
     // **Not fatal, deliberately.** Every other step here aborts the install on
     // failure because it would leave a tree that fails later; this one is the

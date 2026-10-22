@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Bejelentkezés ezzel: {name}",
     "sso-or": "vagy",
-    "sso-failed": "A céges bejelentkezés nem sikerült. Használjon a szervezete domainjébe tartozó fiókot, vagy kérjen segítséget egy rendszergazdától."
+    "sso-failed": "A céges bejelentkezés nem sikerült. Használjon a szervezete domainjébe tartozó fiókot, vagy kérjen segítséget egy rendszergazdától.",
+    "sso-error-registration-disabled": "A céges fiókja még nem fér hozzá ehhez a telepítéshez. Kérjen meghívót egy rendszergazdától.",
+    "sso-error-domain": "Ezzel a fiókkal itt nem lehet bejelentkezni. Használjon a cég domainjébe tartozó fiókot.",
+    "sso-error-hosted-domain": "A cég Google Workspace-fiókjával jelentkezzen be, ne magánfiókkal.",
+    "sso-error-email-not-verified": "Az identitásszolgáltató nem erősítette meg az e-mail-címét, ezért nem jött létre fiók. Forduljon egy rendszergazdához.",
+    "sso-error-join-organization-unset": "A céges fiókja még nem fér hozzá ehhez a telepítéshez. Kérjen meghívót egy rendszergazdától.",
+    "sso-error-join-organization-not-found": "A vállalati bejelentkezés hibásan van beállítva. Forduljon egy rendszergazdához.",
+    "sso-error-email-missing": "Az identitásszolgáltató nem küldött e-mail-címet. Forduljon egy rendszergazdához.",
+    "sso-error-account-not-linked": "Már létezik fiók ezzel a címmel, de az identitásszolgáltató nem erősítette meg a címet, ezért nem kapcsolódtak össze. Jelentkezzen be a jelszavával.",
+    "sso-error-cancelled": "A vállalati bejelentkezés megszakadt."
   },
   "Forgot-password": {
     "Forgot-password": "Elfelejtetted a jelszavad?",

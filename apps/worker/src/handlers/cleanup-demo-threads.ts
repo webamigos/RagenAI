@@ -16,10 +16,11 @@ import type * as activities from '../activities/index.js';
  * bounds that too. Restrictions first, then threads: if the delete fails and
  * the run is retried, the tenant is at least locked again.
  *
- * The Temporal Schedule that drives it is **not** created here — see
- * `src/scripts/ensure-demo-cleanup-schedule.ts`. A schedule outlives the code
- * that defined it, so removing this workflow does not remove the schedule;
- * that has to be done in Temporal as well.
+ * The schedule that drives it is **not** created here — it is an entry of
+ * `RECURRING_SCHEDULES` (`src/schedules.ts`), registered at worker boot where
+ * `DEMO_ORGANIZATION_ID` is set. A schedule outlives the code that defined
+ * it, so removing this job does not remove the schedule; that has to be done
+ * in the engine as well.
  *
  * ## How a failed run is noticed, stated plainly
  *

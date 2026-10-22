@@ -13,8 +13,9 @@ import type * as activities from '../activities/index.js';
  * further back than 90 days, so rows beyond `ANALYTICS_RETENTION_DAYS` are
  * cost without a reader.
  *
- * The Temporal Schedule that drives it is **not** created here — see
- * `src/scripts/ensure-analytics-retention-schedule.ts`, and the sibling
+ * The schedule that drives it is **not** created here — it is an entry of
+ * `RECURRING_SCHEDULES` (`src/schedules.ts`), registered at worker boot — and
+ * see the sibling
  * warning on the demo cleanup: a schedule is server-side state that outlives
  * the code defining it, so deleting this workflow leaves a schedule firing at
  * a workflow that no longer exists.

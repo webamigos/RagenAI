@@ -247,12 +247,27 @@ export function publishedPortsFor(
  * `.env.local` — the half-configuration the profiles exist to prevent, only
  * printed instead of executed.
  */
-export function composeUpCommand(profiles: readonly string[] = []): string {
+export function composeUpCommand(
+  profiles: readonly string[] = [],
+  files: readonly string[] = [],
+): string {
+  return ['docker compose', ...composeArgs(profiles, files), 'up -d'].join(' ');
+}
+
+/**
+ * `-f` for each compose file (an appliance names several; the standard stack
+ * names none and lets Compose find `docker-compose.yml`), then `--profile`
+ * for each profile. One function for the printed command and the executed
+ * one, so the two cannot disagree.
+ */
+function composeArgs(
+  profiles: readonly string[],
+  files: readonly string[],
+): string[] {
   return [
-    'docker compose',
-    ...profiles.map((profile) => `--profile ${profile}`),
-    'up -d',
-  ].join(' ');
+    ...files.flatMap((file) => ['-f', file]),
+    ...profiles.flatMap((profile) => ['--profile', profile]),
+  ];
 }
 
 /**
@@ -319,12 +334,16 @@ function isPortInUse(port: number): Promise<boolean> {
 export async function startDockerServices({
   cwd,
   profiles = [],
-}: RunOptions & { profiles?: string[] }): Promise<void> {
-  const args = profiles.flatMap((profile) => ['--profile', profile]);
-  await execa('docker', ['compose', ...args, 'up', '-d'], {
-    cwd,
-    stdio: 'inherit',
-  });
+  files = [],
+}: RunOptions & { profiles?: string[]; files?: string[] }): Promise<void> {
+  await execa(
+    'docker',
+    ['compose', ...composeArgs(profiles, files), 'up', '-d'],
+    {
+      cwd,
+      stdio: 'inherit',
+    },
+  );
 }
 
 export async function installDependencies({ cwd }: RunOptions): Promise<void> {

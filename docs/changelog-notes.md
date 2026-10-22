@@ -78,7 +78,12 @@ archive is the blog.
 ## Unreleased
 
 - [brief] An install can carry its own product name, logo and colour palette, set once by a platform administrator on the admin panel's new Branding page and shown in the panel, on the sign-in pages, in page titles and in emails. The palette is picked from a short list checked for readable contrast in light and dark mode. Off by default while it settles: switch on *Instance branding* in the platform defaults to show it, and off again to go back to Ragen's branding. (Appliance programme, B2.)
+- [brief] *Thread: the on-premises appliance.* `npx create-ragen-app --appliance` (or "Models on this machine" in the provider question) scaffolds a Ragen whose models run on the same machine: no API key, a route table checked to keep every call local, `DOCLING_STRICT=1`, and the appliance compose stack ready to start with a plain `docker compose up -d`. Local profile and one model tier only, and that tier's sizing is not yet measured on real hardware; hybrid comes later. Needs the next create-ragen-app release.
 - [brief] Running Ragen in containers: `APP_URL` in `.env.local` now reaches the web container, so invitation links, emails and the company sign-in callback can name the real host instead of always `localhost`. PII masking works in containers too: add `-f docker-compose.pii.yml`, which starts Presidio and points the apps at it. Before, the container stack overwrote both settings, and masking an operator had turned on was silently off. Masking stays opt-in, and the appliance template no longer turns it on by default. Thread: on-premises appliance. ([PR #1670](https://github.com/webamigos/RagenAI/pull/1670))
+
+- [brief] The fully local appliance installs on an NVIDIA DGX Spark (or any Linux box with an NVIDIA GPU) with one script, `infra/appliance/install-spark.sh`: it checks the GPU, the disk and the image architectures, generates the secrets, pulls the models, checks that Ollama runs them on the GPU (and warns when it cannot confirm it) and waits for the web app. Nothing is built on the machine. ([PR #1665](https://github.com/webamigos/RagenAI/pull/1665))
+
+- [brief] Thread: on-premises appliance. An operations runbook for the appliance (`docs/appliance-runbook.md`): install, proving nothing leaves the machine, backup and restore of Postgres, Qdrant and documents, upgrade and rollback, and swapping a model — including the full re-index an embedding change needs. Offline upgrades and the first-line support role follow with the offline bundle and the support channel.
 
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
@@ -101,6 +106,13 @@ archive is the blog.
   account settings; current membership and document permissions govern calls.
 
 ### Self-hosting
+
+- `[brief]` **Nightly maintenance now runs on every install without a manual
+  step.** The worker registers its own schedules when it starts — pruning old
+  retrieval analytics and purging expired personal memories — where before
+  they ran only if someone had run a setup script, which a container install
+  or the appliance never did. `WORKER_DISABLED_SCHEDULES` turns one off.
+  ([PR #1671](https://github.com/webamigos/RagenAI/pull/1671))
 
 - `[brief]` **The published images stop Prisma's update check on their own.**
   The web, API, worker and admin images now set `CHECKPOINT_DISABLE=1`, so a
@@ -340,3 +352,4 @@ Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właścicie
 - [brief] Company sign-in: an installation can let people sign in with Microsoft Entra ID, Google Workspace or any OpenID Connect provider, restricted to the company's own email domains, with new users joining the company's organization automatically. Open edition, off unless configured.
 - [brief] Running on your own hardware: the setup checklist now says when a local model server (Ollama, vLLM) is not answering, or when a model the install uses was never pulled, and gives the `ollama pull` to run. It costs one free `GET /models` per server and never blocks sign-in.
 - [brief] Signing in with the default language (English) no longer ends in "too many redirects": / and /en stopped sending a signed-in user back and forth.
+- [brief] A refused company sign-in now lands back on the sign-in page with a sentence saying why — an address outside the company's domains, a Google account not managed by its Workspace, an address the identity provider did not verify, or an install not set up to create accounts through SSO — instead of a raw JSON error on the callback URL. Nothing is created on a refusal, as before. All 17 languages. Found against a real Microsoft Entra tenant.
