@@ -35,13 +35,19 @@ type CacheEntry = {
  */
 const CACHE = Symbol.for('ragen.instance-branding.cache');
 
-type CacheHolder = { entry: CacheEntry | null };
+/**
+ * `generation` moves on every clear. A read notes it before asking the
+ * database and stores its answer only if it has not moved: a read that
+ * started before a save and finished after it would otherwise put the
+ * pre-save branding back for a whole window.
+ */
+type CacheHolder = { entry: CacheEntry | null; generation: number };
 
 function holder(): CacheHolder {
   const scope = globalThis as typeof globalThis & {
     [CACHE]?: CacheHolder;
   };
-  scope[CACHE] ??= { entry: null };
+  scope[CACHE] ??= { entry: null, generation: 0 };
   return scope[CACHE];
 }
 
@@ -50,7 +56,9 @@ function holder(): CacheHolder {
  * handled a save shows it on the very next request; tests call it too.
  */
 export function clearInstanceBrandingCache(): void {
-  holder().entry = null;
+  const cache = holder();
+  cache.entry = null;
+  cache.generation += 1;
 }
 
 /**
@@ -81,6 +89,7 @@ export async function getInstanceBrandingQuery(): Promise<InstanceBranding> {
     return cache.entry.value;
   }
 
+  const generation = cache.generation;
   try {
     const enabled = await isInstanceFeatureEnabledQuery('instanceBranding');
     const row = enabled
@@ -96,12 +105,16 @@ export async function getInstanceBrandingQuery(): Promise<InstanceBranding> {
       : null;
 
     const value = toInstanceBranding(row);
-    cache.entry = { value, expiresAt: now + BRANDING_CACHE_TTL_MS };
+    if (cache.generation === generation) {
+      cache.entry = { value, expiresAt: now + BRANDING_CACHE_TTL_MS };
+    }
     return value;
   } catch (error) {
     logger.warn({ err: error }, 'Could not read instance branding');
     const value = cache.entry?.value ?? DEFAULT_INSTANCE_BRANDING;
-    cache.entry = { value, expiresAt: now + BRANDING_FAILURE_TTL_MS };
+    if (cache.generation === generation) {
+      cache.entry = { value, expiresAt: now + BRANDING_FAILURE_TTL_MS };
+    }
     return value;
   }
 }

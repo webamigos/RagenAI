@@ -101,6 +101,47 @@ describe('getInstanceBrandingQuery', () => {
     expect((await getInstanceBrandingQuery()).productName).toBe('Globex');
   });
 
+  it('does not let a read that began before a save put the old branding back', async () => {
+    let finishOldRead: (row: typeof ROW) => void = () => {};
+    findUnique.mockReturnValueOnce(
+      new Promise<typeof ROW>((resolve) => {
+        finishOldRead = resolve;
+      }),
+    );
+    const oldRead = getInstanceBrandingQuery();
+    await vi.waitFor(() => expect(findUnique).toHaveBeenCalledTimes(1));
+
+    // The save lands while the old read is still waiting on the database.
+    clearInstanceBrandingCache();
+    finishOldRead(ROW);
+    expect((await oldRead).productName).toBe('Acme Knowledge');
+
+    findUnique.mockResolvedValue({ ...ROW, productName: 'Globex' });
+    expect((await getInstanceBrandingQuery()).productName).toBe('Globex');
+    expect(findUnique).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not let a read that failed across a save cache the old branding either', async () => {
+    await getInstanceBrandingQuery();
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 61_000);
+    let failOldRead: (error: Error) => void = () => {};
+    findUnique.mockReturnValueOnce(
+      new Promise<typeof ROW>((_, reject) => {
+        failOldRead = reject;
+      }),
+    );
+    const oldRead = getInstanceBrandingQuery();
+    await vi.waitFor(() => expect(findUnique).toHaveBeenCalledTimes(2));
+
+    clearInstanceBrandingCache();
+    failOldRead(new Error('connection reset'));
+    await oldRead;
+
+    findUnique.mockResolvedValue({ ...ROW, productName: 'Globex' });
+    expect((await getInstanceBrandingQuery()).productName).toBe('Globex');
+  });
+
   it('shares one cache across module copies, so a save clears what the panel reads', async () => {
     // Next bundles route handlers and server components separately: the
     // save's copy of this module is not the panel's.
