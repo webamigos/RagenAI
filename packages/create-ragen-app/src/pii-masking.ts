@@ -19,6 +19,16 @@ export const PRESIDIO_ANONYMIZER_URL = 'http://localhost:5003';
 /** The compose profile the two services sit behind. */
 export const PII_COMPOSE_PROFILE = 'pii';
 
+/**
+ * The overlay that turns masking on when the apps run as containers
+ * (`--skip-install`, then the full-app stack). The URLs above are for apps on
+ * the host: inside a container `localhost` is the container itself, and
+ * docker-compose.fullapp.yml passes `.env.local` through unchanged, so with
+ * those URLs and no overlay every chat message fails closed. The overlay
+ * starts Presidio and sets the service-name URLs over them.
+ */
+export const PII_CONTAINER_COMPOSE_FILE = 'docker-compose.pii.yml';
+
 export interface PiiMaskingSelection {
   enabled: boolean;
   envUpdates: Record<string, string>;

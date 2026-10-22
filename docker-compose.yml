@@ -137,8 +137,10 @@ services:
   #
   #   docker compose --profile pii up -d
   #
-  # Nothing depends_on them: the apps reach them over HTTP, and only when
-  # PRESIDIO_ANALYZER_URL and PRESIDIO_ANONYMIZER_URL are set.
+  # Nothing here depends_on them: the apps reach them over HTTP, and only when
+  # PRESIDIO_ANALYZER_URL and PRESIDIO_ANONYMIZER_URL are set. With the apps
+  # in containers, docker-compose.pii.yml starts both and sets those URLs to
+  # the service names; the localhost ones in `.env.local` are for host apps.
   presidio-analyzer:
     profiles: ['pii']
     build:

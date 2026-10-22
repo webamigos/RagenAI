@@ -106,6 +106,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [Moving enforcement into a dependency left the old query behind, and six months later it read as proof the app still enforced the limit](lessons/enforcement-moved-to-a-dependency-left-its-query-behind.md)
 
+- [A bare `KEY:` under a Compose `environment:` does not fall back to `env_file:` — it unsets the variable, so the only way to let `.env.local` decide is to leave the key out](lessons/a-bare-compose-environment-key-unsets-the-env-file-value.md)
+
 ### security
 
 - [An "it stays on the machine" claim needs a sealed run, not a review — seven services called home past every earlier check](lessons/an-offline-claim-needs-a-sealed-run-not-a-review.md)

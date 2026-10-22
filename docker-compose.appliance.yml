@@ -11,6 +11,8 @@
 #
 #     -f docker-compose.appliance.gpu.yml
 #
+# and, to mask PII on the machine (opt-in), `-f docker-compose.pii.yml`.
+#
 # Fill `.env.local` from infra/appliance/appliance.env.example first. This
 # file sets only what has to differ inside containers — service names instead
 # of localhost, the mounted route table — and `environment:` wins over
