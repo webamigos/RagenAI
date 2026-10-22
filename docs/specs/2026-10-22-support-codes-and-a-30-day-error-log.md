@@ -20,8 +20,11 @@ and nobody on our side who can look.
 
 ## Decisions
 
-Answered 2026-10-22 (all recommendations accepted). These were the structural
-questions; the sections below are written from them.
+Answered 2026-10-22, then revised the same day against two goals the owner
+set for every answer: **support has to be easy and pleasant**, for the person
+reporting the problem and for whoever handles it, and **logging must not cost
+the application measurable performance.** The sections below are written from
+these decisions.
 
 - **D1. One spec, three phases.** Phase A (codes and references) ships and
   helps support on its own, with only one additive column migration. Phase B
@@ -32,19 +35,31 @@ questions; the sections below are written from them.
   names the area. Bare numbers from 100 were rejected, because 100–599
   collides with HTTP statuses on the same screens and in the same logs, and a
   prefix can be searched for in docs, tickets and Slack.
-- **D3. Only `warn` and `error` records are stored**, structured and redacted,
-  in a Postgres table. `info`/`debug` stay on stdout and OTel. There is no
-  Loki or ClickHouse container, because that would be a second database to
-  size, back up and upgrade on every appliance.
+- **D3. Every `error` is stored, but a `warn` only if it carries a support
+  code.** Rows are structured and redacted, in a Postgres table. An
+  unclassified warning stays on stdout and OTel, along with `info`/`debug`.
+  Volume is the performance risk, and an uncoded warning is noise a support
+  person cannot act on, so both goals point the same way: everything in the
+  admin log has a code and an explanation. There is no Loki or ClickHouse
+  container, because that would be a second database to size, back up and
+  upgrade on every appliance.
 - **D4. Two readers.** Platform admins see everything in `apps/admin`
   (ADR-35: platform-wide is admin). Org owners and admins see their own
   organization's entries in `apps/web`, limited to code, time, reference, area
-  and the catalogue's text, with no stack traces and no attributes.
-- **D5. End users see the reference.** It is shown next to the code on every
-  error. It is a random opaque id, not a row id, so it leaks nothing, and it is
-  the one thing a user can copy into a ticket.
+  and the catalogue's text, with "what to do" shown first and no stack traces
+  or attributes. Most problems on a one-org appliance are fixed by the
+  customer's own admin, without a ticket.
+- **D5. End users see the code and reference, and copy them in one click.**
+  "Copy details" copies a ready-to-paste block (code, reference, time, app
+  version, page). When the install has a support contact configured, a
+  "Contact support" link opens it with the subject prefilled. The reference is
+  a random opaque id, not a row id, so it leaks nothing.
 - **D6. Retention defaults to 30 days**, configurable per install with
-  `ERROR_LOG_RETENTION_DAYS` (1–365). Regulated customers ask for both 7 and 90.
+  `ERROR_LOG_RETENTION_DAYS` (1–365). Regulated customers ask for both 7 and 90. A hard row cap bounds the table whatever the window.
+- **D7. Logging has a performance budget, and a test holds it.** The
+  request path only enqueues; it never awaits the database. The sink writes on
+  its own single connection, so it never takes one from the request pool. The
+  budget and how it is measured are in §4, "Performance budget".
 
 ## Problem
 
@@ -155,44 +170,45 @@ guardrails), so the docs index reads in sections.
 **Initial set.** This is the set A1 ships with. The numbers are fixed in A1's
 review and never change after that:
 
-| Code     | Meaning                                           | From today's code                                |
-| -------- | ------------------------------------------------- | ------------------------------------------------ |
-| RGN-1001 | Session expired or missing                        | `UnauthorizedException`                          |
-| RGN-1002 | Missing permission for this action                | capability guards (ADR-39)                       |
-| RGN-1003 | Company sign-in provider unreachable              | OIDC discovery failure (on-prem B1)              |
-| RGN-1004 | Registration is closed                            | closed sign-up                                   |
-| RGN-2001 | File type not supported                           | upload validation                                |
-| RGN-2002 | File too large                                    | upload validation                                |
-| RGN-2101 | Storage write or read failed                      | `packages/storage` errors                        |
-| RGN-2201 | Document parser (Docling) unreachable             | `docling-client.ts`                              |
-| RGN-2202 | Document could not be parsed                      | `parsingStatus = FAILED`                         |
-| RGN-2203 | Parsing timed out                                 | Docling timeout                                  |
-| RGN-2301 | Embedding failed                                  | `embeddingStatus = FAILED`                       |
-| RGN-3001 | Vector store (Qdrant) unreachable                 |                                                  |
-| RGN-3002 | Vector size does not match the collection         | `VECTOR_SIZE` mismatch                           |
-| RGN-3101 | Reranker unavailable, results not reranked (warn) |                                                  |
-| RGN-4101 | Model offered but not configured                  | `model-not-configured`                           |
-| RGN-4102 | Model provider unreachable                        | `llm-api-error` (network)                        |
-| RGN-4103 | Model provider refused the credentials            | `api-key-error`                                  |
-| RGN-4104 | Model provider returned an error                  | `llm-api-error` (other)                          |
-| RGN-4201 | Rate limit reached                                | `rate-limit-exceeded`                            |
-| RGN-4301 | Monthly usage limit reached                       | `usage-limit-exceeded`, `LimitExceededException` |
-| RGN-4401 | Message flagged by moderation                     | `moderation-error`                               |
-| RGN-4402 | Message blocked by a guardrail rule               | `guardrail-blocked`                              |
-| RGN-5001 | Connector address refused (private network)       | `connector-guard`                                |
-| RGN-5002 | Connector sign-in expired                         | token vault refresh failure                      |
-| RGN-5003 | Connector tool call failed                        | MCP client error                                 |
-| RGN-6001 | Job queue (Redis) unreachable                     |                                                  |
-| RGN-6002 | Job failed after all retries                      | BullMQ `failed`                                  |
-| RGN-6003 | Job stalled                                       | BullMQ `stalled`                                 |
-| RGN-7001 | Required configuration missing                    | env validation                                   |
-| RGN-7002 | Database unreachable                              | Prisma connection errors                         |
-| RGN-7003 | Encryption key unavailable                        | `packages/crypto`                                |
-| RGN-7004 | Database migrations pending                       |                                                  |
-| RGN-8001 | API key invalid                                   | ADR-13 key check                                 |
-| RGN-8002 | API key revoked or expired                        |                                                  |
-| RGN-8003 | Request failed validation                         | `ValidationPipe`                                 |
-| RGN-9000 | Unexpected error                                  | `unknown-error`, anything uncaught               |
+| Code     | Meaning                                              | From today's code                                |
+| -------- | ---------------------------------------------------- | ------------------------------------------------ |
+| RGN-1001 | Session expired or missing                           | `UnauthorizedException`                          |
+| RGN-1002 | Missing permission for this action                   | capability guards (ADR-39)                       |
+| RGN-1003 | Company sign-in provider unreachable                 | OIDC discovery failure (on-prem B1)              |
+| RGN-1004 | Registration is closed                               | closed sign-up                                   |
+| RGN-2001 | File type not supported                              | upload validation                                |
+| RGN-2002 | File too large                                       | upload validation                                |
+| RGN-2101 | Storage write or read failed                         | `packages/storage` errors                        |
+| RGN-2201 | Document parser (Docling) unreachable                | `docling-client.ts`                              |
+| RGN-2202 | Document could not be parsed                         | `parsingStatus = FAILED`                         |
+| RGN-2203 | Parsing timed out                                    | Docling timeout                                  |
+| RGN-2301 | Embedding failed                                     | `embeddingStatus = FAILED`                       |
+| RGN-3001 | Vector store (Qdrant) unreachable                    |                                                  |
+| RGN-3002 | Vector size does not match the collection            | `VECTOR_SIZE` mismatch                           |
+| RGN-3101 | Reranker unavailable, results not reranked (warn)    |                                                  |
+| RGN-4101 | Model offered but not configured                     | `model-not-configured`                           |
+| RGN-4102 | Model provider unreachable                           | `llm-api-error` (network)                        |
+| RGN-4103 | Model provider refused the credentials               | `api-key-error`                                  |
+| RGN-4104 | Model provider returned an error                     | `llm-api-error` (other)                          |
+| RGN-4201 | Rate limit reached                                   | `rate-limit-exceeded`                            |
+| RGN-4301 | Monthly usage limit reached                          | `usage-limit-exceeded`, `LimitExceededException` |
+| RGN-4401 | Message flagged by moderation                        | `moderation-error`                               |
+| RGN-4402 | Message blocked by a guardrail rule                  | `guardrail-blocked`                              |
+| RGN-5001 | Connector address refused (private network)          | `connector-guard`                                |
+| RGN-5002 | Connector sign-in expired                            | token vault refresh failure                      |
+| RGN-5003 | Connector tool call failed                           | MCP client error                                 |
+| RGN-6001 | Job queue (Redis) unreachable                        |                                                  |
+| RGN-6002 | Job failed after all retries                         | BullMQ `failed`                                  |
+| RGN-6003 | Job stalled                                          | BullMQ `stalled`                                 |
+| RGN-7001 | Required configuration missing                       | env validation                                   |
+| RGN-7002 | Database unreachable                                 | Prisma connection errors                         |
+| RGN-7003 | Encryption key unavailable                           | `packages/crypto`                                |
+| RGN-7004 | Database migrations pending                          |                                                  |
+| RGN-8001 | API key invalid                                      | ADR-13 key check                                 |
+| RGN-8002 | API key revoked or expired                           |                                                  |
+| RGN-8003 | Request failed validation                            | `ValidationPipe`                                 |
+| RGN-9000 | Unexpected error                                     | `unknown-error`, anything uncaught               |
+| RGN-9001 | Log rate limited: records counted, not stored (warn) | the sink's own ceiling                           |
 
 **How code reaches a code.** A `SupportError` class in `platform-contracts`
 carries `code`, a safe `message` and an optional `cause`. The existing error
@@ -254,10 +270,33 @@ payload)` has no metadata slot today, so it gains an optional fourth
 ### 3. Errors carry code + ref to whoever sees them
 
 - **Panel.** The error boundary, the chat error bubble and error toasts show
-  "Kod błędu RGN-4102 · Ref 7F3K-92QD" with a copy button that copies both.
-  For `audience: 'admin'` codes the text adds "Tell your administrator". An
-  org admin also sees the catalogue's `action` and the docs link, inline,
-  because on an offline install the link does not open.
+  a human sentence in the reader's language first ("The AI model is not
+  responding right now"), then "Kod błędu RGN-4102 · Ref 7F3K-92QD" in a
+  smaller, muted line. The code is never the headline.
+  - **"Copy details"** copies a plain-text block that pastes cleanly into an
+    email, Teams or a ticket:
+
+    ```text
+    Ragen error RGN-4102 (Model provider unreachable)
+    Ref: 7F3K-92QD
+    Time: 2026-10-22 14:03:11 CEST
+    Version: 1.14.0
+    Page: /chat/[threadId]
+    ```
+
+    The page is the route template, never the URL with ids.
+
+  - **"Contact support"** appears when the install sets `SUPPORT_CONTACT`
+    (`mailto:` or an `https` URL). It sits beside the instance branding of the
+    on-prem spec (D5 there), because on an appliance it is usually the
+    customer's own IT. It opens with the subject "RGN-4102 · 7F3K-92QD" and
+    the details as the body.
+  - For `audience: 'user'` codes the sentence says what _they_ can do ("The
+    file is larger than 50 MB. Split it or compress it."). For
+    `audience: 'admin'` codes it says "Your administrator can fix this", so
+    nobody retries something that cannot succeed.
+  - An org admin also sees the catalogue's `action` and the docs link, inline,
+    because on an offline install the link does not open.
 - **Error boundary.** In production Next sends a client `error.tsx` only the
   `digest`, so the server-side ref and code cannot reach it. The boundary
   therefore shows `RGN-9000` and the digest as its reference ("Ref
@@ -301,12 +340,57 @@ stay on stdout and OTel. Every failure that comes back from apps/api has
 already been logged by apps/api under the same ref, which mcp passed along,
 so the "same reference" view still shows the MCP request.
 
-The sink takes every `warn`/`error` record and writes it to
-`OperationalEvent` in batches (every 2 s or 100 records), asynchronously, from
-a bounded in-memory queue, so a slow database never blocks a request. On
-`SIGTERM` it flushes what it holds, with a 2-second limit. Its own write
-errors go to stdout only, never back into the sink, so a broken database
-cannot make the sink log about itself in a loop.
+The sink takes every `error` record and every `warn` that carries a code
+(D3), and writes them to `OperationalEvent` in batches (every 2 s or 100
+records), asynchronously, from a bounded in-memory queue. On `SIGTERM` it
+flushes what it holds, with a 2-second limit. Its own write errors go to
+stdout only, never back into the sink, so a broken database cannot make the
+sink log about itself in a loop.
+
+#### Performance budget
+
+Logging an error must not slow down the request that hit it, and the log
+must not slow down anyone else's.
+
+- **The request path only enqueues.** In the caller, the sink does a
+  level/code check, builds the row (allowlist, truncation, scrubber) and
+  pushes it onto an array. It never awaits I/O. Budget: **under 50 µs per
+  stored record** on the calling path, measured by a benchmark in the
+  package's tests. Records that will not be stored (`info`, `debug`,
+  uncoded `warn`) cost one comparison.
+- **Bounded work per record.** `message` is cut to 1 KB _before_ the
+  scrubber runs, so the regexes run on bounded input. The stack keeps its top
+  15 frames, at most 4 KB. The stack is the one the error already carries,
+  so nothing is captured just for logging.
+- **Its own connection.** The sink writes through a dedicated `pg` pool with
+  `max: 1` and a 2-second `statement_timeout`. It never competes with
+  requests for the app's Prisma pool, and a slow insert times out instead of
+  piling up. A web replica therefore opens one extra connection; the
+  appliance sizing in the on-prem spec counts it.
+- **One statement per batch.** A batch is a single multi-row
+  `INSERT … ON CONFLICT DO UPDATE` (dedup below), so 100 records cost one
+  round trip.
+- **Ceiling per process.** At most 20 rows per second are written per
+  process, after dedup. Beyond that, records are only counted, into one
+  `RGN-9001` "log rate limited" summary row per minute, so a storm costs the
+  database a constant amount, and the admin sees that a storm happened.
+- **Few, cheap indexes.** Each index is paid on every write, so there are
+  six, and the time index is a BRIN, which an append-only table keeps
+  almost for free (Data model).
+- **Retention off the hot path.** The prune runs at 03:45, after the
+  analytics prune at 03:30, and deletes in batches of 5 000 with a pause
+  between them, so it never holds a long lock or saturates I/O.
+- **Reads are bounded too.** Admin lists use keyset pagination (no
+  `OFFSET`), and they never run an exact `COUNT(*)` over 30 days: they show
+  "1 000+" past a limit. The dashboard tiles come from one grouped query,
+  cached for 60 s. The search by reference or code is an index lookup across
+  the full retention window.
+- **Measured, not assumed.** Phase B ends with a load run from
+  `apps/web/perf` (chat and upload scenarios) with 5 % of requests forced to
+  fail. Its p95 latency with the sink on must stay within 5 % of the same run
+  with `ERROR_LOG_ENABLED=false`. The result is written into this spec.
+- **Kill switch.** `ERROR_LOG_ENABLED=false` turns the sink off with a
+  restart, and the request path then pays nothing beyond the level check.
 
 **What a row holds is an allowlist, not a denylist:** time, app, level, code,
 ref, organizationId, userId, message, error class, stack (only for `error`:
@@ -336,7 +420,11 @@ cannot fill the disk.
 
 **Retention.** A scheduled worker job, `pruneOperationalEvents`, shaped like
 `ANALYTICS_RETENTION_SCHEDULE` in `apps/worker/src/schedules.ts`, deletes rows
-older than `ERROR_LOG_RETENTION_DAYS` nightly, in batches. A hard cap of
+older than `ERROR_LOG_RETENTION_DAYS` nightly, in batches (see Performance
+budget). Daily table partitions, where retention would be a `DROP`, were
+considered and rejected for now. Prisma migrations do not manage partitions,
+and at a 2 M-row cap batched deletes are cheap. Revisit if an install needs
+a much larger cap. A hard cap of
 `ERROR_LOG_MAX_ROWS` (default 2 000 000) prunes oldest first even inside the
 window, and the admin says when that happened.
 
@@ -354,15 +442,20 @@ admin, lost with the container). A Loki container (D3). Writing into
 `/activity-log` (`DateFilter`, `Pagination`, `SortableHeader`,
 `ExportButton`, `SearchableSelect`):
 
-- a list filtered by app, level, code, area, organization and time (default
-  the last 30 days), with an "unclassified" filter for `RGN-9000`, which is
-  the backlog of errors that still need a code;
-- one search box that accepts a reference (`7F3K-92QD`, `7f3k92qd`) or a code
-  (`RGN-4102`, `4102`);
+- a list filtered by app, level, code, area, organization and time. It opens
+  on the last 24 hours, which is what someone is asking about, and the filter
+  goes back the full retention window. An "unclassified" filter for
+  `RGN-9000` is the backlog of errors that still need a code;
+- one search box that takes whatever the customer sent: a reference in any
+  form (`7F3K-92QD`, `7f3k92qd`, `Ref: 7F3K-92QD`), a code (`RGN-4102`,
+  `4102`), a Next digest, or the whole "Copy details" block pasted as is. The
+  box finds the ref or code inside it. It always searches the whole window;
 - **"Same reference"**: every app's entries for one ref, in time order. This
   is the support engineer's main view;
-- a detail page: the record, the catalogue's title, cause and action, the
-  docs link, and how many times it repeated;
+- a detail page: the catalogue's "what to do" first, then cause, the docs
+  link, how many times it repeated and in how many organizations, and the
+  raw record last. A "Support bundle for this incident" button prefills the
+  bundle's scope with this organization and the hour around the error;
 - the dashboard gains "top codes, last 24 h / 7 d" `StatTile`s and a line for
   "N events could not be stored" (see Failure modes);
 - export to CSV/JSONL through the existing `ExportButton` route, as an
@@ -372,8 +465,11 @@ admin, lost with the container). A Loki container (D3). Writing into
 `organization/audit-logs` and gated the same way, by capability
 (`canManageOrg()`), never by comparing the role string. It is scoped by the
 session's organization (`getOrgIdFromAuthOrThrow()`), never by a parameter.
-It shows time, code, title, area, reference, count, and the catalogue's
-action with the docs link. It shows no stack, attributes, user or app.
+Each entry leads with the catalogue's action ("Check the model server is
+running"), then shows time, code, title, area, reference, count and the docs
+link. It shows no stack, attributes, user or app. Its empty state says "No
+errors in the last 30 days", which is itself useful to a customer asking "is
+it us or you".
 
 ### 6. Support bundle
 
@@ -406,6 +502,11 @@ ids to a third party:
   plus a sample of the event rows. The admin downloads only after seeing it;
 - every download is an `AuditLog` entry naming the scope.
 
+**Cost.** The bundle is built on request and streamed, not stored. Only one
+can be built at a time per install, its event rows are capped at 50 000, and
+the health checks run with their usual timeouts, so a support request cannot
+load a struggling install further.
+
 This is what first-line support asks for first, and it works with no support
 channel at all.
 
@@ -427,7 +528,7 @@ matches the catalogue, so a code cannot ship undocumented.
 | `packages/jobs` + both adapters | `JobRuntime.start` gains optional `meta: { ref }`; failed-job event                                                      | `npm run worker:test:jobs`, the Temporal adapter's tests                                               |
 | Better Auth org/user deletion   | hooks delete or anonymise log rows                                                                                       | hook tests (the library owns deletion, so no Prisma delete beside it)                                  |
 | `prisma/schema.prisma`          | `OperationalEvent`, `UserFile.failureCode` / `failureRef`                                                                | migration + `npm run verify`                                                                           |
-| `packages/env`                  | `ERROR_LOG_ENABLED`, `ERROR_LOG_RETENTION_DAYS`, `ERROR_LOG_MAX_ROWS`, one fragment for every app                        | package tests; `create-ragen-app` gains them (Post-Task step 4)                                        |
+| `packages/env`                  | `ERROR_LOG_ENABLED`, `ERROR_LOG_RETENTION_DAYS`, `ERROR_LOG_MAX_ROWS`, `SUPPORT_CONTACT`, one fragment for every app     | package tests; `create-ragen-app` gains them (Post-Task step 4)                                        |
 | `apps/api` filters              | responses gain `code`, `ref`, `ragen_*`                                                                                  | filter specs, OpenAI-surface contract test                                                             |
 | auth / tenant scoping           | org view by session org                                                                                                  | the IDOR test (the gate); `OperationalEvent` is also added to the tenant-scope guard, which only warns |
 | `src/proxy.ts`                  | sets the ref header only (no auth)                                                                                       | proxy tests                                                                                            |
@@ -446,8 +547,8 @@ model OperationalEvent {
   app            String   // web | api | worker | mcp | admin
   level          String   // warn | error
   code           String   // RGN-xxxx, RGN-9000 when unclassified
-  ref            String?  // the first occurrence's reference
-  refs           String[] @default([]) // folded occurrences, max 20
+  ref            String?  // the first occurrence's reference, for display
+  refs           String[] @default([]) // every occurrence's ref (first included), max 20; searched via GIN
   organizationId String?  @map("organization_id")
   userId         String?  @map("user_id")
   message        String
@@ -456,8 +557,7 @@ model OperationalEvent {
   attributes     Json     @default("{}")
 
   @@unique([dedupKey, minuteBucket])
-  @@index([occurredAt])
-  @@index([ref])
+  @@index([occurredAt], type: Brin)
   @@index([refs], type: Gin)
   @@index([code, occurredAt])
   @@index([organizationId, occurredAt])
@@ -470,6 +570,12 @@ model UserFile {
   failureRef  String? @map("failure_ref")
 }
 ```
+
+There are six indexes counting the `publicId` key, and no more, because each is paid on every write. The search
+by reference goes through the GIN index on `refs`, which includes the first
+ref, so `ref` itself needs no index of its own. The time index is a BRIN,
+because rows arrive in time order. Admin queries filter on time, so it
+narrows them at a fraction of a B-tree's write cost.
 
 The id follows the repo's convention (`Int` plus `publicId`), so rows
 serialize in Server Actions and exports with no BigInt handling. `Int` is
@@ -539,7 +645,8 @@ support.
       trusted callers. `JobRuntime.start` gains `meta: { ref }` in both adapters.
       Every log line has `ref`.
 - [ ] **A3.** The existing error classes gain `supportCode`. The panel error
-      boundary, the chat error bubble and toasts show code + ref with copy.
+      boundary, the chat error bubble and toasts show a human sentence, then code +
+      ref, "Copy details" and, when `SUPPORT_CONTACT` is set, "Contact support".
       `apps/api` (both surfaces) and the chat stream return them. MCP tool errors
       append them. next-intl messages for the initial set, in `en` and `pl`.
 - [ ] **A4.** `UserFile.failureCode` / `failureRef` (additive migration),
@@ -559,7 +666,9 @@ support.
 - [ ] **B2.** `pruneOperationalEvents` schedule and the row cap.
 - [ ] **B3.** `apps/admin` `/logs`: list, filters, ref/code search, "same
       reference", detail, export, dashboard tiles. `ERROR_LOG_ENABLED` flips to
-      `true` by default in this step.
+      `true` by default in this step, once B3a has passed.
+- [ ] **B3a.** Load run from `apps/web/perf` with 5 % forced failures, sink on
+      vs off. The p95 must stay within 5 %, and the result is recorded here.
 - [ ] **B4.** `apps/web` `organization/errors` for org owners and admins,
       with nav entry by capability and the IDOR test.
 
@@ -578,7 +687,8 @@ support.
   mapped error class and library error. Ref generation, parsing and
   normalisation. Scrubber and allowlist with PII and secret fixtures. Dedup
   and the folded-refs cap. The retention job and row cap. The bundle's env
-  masking.
+  masking. A benchmark holds the calling-path budget (under 50 µs per stored
+  record) and the per-process ceiling.
 - **Integration.** A public-API chat request (`apps/api` `/v1/chat/completions`
   → web's internal `api/v1/chat`) that fails leaves rows in both apps sharing
   one ref, and the response carries it. A panel upload whose parse fails
