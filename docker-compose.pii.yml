@@ -1,0 +1,73 @@
+# PII masking for the container stack: starts Presidio and points the apps at
+# it by service name. Masking is opt-in, and this file is how a container
+# install opts in:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.fullapp.yml \
+#     -f docker-compose.pii.yml up -d
+#
+# and the appliance adds it after its own files:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.fullapp.yml \
+#     -f docker-compose.appliance.yml -f docker-compose.pii.yml up -d
+#
+# Why a file rather than two lines in `.env.local`: the URLs differ by where
+# the app runs. A host app reaches the analyzer at `localhost:5002`, the port
+# docker-compose.yml publishes; inside a container `localhost` is the
+# container itself, so the same value points at nothing and every chat
+# message fails closed. Compose cannot rewrite one into the other, and an
+# `environment:` entry in docker-compose.fullapp.yml cannot tell "the operator
+# asked for masking" from "nobody did". This file can: it is only on the
+# command line when someone asked.
+#
+# Before this file existed, docker-compose.fullapp.yml set the two URLs to
+# `${PRESIDIO_ANALYZER_URL:-}`, which Compose interpolates from `.env`, not
+# from `.env.local` — so the value the docs told an operator to set was
+# overwritten with an empty string and nothing was masked, in silence.
+#
+# Only for the container stack: it adds settings to web, api and worker, which
+# docker-compose.yml alone does not define. Host apps keep using
+# `docker compose --profile pii up -d` and the localhost URLs in `.env.local`.
+#
+# The kill switch still lives in `.env.local`: FEATURE_FLAG_PII_MASKING=0 turns
+# a configured deployment's masking off without removing this file.
+#
+# Requires Docker Compose 2.24 or newer, for `!reset` (the same floor the
+# `env_file: path:` form in docker-compose.fullapp.yml already sets).
+
+x-presidio-urls: &presidio-urls
+  PRESIDIO_ANALYZER_URL: http://presidio-analyzer:3000
+  PRESIDIO_ANONYMIZER_URL: http://presidio-anonymizer:3000
+
+x-presidio-ready: &presidio-ready
+  presidio-analyzer:
+    condition: service_healthy
+  presidio-anonymizer:
+    condition: service_healthy
+
+services:
+  # Out of the `pii` profile, so this file alone starts them; `--profile pii`
+  # is still harmless to pass.
+  presidio-analyzer:
+    profiles: !reset []
+  presidio-anonymizer:
+    profiles: !reset []
+
+  # Masking fails closed — a message is not sent while the analyzer is
+  # unreachable — so the two apps that mask wait for both halves.
+  web:
+    environment:
+      <<: *presidio-urls
+    depends_on:
+      <<: *presidio-ready
+
+  worker:
+    environment:
+      <<: *presidio-urls
+    depends_on:
+      <<: *presidio-ready
+
+  # api does not call Presidio today; the URLs are set so the three apps agree
+  # and none of them carries a `localhost` address from `.env.local`.
+  api:
+    environment:
+      <<: *presidio-urls

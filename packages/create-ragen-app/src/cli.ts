@@ -53,6 +53,7 @@ import {
 import {
   resolvePiiMaskingSelection,
   PII_COMPOSE_PROFILE,
+  PII_CONTAINER_COMPOSE_FILE,
   type PiiMaskingSelection,
 } from './pii-masking';
 import { generateSecret } from './secrets';
@@ -191,9 +192,9 @@ export async function run(argv: string[]): Promise<boolean> {
   // that keep it on the machine: files on local disk and a local encryption
   // key (the alternatives offered are cloud services), and BullMQ on the
   // stack's own Redis (Temporal is a server somewhere else). PII masking
-  // stays off, as for any unattended install: in the container stack the
-  // Presidio URLs have to be service names in `.env`, which this wizard does
-  // not write yet.
+  // stays off, as for any unattended install: turning it on in the container
+  // stack means adding `docker-compose.pii.yml` to the profile, which this
+  // wizard does not do yet.
   const unattended = isUnattended(args) || appliance !== undefined;
 
   // Storage and encryption were skipped by every earlier version of this
@@ -410,7 +411,10 @@ export async function run(argv: string[]): Promise<boolean> {
         '` profile, so start the stack with `' +
         composeUpCommand(composeProfiles) +
         '` — a plain `up` skips those two containers and the app would ' +
-        'point at services nobody started.',
+        'point at services nobody started. With the apps in containers, add `-f ' +
+        PII_CONTAINER_COMPOSE_FILE +
+        '` to the full-app command instead: the Presidio URLs in .env.local ' +
+        'are localhost ones, for apps on the host.',
     );
   }
 
@@ -442,7 +446,9 @@ export async function run(argv: string[]): Promise<boolean> {
     );
   }
 
-  clack.outro(outroFor(targetDir, args, appliance, composeProfiles));
+  clack.outro(
+    outroFor(targetDir, args, appliance, composeProfiles, piiMasking.enabled),
+  );
 
   return true;
 }
@@ -452,11 +458,14 @@ function outroFor(
   args: CliArgs,
   appliance: ApplianceSelection | undefined,
   profiles: readonly string[],
+  piiMasking: boolean,
 ): string {
   if (appliance) {
     return applianceOutro(targetDir, appliance, profiles);
   }
-  return args.skipInstall ? containerOutro(targetDir) : hostOutro(targetDir);
+  return args.skipInstall
+    ? containerOutro(targetDir, piiMasking)
+    : hostOutro(targetDir);
 }
 
 /**
@@ -465,11 +474,17 @@ function outroFor(
  * full-app stack is the path that needs neither: its `migrate` service does
  * both, and its containers read the `.env.local` just written.
  */
-function containerOutro(targetDir: string): string {
+function containerOutro(targetDir: string, piiMasking: boolean): string {
+  // With masking on, the overlay is part of the command: `ragen:up:everything`
+  // alone starts no Presidio, and the localhost URLs in .env.local point at
+  // nothing inside a container, so chat would fail closed.
+  const start = piiMasking
+    ? `docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f ${PII_CONTAINER_COMPOSE_FILE} up`
+    : 'npm run ragen:up:everything';
   return [
     'Done. Start everything in containers:',
     `  cd ${targetDir}`,
-    '  npm run ragen:up:everything',
+    `  ${start}`,
     '',
     'It pulls the release images, migrates the database itself and reads',
     'the .env.local written here.',
