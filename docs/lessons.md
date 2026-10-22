@@ -82,6 +82,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [A flag set on a deployment whose build predates its consumer is inert, and the deployment reports nothing](lessons/a-flag-set-on-a-build-that-predates-its-consumer-is-inert.md)
 
 - [A layered Compose file resolves its relative paths against the first `-f` file, not its own directory](lessons/compose-resolves-relative-paths-against-the-first-f-file.md)
+- [A literal in Compose `environment:` wins over `env_file:`, so the value in `.env.local` never reaches the container](lessons/compose-environment-wins-over-env-file.md)
 - [turbo.json excluded .next/cache but not .next/dev, so every build tarred the Turbopack dev cache](lessons/turbo-cached-the-turbopack-dev-cache.md)
 - [A NEXT_PUBLIC_ variable set only at runtime renders on the server and disappears on hydration, and a placeholder value for one is worse than none](lessons/a-next-public-var-set-at-runtime-flashes-then-vanishes.md)
 - [A `webpack` block in next.config.ts does nothing under Turbopack, and Next says nothing about it](lessons/a-webpack-config-block-is-inert-under-turbopack.md)
