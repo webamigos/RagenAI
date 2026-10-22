@@ -101,7 +101,16 @@
     "demo-fill": "Wypełnij",
     "sso-sign-in": "Zaloguj się przez {name}",
     "sso-or": "lub",
-    "sso-failed": "Logowanie firmowe nie powiodło się. Użyj konta w domenie swojej organizacji albo poproś administratora o pomoc."
+    "sso-failed": "Logowanie firmowe nie powiodło się. Użyj konta w domenie swojej organizacji albo poproś administratora o pomoc.",
+    "sso-error-registration-disabled": "Twoje konto firmowe nie ma jeszcze dostępu do tej instalacji. Poproś administratora o zaproszenie.",
+    "sso-error-domain": "Tym kontem nie można się tu zalogować. Użyj konta w domenie firmy.",
+    "sso-error-hosted-domain": "Zaloguj się kontem Google Workspace firmy, nie kontem prywatnym.",
+    "sso-error-email-not-verified": "Dostawca tożsamości nie potwierdził Twojego adresu e-mail, więc konto nie zostało utworzone. Skontaktuj się z administratorem.",
+    "sso-error-join-organization-unset": "Twoje konto firmowe nie ma jeszcze dostępu do tej instalacji. Poproś administratora o zaproszenie.",
+    "sso-error-join-organization-not-found": "Logowanie firmowe jest źle skonfigurowane. Skontaktuj się z administratorem.",
+    "sso-error-email-missing": "Dostawca tożsamości nie przekazał adresu e-mail. Skontaktuj się z administratorem.",
+    "sso-error-account-not-linked": "Konto z tym adresem już istnieje, ale dostawca tożsamości nie potwierdził adresu, więc nie zostały połączone. Zaloguj się hasłem.",
+    "sso-error-cancelled": "Logowanie firmowe zostało anulowane."
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",

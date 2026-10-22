@@ -110,6 +110,14 @@ export const workerEnvSchema = fragments.targetEnvRequired
     // makes on purpose.
     ANALYTICS_RETENTION_DAYS: z.coerce.number().positive().optional(),
 
+    // Recurring schedules the worker must not register at boot
+    // (`src/schedules.ts`): comma-separated ids, each of which boot *deletes*
+    // instead, so the opt-out survives restarts. Worker-only, so it is
+    // declared here rather than in an `@ragenai/env` fragment (ADR-37). Free
+    // text on purpose: an id that outlived its schedule warns at boot rather
+    // than refusing to start.
+    WORKER_DISABLED_SCHEDULES: blankAsUndefined(z.string().optional()),
+
     // Ragen Brain extraction (consts.ts). All optional: the model falls back
     // to SUMMARY_MODEL and the two per-run ceilings to 200 documents and two
     // million tokens. Declared so a typo is refused rather than stripped.

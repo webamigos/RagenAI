@@ -80,6 +80,8 @@ archive is the blog.
 - [major] Organizations can now decide how long conversations are kept. On the organization's Settings page an owner or admin picks 30, 90, 180 or 365 days, and a daily job permanently deletes every thread with no new message for that long — with its messages, sources, shares and public link. Off by default, so nothing changes until someone chooses a period, and enabling or shortening it asks for confirmation first. Thread: Ragen as an on-premises appliance — "how long do you keep it" is the first data-protection question.
 - [brief] Running Ragen in containers: `APP_URL` in `.env.local` now reaches the web container, so invitation links, emails and the company sign-in callback can name the real host instead of always `localhost`. PII masking works in containers too: add `-f docker-compose.pii.yml`, which starts Presidio and points the apps at it. Before, the container stack overwrote both settings, and masking an operator had turned on was silently off. Masking stays opt-in, and the appliance template no longer turns it on by default. Thread: on-premises appliance. ([PR #1670](https://github.com/webamigos/RagenAI/pull/1670))
 
+- [brief] The fully local appliance installs on an NVIDIA DGX Spark (or any Linux box with an NVIDIA GPU) with one script, `infra/appliance/install-spark.sh`: it checks the GPU, the disk and the image architectures, generates the secrets, pulls the models, checks that Ollama runs them on the GPU (and warns when it cannot confirm it) and waits for the web app. Nothing is built on the machine. ([PR #1665](https://github.com/webamigos/RagenAI/pull/1665))
+
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)
@@ -101,6 +103,13 @@ archive is the blog.
   account settings; current membership and document permissions govern calls.
 
 ### Self-hosting
+
+- `[brief]` **Nightly maintenance now runs on every install without a manual
+  step.** The worker registers its own schedules when it starts — pruning old
+  retrieval analytics and purging expired personal memories — where before
+  they ran only if someone had run a setup script, which a container install
+  or the appliance never did. `WORKER_DISABLED_SCHEDULES` turns one off.
+  ([PR #1671](https://github.com/webamigos/RagenAI/pull/1671))
 
 - `[brief]` **The published images stop Prisma's update check on their own.**
   The web, API, worker and admin images now set `CHECKPOINT_DISABLE=1`, so a
@@ -340,3 +349,4 @@ Brain ma tryb przeglądu z twierdzeniami obok cytatów, przypisaniem właścicie
 - [brief] Company sign-in: an installation can let people sign in with Microsoft Entra ID, Google Workspace or any OpenID Connect provider, restricted to the company's own email domains, with new users joining the company's organization automatically. Open edition, off unless configured.
 - [brief] Running on your own hardware: the setup checklist now says when a local model server (Ollama, vLLM) is not answering, or when a model the install uses was never pulled, and gives the `ollama pull` to run. It costs one free `GET /models` per server and never blocks sign-in.
 - [brief] Signing in with the default language (English) no longer ends in "too many redirects": / and /en stopped sending a signed-in user back and forth.
+- [brief] A refused company sign-in now lands back on the sign-in page with a sentence saying why — an address outside the company's domains, a Google account not managed by its Workspace, an address the identity provider did not verify, or an install not set up to create accounts through SSO — instead of a raw JSON error on the callback URL. Nothing is created on a refusal, as before. All 17 languages. Found against a real Microsoft Entra tenant.

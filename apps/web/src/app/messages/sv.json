@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Logga in med {name}",
     "sso-or": "eller",
-    "sso-failed": "Företagsinloggningen misslyckades. Använd ett konto i din organisations domän eller fråga en administratör."
+    "sso-failed": "Företagsinloggningen misslyckades. Använd ett konto i din organisations domän eller fråga en administratör.",
+    "sso-error-registration-disabled": "Ditt företagskonto har ännu inte åtkomst till den här installationen. Be en administratör om en inbjudan.",
+    "sso-error-domain": "Du kan inte logga in här med det här kontot. Använd ett konto i företagets domän.",
+    "sso-error-hosted-domain": "Logga in med företagets Google Workspace-konto, inte ett privat konto.",
+    "sso-error-email-not-verified": "Din identitetsleverantör bekräftade inte din e-postadress, så inget konto skapades. Kontakta en administratör.",
+    "sso-error-join-organization-unset": "Ditt företagskonto har ännu inte åtkomst till den här installationen. Be en administratör om en inbjudan.",
+    "sso-error-join-organization-not-found": "Företagsinloggningen är felkonfigurerad. Kontakta en administratör.",
+    "sso-error-email-missing": "Din identitetsleverantör skickade ingen e-postadress. Kontakta en administratör.",
+    "sso-error-account-not-linked": "Det finns redan ett konto med den här adressen, men din identitetsleverantör bekräftade inte adressen, så de kopplades inte ihop. Logga in med ditt lösenord.",
+    "sso-error-cancelled": "Företagsinloggningen avbröts."
   },
   "Forgot-password": {
     "Forgot-password": "Glömt ditt lösenord?",

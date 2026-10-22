@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Mit {name} anmelden",
     "sso-or": "oder",
-    "sso-failed": "Die Firmenanmeldung ist fehlgeschlagen. Verwenden Sie ein Konto in der Domain Ihrer Organisation oder wenden Sie sich an einen Administrator."
+    "sso-failed": "Die Firmenanmeldung ist fehlgeschlagen. Verwenden Sie ein Konto in der Domain Ihrer Organisation oder wenden Sie sich an einen Administrator.",
+    "sso-error-registration-disabled": "Ihr Firmenkonto hat noch keinen Zugriff auf diese Installation. Bitten Sie einen Administrator um eine Einladung.",
+    "sso-error-domain": "Mit diesem Konto können Sie sich hier nicht anmelden. Verwenden Sie ein Konto in der Domain Ihres Unternehmens.",
+    "sso-error-hosted-domain": "Melden Sie sich mit dem Google-Workspace-Konto Ihres Unternehmens an, nicht mit einem privaten Konto.",
+    "sso-error-email-not-verified": "Ihr Identitätsanbieter hat Ihre E-Mail-Adresse nicht bestätigt, daher wurde kein Konto erstellt. Wenden Sie sich an einen Administrator.",
+    "sso-error-join-organization-unset": "Ihr Firmenkonto hat noch keinen Zugriff auf diese Installation. Bitten Sie einen Administrator um eine Einladung.",
+    "sso-error-join-organization-not-found": "Die Firmenanmeldung ist falsch konfiguriert. Wenden Sie sich an einen Administrator.",
+    "sso-error-email-missing": "Ihr Identitätsanbieter hat keine E-Mail-Adresse übermittelt. Wenden Sie sich an einen Administrator.",
+    "sso-error-account-not-linked": "Ein Konto mit dieser Adresse existiert bereits, aber Ihr Identitätsanbieter hat die Adresse nicht bestätigt, daher wurden sie nicht verknüpft. Melden Sie sich mit Ihrem Passwort an.",
+    "sso-error-cancelled": "Die Firmenanmeldung wurde abgebrochen."
   },
   "Forgot-password": {
     "Forgot-password": "Passwort vergessen?",

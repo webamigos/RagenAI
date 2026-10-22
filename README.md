@@ -322,7 +322,12 @@ docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f docker-com
 ```
 
 On a machine with an NVIDIA GPU and the NVIDIA Container Toolkit, add
-`-f docker-compose.appliance.gpu.yml`. The default models:
+`-f docker-compose.appliance.gpu.yml`. On an NVIDIA DGX Spark, or any Linux
+host with an NVIDIA GPU, one script does all of it and checks the GPU, the disk
+and the image architectures on the way:
+`bash infra/appliance/install-spark.sh --host <address>`
+([details](infra/appliance/README.md#with-the-script-nvidia-dgx-spark-or-any-linux-host-with-an-nvidia-gpu)).
+The default models:
 
 | Model                          | Used for                                                    |
 | ------------------------------ | ----------------------------------------------------------- |
@@ -356,8 +361,8 @@ overlay now switches each one off
 swaps in two small models, because it is about traffic, not answer quality;
 `--full-models` runs the real ones.
 
-**What it is not yet.** This is a compose overlay and a check, not an
-installer. `create-ragen-app` does not offer it, there is no offline bundle,
+**What it is not yet.** This is a compose overlay, a check and a one-host
+install script, not a supported installer. `create-ragen-app` does not offer it, there is no offline bundle,
 no hardware sizing has been measured, and there is no local reranker
 (reranking stays off). vLLM and a hybrid profile — data local, chat through one
 endpoint you choose — are designed but not built. The egress check covers

@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { signIn } from '@/app/hooks/use-better-auth';
+import { ssoErrorMessageKey } from '@/lib/oidc-errors';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 import { logger } from '@/app/lib/utils/logger';
@@ -41,9 +42,11 @@ export const LoginForm = ({ prefillEmail, sso }: LoginFormProps = {}) => {
   const oauthQuery = searchParams.get('sig')
     ? searchParams.toString()
     : undefined;
-  // Better Auth sends a failed OAuth callback back here with `?error=<code>`,
-  // e.g. `email_not_found` for an address outside the allowed domains.
+  // A refused OIDC callback comes back here with `?error=<code>` — Better
+  // Auth's own codes and the ones in `src/lib/oidc-errors.ts` — and each has
+  // a sentence saying what happened.
   const ssoError = sso ? searchParams.get('error') : null;
+  const ssoErrorKey = ssoErrorMessageKey(ssoError);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const signInWithSso = async () => {
@@ -143,13 +146,14 @@ export const LoginForm = ({ prefillEmail, sso }: LoginFormProps = {}) => {
           >
             {t('sso-sign-in', { name: sso.displayName })}
           </Button>
-          {ssoError && (
+          {ssoErrorKey && (
             <p
               className="text-sm text-destructive mt-2"
               role="alert"
               data-testid="sign-in-sso-error"
+              data-error={ssoError ?? undefined}
             >
-              {t('sso-failed')}
+              {t(ssoErrorKey)}
             </p>
           )}
           <p className="mt-6 text-center text-xs uppercase tracking-wide text-muted-foreground">

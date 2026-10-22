@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Log ind med {name}",
     "sso-or": "eller",
-    "sso-failed": "Virksomhedslogin mislykkedes. Brug en konto i din organisations domæne, eller spørg en administrator."
+    "sso-failed": "Virksomhedslogin mislykkedes. Brug en konto i din organisations domæne, eller spørg en administrator.",
+    "sso-error-registration-disabled": "Din virksomhedskonto har endnu ikke adgang til denne installation. Bed en administrator om en invitation.",
+    "sso-error-domain": "Du kan ikke logge ind her med denne konto. Brug en konto i virksomhedens domæne.",
+    "sso-error-hosted-domain": "Log ind med virksomhedens Google Workspace-konto, ikke en privat konto.",
+    "sso-error-email-not-verified": "Din identitetsudbyder bekræftede ikke din e-mailadresse, så der blev ikke oprettet en konto. Kontakt en administrator.",
+    "sso-error-join-organization-unset": "Din virksomhedskonto har endnu ikke adgang til denne installation. Bed en administrator om en invitation.",
+    "sso-error-join-organization-not-found": "Virksomhedslogin er konfigureret forkert. Kontakt en administrator.",
+    "sso-error-email-missing": "Din identitetsudbyder sendte ingen e-mailadresse. Kontakt en administrator.",
+    "sso-error-account-not-linked": "Der findes allerede en konto med denne adresse, men din identitetsudbyder bekræftede ikke adressen, så de blev ikke forbundet. Log ind med din adgangskode.",
+    "sso-error-cancelled": "Virksomhedslogin blev annulleret."
   },
   "Forgot-password": {
     "Forgot-password": "Glemt din adgangskode?",

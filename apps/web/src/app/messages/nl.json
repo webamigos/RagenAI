@@ -101,7 +101,16 @@
     "demo-fill": "Invullen",
     "sso-sign-in": "Inloggen met {name}",
     "sso-or": "of",
-    "sso-failed": "Bedrijfsaanmelding is mislukt. Gebruik een account in het domein van je organisatie of vraag een beheerder."
+    "sso-failed": "Bedrijfsaanmelding is mislukt. Gebruik een account in het domein van je organisatie of vraag een beheerder.",
+    "sso-error-registration-disabled": "Je bedrijfsaccount heeft nog geen toegang tot deze installatie. Vraag een beheerder om een uitnodiging.",
+    "sso-error-domain": "Met dit account kun je hier niet inloggen. Gebruik een account in het domein van je bedrijf.",
+    "sso-error-hosted-domain": "Meld je aan met het Google Workspace-account van je bedrijf, niet met een privéaccount.",
+    "sso-error-email-not-verified": "Je identiteitsprovider heeft je e-mailadres niet bevestigd, dus er is geen account aangemaakt. Neem contact op met een beheerder.",
+    "sso-error-join-organization-unset": "Je bedrijfsaccount heeft nog geen toegang tot deze installatie. Vraag een beheerder om een uitnodiging.",
+    "sso-error-join-organization-not-found": "Zakelijke aanmelding is verkeerd geconfigureerd. Neem contact op met een beheerder.",
+    "sso-error-email-missing": "Je identiteitsprovider heeft geen e-mailadres doorgegeven. Neem contact op met een beheerder.",
+    "sso-error-account-not-linked": "Er bestaat al een account met dit adres, maar je identiteitsprovider heeft het adres niet bevestigd, dus ze zijn niet gekoppeld. Meld je aan met je wachtwoord.",
+    "sso-error-cancelled": "Zakelijke aanmelding is geannuleerd."
   },
   "Forgot-password": {
     "Forgot-password": "Wachtwoord vergeten?",

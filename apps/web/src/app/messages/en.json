@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Sign in with {name}",
     "sso-or": "or",
-    "sso-failed": "Company sign-in failed. Use an account in your organization's domain, or ask an administrator."
+    "sso-failed": "Company sign-in failed. Use an account in your organization's domain, or ask an administrator.",
+    "sso-error-registration-disabled": "Your company account does not have access to this installation yet. Ask an administrator for an invitation.",
+    "sso-error-domain": "You cannot sign in here with this account. Use an account in your company's domain.",
+    "sso-error-hosted-domain": "Sign in with your company's Google Workspace account, not a personal one.",
+    "sso-error-email-not-verified": "Your identity provider did not confirm your email address, so no account was created. Ask an administrator.",
+    "sso-error-join-organization-unset": "Your company account does not have access to this installation yet. Ask an administrator for an invitation.",
+    "sso-error-join-organization-not-found": "Company sign-in is misconfigured. Contact an administrator.",
+    "sso-error-email-missing": "Your identity provider did not send an email address. Ask an administrator.",
+    "sso-error-account-not-linked": "An account with this address already exists, but your identity provider did not confirm the address, so the two were not linked. Sign in with your password.",
+    "sso-error-cancelled": "Company sign-in was cancelled."
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",

@@ -168,6 +168,41 @@ flowchart LR
 
 The summary step is best-effort: feature flag off, empty input, LLM errors, and Temporal-level failures all degrade to "no summary" without affecting ingest success. `mergeFileMetadata` runs **outside** the embedding try-catch so a DB error cannot falsely mark embedding as FAILED.
 
+### Recurring schedules are registered at boot
+
+Every nightly job the worker owns has one entry in `RECURRING_SCHEDULES`
+(`src/schedules.ts`): the schedule (id, job, cron, timezone) and, where it has
+one, the condition it needs. `src/schedules-at-boot.ts` upserts the list once
+the BullMQ workers are consuming, so a container install — which runs the
+image and nothing else — gets its schedules without an operator step. Before
+this, a schedule existed only where somebody had run its
+`ensure-*-schedule.ts` script, and on the appliance nobody had.
+
+- **Adding a schedule is one entry in the list.** A script is optional; if you
+  add one, make it a thin wrapper over `scripts/ensure-schedule.ts` with the
+  entry's id. `scripts/__tests__/schedules.test.ts` fails on a script whose
+  schedule is not in the list, and on an entry with no script.
+- **Conditions stay conditions.** `demo-thread-cleanup` is registered only
+  where `DEMO_ORGANIZATION_ID` is set (`skipReason`); boot skips it otherwise
+  and leaves any existing one alone. The script refuses on the same condition.
+- **The opt-out is `WORKER_DISABLED_SCHEDULES`** (comma-separated ids): boot
+  *deletes* those instead of registering them, so the choice survives every
+  restart. A script's `--delete` on its own lasts only until the next boot,
+  and the script prints that.
+- **Several replicas at once are safe.** BullMQ's `upsertJobScheduler` is
+  keyed by id and atomic; N concurrent boots leave one scheduler per id
+  (`schedules.jobs-integration.ts`).
+- **Never fatal.** Redis is checked before the workers start; a registration
+  that still fails is logged at `error` per schedule and the boot continues.
+  The next start repairs it.
+- **BullMQ only.** Under `WORKER_RUNTIME=temporal` (the `ragen-enterprise`
+  image) the scripts remain how schedules are created; they work on either
+  runtime.
+
+Removing a job from the code still does not remove its schedule — delete it
+with the script's `--delete` *and* list it in `WORKER_DISABLED_SCHEDULES`, or
+remove the entry and delete the schedule in the same release.
+
 ### Cancellation is a row, not a signal
 
 `cancelEmbedding` and the `embeddingState` query are **gone**. Cancelling writes

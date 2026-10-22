@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Se connecter avec {name}",
     "sso-or": "ou",
-    "sso-failed": "La connexion d'entreprise a échoué. Utilisez un compte du domaine de votre organisation ou contactez un administrateur."
+    "sso-failed": "La connexion d'entreprise a échoué. Utilisez un compte du domaine de votre organisation ou contactez un administrateur.",
+    "sso-error-registration-disabled": "Votre compte d'entreprise n'a pas encore accès à cette installation. Demandez une invitation à un administrateur.",
+    "sso-error-domain": "Vous ne pouvez pas vous connecter ici avec ce compte. Utilisez un compte du domaine de votre entreprise.",
+    "sso-error-hosted-domain": "Connectez-vous avec le compte Google Workspace de votre entreprise, pas avec un compte personnel.",
+    "sso-error-email-not-verified": "Votre fournisseur d'identité n'a pas confirmé votre adresse e-mail ; aucun compte n'a donc été créé. Contactez un administrateur.",
+    "sso-error-join-organization-unset": "Votre compte d'entreprise n'a pas encore accès à cette installation. Demandez une invitation à un administrateur.",
+    "sso-error-join-organization-not-found": "La connexion d'entreprise est mal configurée. Contactez un administrateur.",
+    "sso-error-email-missing": "Votre fournisseur d'identité n'a transmis aucune adresse e-mail. Contactez un administrateur.",
+    "sso-error-account-not-linked": "Un compte avec cette adresse existe déjà, mais votre fournisseur d'identité n'a pas confirmé l'adresse ; ils n'ont donc pas été liés. Connectez-vous avec votre mot de passe.",
+    "sso-error-cancelled": "La connexion d'entreprise a été annulée."
   },
   "Forgot-password": {
     "Forgot-password": "Mot de passe oublié ?",

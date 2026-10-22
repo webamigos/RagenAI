@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Přihlásit se přes {name}",
     "sso-or": "nebo",
-    "sso-failed": "Firemní přihlášení selhalo. Použijte účet v doméně vaší organizace, nebo požádejte správce."
+    "sso-failed": "Firemní přihlášení selhalo. Použijte účet v doméně vaší organizace, nebo požádejte správce.",
+    "sso-error-registration-disabled": "Váš firemní účet zatím nemá přístup k této instalaci. Požádejte správce o pozvánku.",
+    "sso-error-domain": "Tímto účtem se zde přihlásit nelze. Použijte účet v doméně vaší firmy.",
+    "sso-error-hosted-domain": "Přihlaste se firemním účtem Google Workspace, ne soukromým účtem.",
+    "sso-error-email-not-verified": "Poskytovatel identity nepotvrdil vaši e-mailovou adresu, proto nebyl vytvořen žádný účet. Obraťte se na správce.",
+    "sso-error-join-organization-unset": "Váš firemní účet zatím nemá přístup k této instalaci. Požádejte správce o pozvánku.",
+    "sso-error-join-organization-not-found": "Firemní přihlášení je špatně nakonfigurováno. Obraťte se na správce.",
+    "sso-error-email-missing": "Poskytovatel identity neposlal e-mailovou adresu. Obraťte se na správce.",
+    "sso-error-account-not-linked": "Účet s touto adresou už existuje, ale poskytovatel identity adresu nepotvrdil, proto nebyly propojeny. Přihlaste se heslem.",
+    "sso-error-cancelled": "Firemní přihlášení bylo zrušeno."
   },
   "Forgot-password": {
     "Forgot-password": "Zapomněli jste heslo?",

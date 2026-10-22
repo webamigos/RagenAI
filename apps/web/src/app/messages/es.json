@@ -101,7 +101,16 @@
     "demo-fill": "Fill in",
     "sso-sign-in": "Iniciar sesión con {name}",
     "sso-or": "o",
-    "sso-failed": "El inicio de sesión corporativo ha fallado. Usa una cuenta del dominio de tu organización o pide ayuda a un administrador."
+    "sso-failed": "El inicio de sesión corporativo ha fallado. Usa una cuenta del dominio de tu organización o pide ayuda a un administrador.",
+    "sso-error-registration-disabled": "Tu cuenta corporativa todavía no tiene acceso a esta instalación. Pide una invitación a un administrador.",
+    "sso-error-domain": "No puedes iniciar sesión aquí con esta cuenta. Usa una cuenta del dominio de tu empresa.",
+    "sso-error-hosted-domain": "Inicia sesión con la cuenta de Google Workspace de tu empresa, no con una cuenta personal.",
+    "sso-error-email-not-verified": "Tu proveedor de identidad no confirmó tu dirección de correo, así que no se creó ninguna cuenta. Contacta con un administrador.",
+    "sso-error-join-organization-unset": "Tu cuenta corporativa todavía no tiene acceso a esta instalación. Pide una invitación a un administrador.",
+    "sso-error-join-organization-not-found": "El inicio de sesión corporativo está mal configurado. Contacta con un administrador.",
+    "sso-error-email-missing": "Tu proveedor de identidad no envió ninguna dirección de correo. Contacta con un administrador.",
+    "sso-error-account-not-linked": "Ya existe una cuenta con esta dirección, pero tu proveedor de identidad no confirmó la dirección, así que no se vincularon. Inicia sesión con tu contraseña.",
+    "sso-error-cancelled": "Se canceló el inicio de sesión corporativo."
   },
   "Forgot-password": {
     "Forgot-password": "¿Olvidaste tu contraseña?",
