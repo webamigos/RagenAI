@@ -40,6 +40,7 @@ import {
 import {
   resolvePiiMaskingSelection,
   PII_COMPOSE_PROFILE,
+  PII_CONTAINER_COMPOSE_FILE,
   type PiiMaskingSelection,
 } from './pii-masking';
 import { generateSecret } from './secrets';
@@ -360,7 +361,10 @@ export async function run(argv: string[]): Promise<boolean> {
         '` profile, so start the stack with `' +
         composeUpCommand(composeProfiles) +
         '` — a plain `up` skips those two containers and the app would ' +
-        'point at services nobody started.',
+        'point at services nobody started. With the apps in containers, add `-f ' +
+        PII_CONTAINER_COMPOSE_FILE +
+        '` to the full-app command instead: the Presidio URLs in .env.local ' +
+        'are localhost ones, for apps on the host.',
     );
   }
 

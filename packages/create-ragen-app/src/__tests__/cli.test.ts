@@ -889,6 +889,25 @@ describe('choosing RustFS', () => {
     expect(rustfsNote).toContain('http://localhost:59001');
   });
 
+  /**
+   * The URLs this wizard writes are localhost ones, which inside a container
+   * point at the container itself. The full-app stack no longer blanks them,
+   * so without the overlay a container install fails closed on every message
+   * — loudly, but only the note says what to add.
+   */
+  it('tells a container install to add the PII overlay', async () => {
+    chooseRustfs();
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const piiNote = vi
+      .mocked(clack.log.info)
+      .mock.calls.map(([message]) => String(message))
+      .find((message) => message.includes('PII masking is on'));
+    expect(piiNote).toContain('-f docker-compose.pii.yml');
+  });
+
   it('probes RustFS’s ports and prints a recovery command naming both profiles', async () => {
     vi.mocked(busyPublishedPorts).mockResolvedValueOnce([
       { service: 'RustFS (S3 API)', variable: 'RUSTFS_PORT', port: 59000 },
