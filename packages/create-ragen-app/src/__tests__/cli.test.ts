@@ -735,6 +735,20 @@ describe('the closing instructions', () => {
     expect(outro).not.toContain('npm run web:dev');
   });
 
+  it('carry the PII overlay when masking is on, or chat fails closed', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    // Yes to PII masking.
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+
+    await run(['/tmp/ragen-test', '--skip-docker', '--skip-install']);
+
+    const outro = String(vi.mocked(clack.outro).mock.calls.at(-1)?.[0]);
+    expect(outro).toContain(
+      'docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f docker-compose.pii.yml up',
+    );
+    expect(outro).not.toContain('npm run ragen:up:everything');
+  });
+
   it('point a full install at the three host processes', async () => {
     vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
     vi.mocked(clack.confirm).mockResolvedValue(false as never);
@@ -887,6 +901,25 @@ describe('choosing RustFS', () => {
       'docker compose --profile pii --profile s3 up -d',
     );
     expect(rustfsNote).toContain('http://localhost:59001');
+  });
+
+  /**
+   * The URLs this wizard writes are localhost ones, which inside a container
+   * point at the container itself. The full-app stack no longer blanks them,
+   * so without the overlay a container install fails closed on every message
+   * — loudly, but only the note says what to add.
+   */
+  it('tells a container install to add the PII overlay', async () => {
+    chooseRustfs();
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const piiNote = vi
+      .mocked(clack.log.info)
+      .mock.calls.map(([message]) => String(message))
+      .find((message) => message.includes('PII masking is on'));
+    expect(piiNote).toContain('-f docker-compose.pii.yml');
   });
 
   it('probes RustFS’s ports and prints a recovery command naming both profiles', async () => {
