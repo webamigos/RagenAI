@@ -83,6 +83,19 @@ export const MEMORY_PURGE_SCHEDULE = {
   timezone: SCHEDULE_TIMEZONE,
 } as const satisfies JobSchedule;
 
+/**
+ * Per-organization thread retention (spec
+ * 2026-10-17-ragen-as-an-on-premises-appliance, B4). 04:30 — after the other
+ * three deletes, so no two nightly deletes run against the database at once.
+ * It deletes nothing for an organization that has not set a period.
+ */
+export const THREAD_RETENTION_SCHEDULE = {
+  id: 'thread-retention',
+  job: 'pruneExpiredThreads',
+  cron: '30 4 * * *',
+  timezone: SCHEDULE_TIMEZONE,
+} as const satisfies JobSchedule;
+
 type Env = Readonly<Record<string, string | undefined>>;
 
 export interface RecurringSchedule {
@@ -113,6 +126,10 @@ export const RECURRING_SCHEDULES: readonly RecurringSchedule[] = [
   // Unconditional: with `personalMemory` off everywhere there is nothing to
   // purge and the run is a no-op.
   { schedule: MEMORY_PURGE_SCHEDULE },
+  // Unconditional: an organization without `threadRetentionDays` is skipped
+  // by the job, so registering it everywhere deletes nothing until an owner
+  // or admin chooses a period.
+  { schedule: THREAD_RETENTION_SCHEDULE },
 ];
 
 /** The opt-out: comma-separated schedule ids boot removes instead of registering. */

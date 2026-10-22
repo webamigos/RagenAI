@@ -659,7 +659,8 @@
       "no-connectors": "Nenhum conector disponível. Entre em contato com o administrador.",
       "hint": "Os conectores não marcados herdam os padrões do aplicativo. Apenas os conectores ativados pelo administrador são exibidos.",
       "read-only": "As configurações de conectores são somente leitura para esta organização."
-    }
+    },
+    "data-retention": "Retenção de dados"
   },
   "settings-page": {
     "title": "Configurações",
@@ -3490,5 +3491,29 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Retenção de conversas",
+    "description": "Elimine automaticamente as conversas a que ninguém acrescentou nada durante um período definido. Desativado por predefinição: as conversas são mantidas até alguém as eliminar.",
+    "what-is-deleted": "A eliminação é permanente. Uma conversa é removida com as suas mensagens, as respetivas fontes, as partilhas, o link público e as memórias pessoais que atualizou por último. Não pode ser recuperada.",
+    "which-threads": "Aplica-se a todas as conversas desta organização, incluindo as partilhadas, com estrela, do chatbot e da API. Os documentos da base de conhecimento não são afetados.",
+    "when": "Uma conversa é eliminada quando passa o número de dias escolhido sem nenhuma mensagem nova. A verificação é feita uma vez por dia.",
+    "current-off": "Atualmente desativado: as conversas são mantidas até alguém as eliminar.",
+    "current-on": "Atualmente ativado: as conversas são eliminadas após {days} dias sem uma mensagem nova.",
+    "option-off": "Desativado",
+    "option-off-description": "Manter as conversas até alguém as eliminar",
+    "option-days": "{days} dias",
+    "option-days-description": "Eliminar uma conversa após {days} dias sem uma mensagem nova",
+    "save": "Guardar período de retenção",
+    "saving": "A guardar…",
+    "confirm-title": "Eliminar conversas após {days} dias?",
+    "confirm-description": "Na próxima execução diária, todas as conversas desta organização sem mensagens novas nos últimos {days} dias serão eliminadas permanentemente, com as suas mensagens, fontes, partilhas e link público. Esta ação não pode ser anulada.",
+    "confirm-action": "Eliminar após {days} dias",
+    "saved-off": "Retenção de conversas desativada. Nenhuma conversa será eliminada automaticamente.",
+    "saved-on": "Guardado. As conversas sem mensagens novas durante {days} dias serão eliminadas na próxima execução diária.",
+    "error-invalid-period": "Não guardado: esse período não está disponível. Escolha uma das opções da lista e guarde novamente.",
+    "error-forbidden": "Não guardado: apenas o proprietário ou um administrador da organização pode alterar isto.",
+    "error-settings-locked": "Não guardado: as definições desta organização estão bloqueadas. Peça ao administrador da plataforma para as desbloquear.",
+    "error-save-failed": "Não guardado: ocorreu um erro. Tente novamente dentro de momentos."
   }
 }

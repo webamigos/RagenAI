@@ -659,7 +659,8 @@
       "no-connectors": "Ingen koblinger er tilgjengelige. Kontakt administratoren.",
       "hint": "Koblinger som ikke er avkrysset, arver applikasjonens standardinnstillinger. Bare koblinger aktivert av administratoren vises.",
       "read-only": "Koblingsinnstillingene er skrivebeskyttet for denne organisasjonen."
-    }
+    },
+    "data-retention": "Datalagring"
   },
   "settings-page": {
     "title": "Innstillinger",
@@ -3490,5 +3491,29 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Lagring av tråder",
+    "description": "Slett samtaler automatisk når ingen har lagt til noe i en bestemt periode. Av som standard: tråder beholdes til noen sletter dem.",
+    "what-is-deleted": "Slettingen er permanent. En tråd fjernes sammen med meldingene, kildene deres, delinger, den offentlige lenken og de personlige minnene den sist oppdaterte. Den kan ikke gjenopprettes.",
+    "which-threads": "Gjelder alle tråder i denne organisasjonen, også delte, stjernemerkede, chatbot- og API-samtaler. Dokumenter i kunnskapsbasen berøres ikke.",
+    "when": "En tråd slettes når den ikke har fått en ny melding i det valgte antallet dager. Kontrollen kjører én gang om dagen.",
+    "current-off": "Av: tråder beholdes til noen sletter dem.",
+    "current-on": "På: tråder slettes etter {days} dager uten ny melding.",
+    "option-off": "Av",
+    "option-off-description": "Behold tråder til noen sletter dem",
+    "option-days": "{days} dager",
+    "option-days-description": "Slett en tråd etter {days} dager uten ny melding",
+    "save": "Lagre lagringstid",
+    "saving": "Lagrer…",
+    "confirm-title": "Slette tråder etter {days} dager?",
+    "confirm-description": "Ved neste daglige kjøring slettes hver tråd i denne organisasjonen uten ny melding de siste {days} dagene permanent, sammen med meldinger, kilder, delinger og offentlig lenke. Dette kan ikke angres.",
+    "confirm-action": "Slett etter {days} dager",
+    "saved-off": "Lagring av tråder er slått av. Ingen tråder slettes automatisk.",
+    "saved-on": "Lagret. Tråder uten ny melding på {days} dager slettes ved neste daglige kjøring.",
+    "error-invalid-period": "Ikke lagret — den perioden er ikke tilgjengelig. Velg et av alternativene i listen og lagre på nytt.",
+    "error-forbidden": "Ikke lagret — bare en eier eller administrator av organisasjonen kan endre dette.",
+    "error-settings-locked": "Ikke lagret — organisasjonens innstillinger er låst. Be plattformadministratoren om å låse dem opp.",
+    "error-save-failed": "Ikke lagret — noe gikk galt. Prøv igjen om et øyeblikk."
   }
 }

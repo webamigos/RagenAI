@@ -21,6 +21,7 @@ import { memoryPurge } from '../../src/handlers/memory-purge.js';
 import { syncDocumentAccess } from '../../src/handlers/sync-document-access.js';
 import { optimizeDocument } from '../../src/handlers/optimize-document.js';
 import { pruneAnalyticsRetrievals } from '../../src/handlers/prune-analytics-retrievals.js';
+import { pruneExpiredThreads } from '../../src/handlers/prune-expired-threads.js';
 import { reindexDocumentVersion } from '../../src/handlers/reindex-document-version.js';
 import { runFileEmbeddings } from '../../src/handlers/parse-and-embed.js';
 import { scrapeWebsite } from '../../src/handlers/scrape-website.js';
@@ -104,6 +105,7 @@ export async function startBullMqHarness(
     memoryExtract,
     memoryPurge,
     syncDocumentAccess,
+    pruneExpiredThreads,
     ...options.handlerOverrides,
   };
 

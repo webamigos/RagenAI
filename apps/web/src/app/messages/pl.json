@@ -659,7 +659,8 @@
       "no-connectors": "Brak dostępnych integracji. Skontaktuj się z administratorem.",
       "hint": "Niezaznaczone integracje dziedziczą domyślne ustawienia aplikacji. Wyświetlane są tylko integracje włączone przez administratora.",
       "read-only": "Ustawienia konektorów są w tej organizacji tylko do odczytu."
-    }
+    },
+    "data-retention": "Przechowywanie danych"
   },
   "settings-page": {
     "title": "Ustawienia",
@@ -3490,5 +3491,29 @@
     "paired-toast": "Pliki połączone w parę.",
     "removed-toast": "Para usunięta.",
     "error": "Nie udało się zmienić pary. Plik może już być sparowany albo nie zarządzasz obydwoma plikami."
+  },
+  "thread-retention": {
+    "title": "Przechowywanie wątków",
+    "description": "Automatycznie usuwaj rozmowy, do których nikt nic nie dodał przez określony czas. Domyślnie wyłączone: wątki są przechowywane, dopóki ktoś ich nie usunie.",
+    "what-is-deleted": "Usunięcie jest trwałe. Wątek znika razem z wiadomościami, ich źródłami, udostępnieniami, linkiem publicznym i osobistymi wspomnieniami, które ostatnio zaktualizował. Nie można go odzyskać.",
+    "which-threads": "Dotyczy każdego wątku w tej organizacji, także udostępnionych, oznaczonych gwiazdką, rozmów z chatbotem i przez API. Dokumenty w bazie wiedzy pozostają bez zmian.",
+    "when": "Wątek jest usuwany, gdy przez wybraną liczbę dni nie pojawi się w nim żadna nowa wiadomość. Sprawdzanie odbywa się raz dziennie.",
+    "current-off": "Obecnie wyłączone: wątki są przechowywane, dopóki ktoś ich nie usunie.",
+    "current-on": "Obecnie włączone: wątki są usuwane po {days} dniach bez nowej wiadomości.",
+    "option-off": "Wyłączone",
+    "option-off-description": "Przechowuj wątki, dopóki ktoś ich nie usunie",
+    "option-days": "{days} dni",
+    "option-days-description": "Usuń wątek po {days} dniach bez nowej wiadomości",
+    "save": "Zapisz okres przechowywania",
+    "saving": "Zapisywanie…",
+    "confirm-title": "Usuwać wątki po {days} dniach?",
+    "confirm-description": "Przy najbliższym codziennym uruchomieniu każdy wątek w tej organizacji bez nowej wiadomości w ciągu ostatnich {days} dni zostanie trwale usunięty razem z wiadomościami, źródłami, udostępnieniami i linkiem publicznym. Tej operacji nie można cofnąć.",
+    "confirm-action": "Usuwaj po {days} dniach",
+    "saved-off": "Przechowywanie wątków wyłączone. Żaden wątek nie zostanie usunięty automatycznie.",
+    "saved-on": "Zapisano. Wątki bez nowej wiadomości przez {days} dni zostaną usunięte przy najbliższym codziennym uruchomieniu.",
+    "error-invalid-period": "Nie zapisano — ten okres jest niedostępny. Wybierz jedną z opcji z listy i zapisz ponownie.",
+    "error-forbidden": "Nie zapisano — zmienić to może tylko właściciel lub administrator organizacji.",
+    "error-settings-locked": "Nie zapisano — ustawienia tej organizacji są zablokowane. Poproś administratora platformy o ich odblokowanie.",
+    "error-save-failed": "Nie zapisano — coś poszło nie tak. Spróbuj ponownie za chwilę."
   }
 }

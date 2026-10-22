@@ -142,17 +142,18 @@ Two settings to decide before the first start:
   without removing the file. The egress check does not cover this path yet
   (section 2).
 
-Three things the template does not do yet:
+Two things the template does not do yet:
 
 - **No TLS.** web (3000), api (3001) and admin (3200) are published on every
   interface; the backing services on loopback only. Put the organization's
   own reverse proxy with its certificate in front of web.
 - **apps/admin reads `apps/admin/.env.local`** in this stack, not the root
   file, and the template does not cover it.
-- **Nightly schedules are not created.** Analytics pruning and the personal
-  memory purge are BullMQ schedules made by scripts in
-  `apps/worker/src/scripts/ensure-*-schedule.ts`, run once per environment.
-  Nothing runs them on an appliance.
+
+Nightly schedules need no step: the worker registers them at boot
+(analytics pruning, the personal memory purge, and thread retention, which
+deletes nothing until an organization chooses a period). To keep one off,
+list its id in `WORKER_DISABLED_SCHEDULES`.
 
 ### 1.4 Start
 
@@ -754,6 +755,6 @@ Gaps this runbook works around or points at, in one place:
   a way to re-embed published Brain pages (8.2).
 - **`embeddings-dimension-mismatch` on the appliance** cannot see a model
   change behind `local-embed` (8.2).
-- **The container stack's admin env file, TLS and nightly schedules** (1.3).
+- **The container stack's admin env file and TLS** (1.3).
 - **Sizing per tier (A5)**, the vLLM variant, a local reranker and the hybrid
   profile (A1b), and the rest of the egress check (A3b).
