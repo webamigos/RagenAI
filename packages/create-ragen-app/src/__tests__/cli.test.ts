@@ -735,6 +735,20 @@ describe('the closing instructions', () => {
     expect(outro).not.toContain('npm run web:dev');
   });
 
+  it('carry the PII overlay when masking is on, or chat fails closed', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    // Yes to PII masking.
+    vi.mocked(clack.confirm).mockResolvedValue(true as never);
+
+    await run(['/tmp/ragen-test', '--skip-docker', '--skip-install']);
+
+    const outro = String(vi.mocked(clack.outro).mock.calls.at(-1)?.[0]);
+    expect(outro).toContain(
+      'docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f docker-compose.pii.yml up',
+    );
+    expect(outro).not.toContain('npm run ragen:up:everything');
+  });
+
   it('point a full install at the three host processes', async () => {
     vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
     vi.mocked(clack.confirm).mockResolvedValue(false as never);

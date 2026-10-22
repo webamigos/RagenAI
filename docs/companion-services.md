@@ -345,8 +345,9 @@ instead.
 ### Everything in containers (`ragen:up:everything`)
 
 `docker-compose.fullapp.yml` runs web, api, worker and admin as containers on
-top of `docker-compose.yml`. Each reads the root `.env.local` through
-`env_file:`, and then its `environment:` block, which **wins over `.env.local`**,
+top of `docker-compose.yml`. web, api and worker read the root `.env.local`
+through `env_file:` (admin reads `apps/admin/.env.local` instead, so an
+admin-only setting goes there), and then its `environment:` block, which **wins over `.env.local`**,
 replaces the addresses that differ inside the network (`postgres:5432` for
 `localhost:55432`, and so on). So a setting belongs in that block only when
 its container value differs from its host value; anything an operator owns
