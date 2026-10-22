@@ -9,7 +9,7 @@ npx create-ragen-app my-ragen-app
 
 It clones the repo, generates every secret it safely can, lets you paste a
 plain OpenAI or Anthropic API key instead of configuring an enterprise model
-provider, starts the backing services (Postgres, Qdrant, Redis, …) in Docker,
+provider (or skip keys entirely with [an appliance](#appliance)), starts the backing services (Postgres, Qdrant, Redis, …) in Docker,
 and runs the app's own first-run setup (Prisma client, migrations, seed
 data). What is left is starting the three processes, in separate terminals:
 
@@ -100,10 +100,11 @@ What counts as install-affecting:
 | An app the web app can no longer run without                                      | the outro in `src/cli.ts`, which tells people what to start                                                                                                                                                     |
 | A variable a provider seam makes required                                         | `src/worker-runtime.ts`, `src/storage-provider.ts` or `src/encryption-provider.ts` — the selection writes it, and `tests/architecture/create-ragen-app-knows-the-provider-seams.test.ts` fails when it does not |
 | A new first-run step (migration, seed, generate)                                  | `src/tasks.ts` and `maybeRunFirstTimeSetup`                                                                                                                                                                     |
+| A change to the appliance's route table, compose files or env template            | `APPLIANCE_TIERS` in `src/appliance.ts` — `create-ragen-app-manifest-is-current.test.ts` fails when its model ids, files or values disagree with `infra/appliance/` and `routes.appliance.yaml`                 |
 | A new connector                                                                   | nothing here. The catalogue is rows (ADR-52): the migration that creates `mcp_catalog_entries` seeds the eleven built-ins, `npm run db:seed` keeps them current, and a twelfth is added from the admin panel    |
-| A `docker-compose.yml` service or published port change                           | `PUBLISHED_PORTS` in `src/tasks.ts` — the wizard probes those ports before starting the stack, and `tests/architecture/installer-ports-agree-with-compose.test.ts` fails when the two tables disagree            |
-| A published port behind a profile the wizard starts (`pii`, `s3`)                 | `PROFILE_PUBLISHED_PORTS` in `src/tasks.ts`, and `PROFILES_THE_WIZARD_MAY_START` in that same architecture test — a profile missing from either is ports the wizard starts and never probes                      |
-| A change to how Compose scopes its resources                                      | `resolveComposeProjectName` in `src/tasks.ts` — it writes `COMPOSE_PROJECT_NAME` into the install's `.env`, which is the only thing keeping two installs in same-named directories apart                          |
+| A `docker-compose.yml` service or published port change                           | `PUBLISHED_PORTS` in `src/tasks.ts` — the wizard probes those ports before starting the stack, and `tests/architecture/installer-ports-agree-with-compose.test.ts` fails when the two tables disagree           |
+| A published port behind a profile the wizard starts (`pii`, `s3`)                 | `PROFILE_PUBLISHED_PORTS` in `src/tasks.ts`, and `PROFILES_THE_WIZARD_MAY_START` in that same architecture test — a profile missing from either is ports the wizard starts and never probes                     |
+| A change to how Compose scopes its resources                                      | `resolveComposeProjectName` in `src/tasks.ts` — it writes `COMPOSE_PROJECT_NAME` into the install's `.env`, which is the only thing keeping two installs in same-named directories apart                        |
 | A gate that a brand-new install cannot pass (registration, licensing, onboarding) | usually the app, not this package — a fresh install must be able to reach a working chat without an administrator who does not exist yet                                                                        |
 
 `tests/architecture/create-ragen-app-manifest-is-current.test.ts` catches one
@@ -113,18 +114,80 @@ about — has no textual signal, which is why the rule above is a rule.
 
 ## Flags
 
-| Flag                           | Effect                                                                            |
-| ------------------------------ | --------------------------------------------------------------------------------- |
-| `--ref=<ref>`                  | Clone a branch, tag or commit SHA other than `main`                               |
-| `--skip-docker`                | Write the `.env.local` files but don't start Docker                               |
-| `--skip-install`               | Skip `npm install` / Prisma / seed                                                |
-| `--yes`                        | Accept every default without prompting                                            |
-| `--provider=openai\|anthropic` | Take the API key from `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` instead of prompting |
+| Flag                           | Effect                                                                                 |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `--ref=<ref>`                  | Clone a branch, tag or commit SHA other than `main`                                    |
+| `--skip-docker`                | Write the `.env.local` files but don't start Docker                                    |
+| `--skip-install`               | Skip `npm install` / Prisma / seed                                                     |
+| `--yes`                        | Accept every default without prompting                                                 |
+| `--provider=openai\|anthropic` | Take the API key from `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` instead of prompting      |
+| `--appliance[=local]`          | Install an appliance: models on this machine, no API key (see [Appliance](#appliance)) |
+| `--tier=default`               | The appliance's model tier; only with `--appliance`                                    |
+| `--gpu`                        | Give the appliance's model server the NVIDIA GPUs; only with `--appliance`             |
 
 Anything the wizard doesn't ask about (Stripe, email, MCP connectors) ships
 exactly as documented in the repo's own
 `.env.example` files — see
 [docs/self-hosting](https://docs.ragen.ai/docs/self-hosting).
+
+## Appliance
+
+Ragen on one machine with its models served locally, so no model call leaves
+it — the on-premises appliance in the repository's
+`docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md` (step C1).
+Pick _"Models on this machine"_ in the provider question, or pass
+`--appliance`:
+
+```bash
+npx create-ragen-app my-appliance --appliance --yes          # CPU only
+npx create-ragen-app my-appliance --appliance --gpu --yes    # NVIDIA GPU
+```
+
+**What it asks.** Local or hybrid, then the model tier, then whether the
+machine has an NVIDIA GPU with the NVIDIA Container Toolkit. Today two of
+those have one answer, so the wizard says which rather than asking:
+
+- **Profile: local only.** Hybrid — documents on the machine, chat through
+  one EU endpoint — is listed as not available yet. Its compose profile does
+  not exist (A1b in the spec), and `--appliance=hybrid` is refused with that
+  reason rather than quietly installed as local.
+- **Tier: `default` only, and not yet measured.** It is the configuration the
+  repository's appliance files ship: Ollama with Bielik 11B, Qwen 2.5 7B,
+  Gemma 3 12B and BGE-M3. The spec offers no tier before its sizing has been
+  measured on real hardware (A5), which has not happened, so the wizard warns
+  that nobody can yet say which machine this tier needs or how many people
+  it serves. More tiers are rows in `APPLIANCE_TIERS`, not new code paths.
+
+It asks for **no API key**, and answers the remaining questions with the
+choices that stay on the machine: files on local disk, a generated local
+encryption key, and BullMQ on the stack's own Redis. PII masking stays off,
+as in any unattended install.
+
+**What it writes.**
+
+- **The env** (`.env.local`): `DEFAULT_MODEL=local-chat`, the small model
+  for rephrase, summaries and scoring, `local-vision` as the multimodal
+  fallback, `EMBEDDINGS_MODEL=local-embed` with `VECTOR_SIZE=1024`,
+  `LLM_OLLAMA_BASE_URL`/`LLM_OLLAMA_API_KEY`, `DOCUMENT_PARSER=docling` and
+  `DOCLING_STRICT=1` — the same values as `infra/appliance/appliance.env.example`.
+- **The route file**: `infra/llm-gateway/routes.appliance.yaml` copied over
+  `infra/llm-gateway/routes.yaml`. Before writing it, the wizard reads the
+  table it cloned and stops if any route is not `openai-compatible` on the
+  local `ollama` connection, or if a model the env selects has no route. The
+  appliance's containers read the original table; the copy means an app run
+  on the host finds no cloud route either.
+- **The profile** (`.env`): `COMPOSE_FILE` naming `docker-compose.yml`,
+  `docker-compose.fullapp.yml` and `docker-compose.appliance.yml` (plus
+  `docker-compose.appliance.gpu.yml` with a GPU). Compose reads it on every
+  command in that directory, so `docker compose ps`, `logs` and `down`
+  address the appliance without `-f`. An existing `COMPOSE_FILE` is kept.
+
+**What it runs.** Everything is in containers, so the host setup (`npm
+install`, Prisma, migrations, seed) is skipped: the stack's `migrate` service
+migrates the database. Starting it pulls the release images and about 20 GB
+of models the first time; later starts need no network. `npm run
+appliance:egress-check`, from a full checkout, proves that nothing leaves the
+machine.
 
 ## Declining to paste a key
 

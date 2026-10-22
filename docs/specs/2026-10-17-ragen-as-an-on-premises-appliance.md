@@ -597,6 +597,29 @@ repeatable demo, and records the gaps as tests.
 - [ ] **C1.** `create-ragen-app` gains "appliance". It asks local or hybrid,
   then the tier (and for hybrid the EU endpoint), and writes the profile, the
   route file and the env.
+  - [x] **C1a (local, default tier).** "Models on this machine" in the
+    provider question, or `--appliance` (`--tier=`, `--gpu`). It asks no API
+    key. It writes the profile as `COMPOSE_FILE` in `.env` (the standard
+    files plus `docker-compose.appliance.yml`, and the GPU file on request).
+    It copies `routes.appliance.yaml` over `routes.yaml` after checking that
+    every route is `openai-compatible` on the local `ollama` connection and
+    that every model the env selects is routed. The env is the template's
+    model ids, `VECTOR_SIZE=1024` and `DOCLING_STRICT=1`. Storage, encryption
+    and the worker runtime are answered with the on-machine choices, and the
+    host setup is skipped because the containers migrate. Profiles and tiers
+    are rows in `packages/create-ragen-app/src/appliance.ts`. The one tier,
+    `default`, is the Phase 0/A1 Ollama set and is labelled as not yet
+    measured. The installer CI job scaffolds an appliance on every PR, and
+    `create-ragen-app-manifest-is-current` holds the tier to `infra/appliance/`
+    and the route table. The `applianceRules` env fragment named under Core
+    surfaces does not exist yet; the wizard writes what it would require.
+  - [ ] **C1b.** Hybrid: offered once the `appliance-hybrid` profile exists
+    (A1b), asking for the EU endpoint. Until then it is listed as not
+    available and `--appliance=hybrid` is refused.
+  - [ ] **C1c.** More tiers, each offered only after A5 has measured it. A
+    tier is a row, not a code path. PII masking in the appliance container
+    stack also waits: Presidio's URLs there must be service names in `.env`,
+    which the wizard does not write yet.
 - [ ] **C2.** Offline bundle: the release's images as a tarball, with a
   pre-seeded basal volume, the default tier's model weights and a checksum
   manifest. The bundle installs and upgrades with no network, and runs
@@ -625,6 +648,14 @@ repeatable demo, and records the gaps as tests.
   model swap with re-index, backup and restore of Postgres, Qdrant and
   storage, and a first-line checklist that first-line support works through
   with its role in C3 before escalating to us.
+
+  Partly done: [the runbook](../appliance-runbook.md) covers the manual
+  install, the egress check, backup and restore, online upgrade, rollback
+  with the additive-migrations rule, model swap with a full re-index, and
+  troubleshooting per failure mode. Still to do:
+  - the offline upgrade, once C2 exists
+  - the first-line checklist as a role, once C3 exists (a draft is there)
+  - the install through `create-ragen-app`, once C1 lands
 
 ## Testing
 
