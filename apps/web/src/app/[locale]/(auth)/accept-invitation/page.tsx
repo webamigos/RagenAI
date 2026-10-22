@@ -8,10 +8,13 @@ import { auth } from '@/lib/auth';
 import { redirect } from '@/i18n/routing';
 import db from '@ragenai/prisma-client';
 import { getInvitationDetails } from './actions';
+import { getInstanceBrandingQuery } from '@/features/branding/services/queries/get-instance-branding-query';
+import { rebrandText } from '@/features/branding/utils/rebrand-text';
 
 export async function generateMetadata() {
+  const { productName } = await getInstanceBrandingQuery();
   return {
-    title: 'Accept Invitation - Ragen AI',
+    title: rebrandText('Accept Invitation - Ragen AI', productName),
   };
 }
 

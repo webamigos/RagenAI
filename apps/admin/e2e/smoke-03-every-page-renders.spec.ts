@@ -24,6 +24,7 @@ const PAGES: [keyof typeof ROUTES, string][] = [
   ['connectorHealth', 'Connector Health'],
   ['mcpCatalogue', 'MCP Catalogue'],
   ['ragSettings', 'RAG Settings'],
+  ['branding', 'Branding'],
   ['guardrails', 'Guardrails'],
   ['assistantTemplates', 'Global Assistants'],
   ['templateAccess', 'Assistants Access Management'],

@@ -47,6 +47,7 @@ export const FEATURE_KEYS = [
   'personalMemory',
   'crossQueryFusion',
   'languagePairs',
+  'instanceBranding',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -177,6 +178,14 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * defaults to `false`. A pair changes what the panel shows and never what a
  * question retrieves, and Ragen never creates one on its own.
  *
+ * `instanceBranding` lets the install carry its own product name, logo and
+ * palette, set in `apps/admin` (spec 2026-10-17-ragen-as-an-on-premises-appliance,
+ * B2). It defaults to `false` (ADR-50), and off means the stored branding row
+ * is ignored, so turning it off is the whole rollback. It is **instance-wide**:
+ * the branding belongs to the install, not to an organization, so it is read
+ * with {@link resolveInstanceFeature} — the platform default, then this code
+ * default — and a per-organization override or a plan cannot change it.
+ *
  * `personalMemory` lets panel chat remember what a user says about themselves
  * — preferences, role, ongoing work — across their own threads (spec
  * 2026-09-27-personal-memory-across-threads). One extraction call per turn,
@@ -211,6 +220,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   personalMemory: false,
   crossQueryFusion: false,
   languagePairs: false,
+  instanceBranding: false,
 };
 
 /** Human-readable names, shared so the admin panel and the app cannot disagree. */
@@ -249,7 +259,24 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
     'Cross-query fusion: without a reranker, rank hits from every query together so the multi-query variant counts',
   languagePairs:
     'Language pairs: link the same document in two languages (suggestions, PII check, Brain grouping)',
+  instanceBranding:
+    'Instance branding: product name, logo and palette (instance-wide, read from the platform default only)',
 };
+
+/**
+ * Keys that belong to the install rather than to an organization.
+ *
+ * They live in `FEATURE_KEYS` so the platform-defaults form can switch them,
+ * but there is no organization to ask when the answer is needed — an email,
+ * a sign-in page — so a per-organization override or a plan would be a
+ * control that does nothing. {@link resolveInstanceFeature} is how they are
+ * read.
+ */
+export const INSTANCE_FEATURE_KEYS = [
+  'instanceBranding',
+] as const satisfies readonly FeatureKey[];
+
+export type InstanceFeatureKey = (typeof INSTANCE_FEATURE_KEYS)[number];
 
 /**
  * Keep only recognised keys with a usable value, dropping anything else.
@@ -347,6 +374,20 @@ export function resolveFeatures(
     }
   }
   return out;
+}
+
+/**
+ * An instance-wide flag: the platform default, then the code default.
+ *
+ * The same precedence as {@link resolveFeatures} with the two
+ * organization-shaped layers left out, so the admin panel and apps/web read
+ * it identically.
+ */
+export function resolveInstanceFeature(
+  key: InstanceFeatureKey,
+  platformDefaults: PlatformFeatureDefaults | null | undefined,
+): ResolvedFeature {
+  return resolveFeatures({ platformDefaults })[key];
 }
 
 /** The flags alone, for callers that only need to gate on them. */

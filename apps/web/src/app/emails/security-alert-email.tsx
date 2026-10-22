@@ -1,4 +1,5 @@
 import { Heading, Section, Text, Link } from '@react-email/components';
+import type { EmailBranding } from '@/features/branding/contracts/branding.types';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 import { code, strong, type EmailTranslator } from './utils/email-translator';
@@ -17,6 +18,8 @@ type Props = {
   locale: string;
   /** The `emails.security-alert` strings in `locale`. */
   t: EmailTranslator;
+  /** The install's branding; absent is Ragen's (spec B2). */
+  branding?: EmailBranding;
 };
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -45,6 +48,7 @@ const SecurityAlertEmail = ({
   createdAtIso,
   locale,
   t,
+  branding,
 }: Props) => {
   const color = SEVERITY_COLOR[severity] ?? '#525f7f';
   const label = labelFor(t, 'severity', severity);
@@ -57,6 +61,7 @@ const SecurityAlertEmail = ({
   return (
     <EmailLayout
       locale={locale}
+      branding={branding}
       preview={t('preview', { severity: label, event: eventTypeLabel })}
     >
       <Heading className="m-0 text-lg font-bold" style={{ color }}>

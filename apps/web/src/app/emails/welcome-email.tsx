@@ -1,4 +1,5 @@
 import { Button, Hr, Text } from '@react-email/components';
+import type { EmailBranding } from '@/features/branding/contracts/branding.types';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 import type { EmailTranslator } from './utils/email-translator';
@@ -12,10 +13,12 @@ type Props = {
   locale: string;
   /** The `emails.welcome` strings in `locale`. */
   t: EmailTranslator;
+  /** The install's branding; absent is Ragen's (spec B2). */
+  branding?: EmailBranding;
 };
 
-const WelcomeEmail = ({ name, locale, t }: Props) => (
-  <EmailLayout locale={locale} preview={t('preview')}>
+const WelcomeEmail = ({ name, locale, t, branding }: Props) => (
+  <EmailLayout locale={locale} preview={t('preview')} branding={branding}>
     <Text className="text-base leading-6 text-[#525f7f]">
       {name ? t('greeting-named', { name }) : t('greeting')}
     </Text>

@@ -12,9 +12,11 @@ export {
   FEATURE_KEYS,
   FEATURE_LABELS,
   FEATURE_SOURCE_LABELS,
+  INSTANCE_FEATURE_KEYS,
   PLATFORM_FEATURE_DEFAULTS_KEY,
   flattenFeatures,
   resolveFeatures,
+  resolveInstanceFeature,
   sanitizeFeatureOverrides,
 } from '@ragenai/platform-contracts';
 
@@ -24,5 +26,6 @@ export type {
   FeatureOverrides,
   FeatureResolution,
   FeatureSource,
+  InstanceFeatureKey,
   PlatformFeatureDefaults,
 } from '@ragenai/platform-contracts';

@@ -529,8 +529,31 @@ repeatable demo, and records the gaps as tests.
   - **Misconfiguration.** A partial configuration turns SSO off and appears
     on the setup checklist. Password sign-in is never affected.
   - **Tests.** `p0-38` runs against a mock issuer.
-- [ ] **B2.** Instance branding (D5): name, logo and primary token, a runtime
-  setting edited in `apps/admin`, behind feature key `instanceBranding`.
+- [x] **B2.** Instance branding (D5): name, logo and primary token, a runtime
+  setting edited in `apps/admin`, behind feature key `instanceBranding`:
+  - **Storage.** One `InstanceBranding` row (migration adds the table and a
+    `CHECK (id = 1)`); no row, or the key off, is today's branding. The key is
+    instance-wide: read from the platform default only
+    (`resolveInstanceFeature`), never per organization or plan.
+  - **Writer.** The admin page posts to apps/web's
+    `/api/internal/instance-branding` (internal secret plus a re-read
+    platform administrator), because apps/web owns the logo's storage and the
+    branding cache. The read is cached per process for 60 s and cleared by the
+    save.
+  - **Palette.** `primaryToken` names one of five palettes declared in
+    `platform-contracts` (`ragen`, `ocean`, `petrol`, `violet`, `graphite`).
+    Each is a brand ramp in `global.css` under
+    `:root:has([data-palette=…])`, so every derived token follows it in both
+    themes; `text-tokens-meet-contrast` measures each. No crimson, green or
+    amber, which the panel rules reserve.
+  - **Logo.** PNG, JPEG, WebP or SVG up to 512 KB, typed by content; an SVG
+    with scripts, handlers, links or embedded content is refused. Served from
+    `/api/branding/logo` with a `sandbox` CSP, drawn with `<img>`.
+  - **Where it shows.** The logo and name in the panel and sign-in pages,
+    "Ragen AI" / "Ragen Assistant" in page titles and email copy, and the
+    email masthead and signature. The bare word "Ragen" elsewhere in copy is
+    not renamed yet.
+  - **Tests.** Unit and component tests; `smoke-22` for the panel.
 - [x] **B3.** Model probes on the setup page: one free `GET /models` per
   `openai-compatible` server behind `DEFAULT_MODEL`, `REPHRASE_MODEL`,
   `SUMMARY_MODEL` and `EMBEDDINGS_MODEL`, cached for 30 seconds. A server

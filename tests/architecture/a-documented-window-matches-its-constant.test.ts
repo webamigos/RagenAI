@@ -125,6 +125,19 @@ describe('a documented window matches its constant', () => {
     expect(GUARDRAIL_FAILURE_TTL_MS).toBeGreaterThan(0);
   });
 
+  /**
+   * Caches that are not the guardrail cache and happen to share its number.
+   * Named one by one, with the reason, rather than loosening the pattern: a
+   * guardrail window redeclared under a neutral name is exactly what the
+   * pattern is for.
+   */
+  const OTHER_WINDOWS = new Map([
+    [
+      'apps/web/src/features/branding/constants/index.ts',
+      'the instance-branding read (spec 2026-10-17 B2): decoration, not enforcement, and its own documented window',
+    ],
+  ]);
+
   it('is the only place either window is declared', () => {
     // Both were declared twice — exported from apps/web and again as a private
     // const in apps/api's loader. Drift would make the documented sentence
@@ -136,6 +149,7 @@ describe('a documented window matches its constant', () => {
       relativePaths: true,
     })
       .filter((path) => !/\.(test|spec)\.ts$/.test(path))
+      .filter((path) => !OTHER_WINDOWS.has(path))
       .filter((path) => {
         const code = readFileSync(join(REPO_ROOT, path), 'utf8').replace(
           /\/\*[\s\S]*?\*\//g,

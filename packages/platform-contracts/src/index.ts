@@ -36,14 +36,17 @@ export {
   FEATURE_KEYS,
   FEATURE_LABELS,
   FEATURE_SOURCE_LABELS,
+  INSTANCE_FEATURE_KEYS,
   PLATFORM_FEATURE_DEFAULTS_KEY,
   flattenFeatures,
   resolveFeatures,
+  resolveInstanceFeature,
   sanitizeFeatureOverrides,
 } from './features/features';
 export type {
   FeatureFlags,
   FeatureKey,
+  InstanceFeatureKey,
   FeatureOverrides,
   FeatureResolution,
   FeatureResolutionInput,
@@ -56,6 +59,27 @@ export {
   applyDefaultFeatures,
   parseDefaultFeatures,
 } from './features/default-features-from-env';
+
+export {
+  DEFAULT_INSTANCE_PALETTE,
+  DEFAULT_PRODUCT_NAME,
+  INSTANCE_PALETTES,
+  INSTANCE_PALETTE_OPTIONS,
+  LOGO_CONTENT_TYPES,
+  LOGO_EXTENSIONS,
+  LOGO_MAX_BYTES,
+  LOGO_TYPES,
+  PRODUCT_NAME_MAX_LENGTH,
+  checkLogo,
+  detectLogoType,
+  findUnsafeSvgConstruct,
+  isInstancePalette,
+} from './branding/instance-branding';
+export type {
+  InstancePalette,
+  LogoCheck,
+  LogoType,
+} from './branding/instance-branding';
 
 export {
   DEMO_FEATURE_OVERRIDES,
