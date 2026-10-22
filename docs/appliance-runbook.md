@@ -28,13 +28,17 @@ this page says so and names the spec step that will build it.
   means the appliance stack. Without that line, every `docker compose`
   command below needs
   `-f docker-compose.yml -f docker-compose.fullapp.yml -f docker-compose.appliance.yml`
-  (and `-f docker-compose.appliance.gpu.yml` on a GPU machine).
+  (and `-f docker-compose.appliance.gpu.yml` on a GPU machine,
+  `-f docker-compose.pii.yml` with PII masking on).
 - **Two env files, two readers.** `.env` is read by Compose, for
   interpolation: `COMPOSE_FILE`, `COMPOSE_PROJECT_NAME`, `RAGEN_VERSION`,
   ports, the RustFS keys. `.env.local` is passed into web, api, worker and the
   migrate job. Compose's `environment:` blocks win over `.env.local`, which is
   how the database, Redis, Qdrant and model-server addresses become service
-  names inside the containers.
+  names inside the containers. Settings the operator owns, such as `APP_URL`,
+  are left out of those blocks, so `.env.local` decides them
+  ([why](lessons/a-bare-compose-environment-key-unsets-the-env-file-value.md)).
+  To see what a container actually gets, run `docker compose config`.
 - Container and volume names are prefixed with the Compose project name,
   `<project>-postgres-1` and `<project>_postgres_data`. Use service names
   with `docker compose`, not container names
@@ -113,34 +117,33 @@ EOF
 ```
 
 On a GPU machine, append `:docker-compose.appliance.gpu.yml` to
-`COMPOSE_FILE`. Set `POSTGRES_PASSWORD` before the first start, because
+`COMPOSE_FILE`; to mask PII, append `:docker-compose.pii.yml` last (see
+below). Set `POSTGRES_PASSWORD` before the first start, because
 Postgres reads it only when it creates its volume. Every app's
 `DATABASE_URL` is built from the same variable.
 
-Five things the template does not do yet:
+Two settings to decide before the first start:
 
-- **PII masking is off in the container stack.** The template sets
-  `FEATURE_FLAG_PII_MASKING=1` and the Presidio URLs for apps run on the host.
-  In containers, `docker-compose.fullapp.yml` overrides web's and the
-  worker's values with the ones from `.env`, which are empty by default.
-  api keeps the template's `localhost` URLs, which point at nothing inside
-  its container. To turn masking on, put these in `.env` and start with
-  `--profile pii` (or add `COMPOSE_PROFILES=pii` to `.env`):
+- **`APP_URL`** (and `NEXT_PUBLIC_APP_URL`, the same value) in `.env.local`
+  is the address users reach, such as `https://ragen.example.com`.
+  Invitation links, emails and the company sign-in callback are built from
+  it, and the containers read it from that file. Left at
+  `http://localhost:3000`, every link names localhost.
+- **PII masking** is off unless you turn it on. In the container stack that
+  is one step and nothing in `.env.local`: add `docker-compose.pii.yml` after
+  the appliance files, in `COMPOSE_FILE` or as `-f docker-compose.pii.yml`.
+  It starts Presidio on the machine and points web, api and worker at it by
+  service name. Leave the template's commented-out Presidio URLs alone: they
+  are for apps run on the host, and inside a container `localhost` is the
+  container itself, so every chat message would fail closed. The analyzer is
+  built locally from `infra/presidio/analyzer`, so the first start with the
+  file builds an image, and it needs about 1 GB of memory.
+  `FEATURE_FLAG_PII_MASKING=0` in `.env.local` turns masking off again
+  without removing the file. The egress check does not cover this path yet
+  (section 2).
 
-  ```bash
-  FEATURE_FLAG_PII_MASKING=1
-  PRESIDIO_ANALYZER_URL=http://presidio-analyzer:3000
-  PRESIDIO_ANONYMIZER_URL=http://presidio-anonymizer:3000
-  ```
+Three things the template does not do yet:
 
-  The analyzer is built locally from `infra/presidio/analyzer`, so the first
-  start with the profile builds an image. The egress check runs with masking
-  off, so this path is not covered by it.
-- **web's public address is fixed to `http://localhost:3000`** in the
-  container stack. `docker-compose.fullapp.yml` sets `APP_URL` for web
-  itself, and that wins over `.env.local`. An install reached by a hostname
-  needs that line changed. Until then, invitation links and the OIDC
-  callback name `localhost`.
 - **No TLS.** web (3000), api (3001) and admin (3200) are published on every
   interface; the backing services on loopback only. Put the organization's
   own reverse proxy with its certificate in front of web.
@@ -190,8 +193,8 @@ Two things to know:
 
 - A self-hosted issuer such as Keycloak must be up before Ragen. Better Auth
   reads the discovery document once.
-- The callback names `APP_URL`, which in the container stack is still
-  `localhost` (see 1.3).
+- The callback names `APP_URL` from `.env.local` (see 1.3). Set it to the
+  address users reach before registering the callback.
 
 ### 1.7 Check it
 
@@ -241,8 +244,8 @@ What it does and does not prove:
 - **Docker 24 is verified.** On Docker 26 and later an internal network's
   resolver may stop forwarding names, and the canary will fail the run
   rather than pass it.
-- **Not covered yet** (A3b): Brain, the guardrail first pass, PII masking,
-  and the hybrid profile. `--profile hybrid` is refused because the profile
+- **Not covered yet** (A3b): Brain, the guardrail first pass, PII masking
+  (`docker-compose.pii.yml`), and the hybrid profile. `--profile hybrid` is refused because the profile
   does not exist.
 - `--keep` leaves its stack running for a look around.
 
@@ -333,6 +336,11 @@ taken from (`RAGEN_VERSION` in the saved `.env`). Restoring onto a newer
 release is an upgrade: the `migrate` job brings the schema forward. Restoring
 onto an older one is not supported.
 
+Step 2 uses `-U postgres` and the database `ragen`, the defaults of
+`POSTGRES_USER` and `POSTGRES_DB` in `docker-compose.yml`. If `.env` sets
+either, use those values in all three commands, or `dropdb` removes nothing
+and `pg_restore` writes into the wrong database.
+
 ```bash
 B=/var/backups/ragen/<set>
 
@@ -344,7 +352,7 @@ git apply "$B/local-changes.diff"      # if it is not empty
 docker compose up -d postgres qdrant redis
 docker compose stop web api worker admin
 
-# 2. Postgres: replace the database
+# 2. Postgres: replace the database (user and database names: see below)
 docker compose exec -T postgres dropdb -U postgres --if-exists --force ragen
 docker compose exec -T postgres createdb -U postgres ragen
 docker compose exec -T postgres pg_restore -U postgres -d ragen --no-owner < "$B/postgres.dump"
@@ -746,7 +754,6 @@ Gaps this runbook works around or points at, in one place:
   a way to re-embed published Brain pages (8.2).
 - **`embeddings-dimension-mismatch` on the appliance** cannot see a model
   change behind `local-embed` (8.2).
-- **The container stack's PII wiring, `APP_URL`, admin env file, TLS and
-  nightly schedules** (1.3).
+- **The container stack's admin env file, TLS and nightly schedules** (1.3).
 - **Sizing per tier (A5)**, the vLLM variant, a local reranker and the hybrid
   profile (A1b), and the rest of the egress check (A3b).
