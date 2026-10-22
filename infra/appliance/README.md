@@ -3,6 +3,8 @@
 Ragen on one machine with its models served by a local Ollama, so no model
 call leaves it. The design, and what is still missing, is in
 [the spec](../../docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md).
+Operating one — backup, upgrade, rollback, model swaps, troubleshooting —
+is in [the appliance runbook](../../docs/appliance-runbook.md).
 
 ## Run it
 

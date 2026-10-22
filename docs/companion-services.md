@@ -256,6 +256,13 @@ forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 **Requires**: apps/api (port 3001) running and reachable.
 
+### On-premises appliance
+
+The stack with its models served by a local Ollama, on one machine: install,
+the egress check, backup and restore, upgrade, rollback and model swaps are in
+[`appliance-runbook.md`](appliance-runbook.md); the compose overlay is
+described in [`infra/appliance/README.md`](../infra/appliance/README.md).
+
 ### Railway template
 
 The stack as a one-click Railway deploy — services, variables, secrets and what

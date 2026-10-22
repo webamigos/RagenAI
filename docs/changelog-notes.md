@@ -82,6 +82,8 @@ archive is the blog.
 
 - [brief] The fully local appliance installs on an NVIDIA DGX Spark (or any Linux box with an NVIDIA GPU) with one script, `infra/appliance/install-spark.sh`: it checks the GPU, the disk and the image architectures, generates the secrets, pulls the models, checks that Ollama runs them on the GPU (and warns when it cannot confirm it) and waits for the web app. Nothing is built on the machine. ([PR #1665](https://github.com/webamigos/RagenAI/pull/1665))
 
+- [brief] Thread: on-premises appliance. An operations runbook for the appliance (`docs/appliance-runbook.md`): install, proving nothing leaves the machine, backup and restore of Postgres, Qdrant and documents, upgrade and rollback, and swapping a model — including the full re-index an embedding change needs. Offline upgrades and the first-line support role follow with the offline bundle and the support channel.
+
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)
