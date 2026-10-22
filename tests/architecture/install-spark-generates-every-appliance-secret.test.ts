@@ -15,6 +15,11 @@ import { MANIFEST } from '../../packages/create-ragen-app/src/manifest';
  * apps/api and the worker refuse to boot — on the client's machine, after a
  * 20 GB model pull. The manifest is the list a real install gets, so this test
  * reads it rather than a copy.
+ *
+ * apps/admin reads only its own `apps/admin/.env.local`. The first version of
+ * the script never wrote it, so the admin container started without the
+ * secret it calls web with, and invitation resend and guardrail trials failed
+ * (found in review on #1665).
  */
 
 const ROOT = process.cwd();
@@ -23,30 +28,49 @@ const SCRIPT = readFileSync(
   'utf8',
 );
 
-function scriptSecrets(): string[] {
-  const block = /^SECRETS=\(\n([\s\S]*?)^\)/m.exec(SCRIPT)?.[1] ?? '';
+function bashArray(name: string): string[] {
+  const block =
+    new RegExp(`^${name}=\\(\\n([\\s\\S]*?)^\\)`, 'm').exec(SCRIPT)?.[1] ?? '';
   return block
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
 }
 
+function generatedFor(target: 'root' | 'admin') {
+  return MANIFEST.filter(
+    (entry) =>
+      entry.strategy === 'generate-secret' && entry.targets.includes(target),
+  );
+}
+
 describe('install-spark.sh', () => {
   it('generates every root secret create-ragen-app generates', () => {
-    const generated = MANIFEST.filter(
-      (entry) =>
-        entry.strategy === 'generate-secret' && entry.targets.includes('root'),
-    ).map((entry) => entry.key);
-    const named = new Set(scriptSecrets());
+    const generated = generatedFor('root').map((entry) => entry.key);
+    const named = new Set(bashArray('SECRETS'));
 
     expect(generated.length).toBeGreaterThan(0);
     expect(generated.filter((key) => !named.has(key))).toEqual([]);
   });
 
+  it('writes every admin secret, copying the ones shared with root', () => {
+    const admin = generatedFor('admin');
+    const shared = admin
+      .filter((entry) => entry.targets.includes('root'))
+      .map((entry) => entry.key);
+    const own = admin
+      .filter((entry) => !entry.targets.includes('root'))
+      .map((entry) => entry.key);
+
+    expect(admin.length).toBeGreaterThan(0);
+    expect(bashArray('ADMIN_SECRETS').sort()).toEqual(own.sort());
+    expect(bashArray('ADMIN_SHARED_SECRETS').sort()).toEqual(shared.sort());
+  });
+
   it('leaves the encryption key to --encrypt, never to the default run', () => {
     // A test install should not leave a key behind that must be kept for
     // ever; the key is generated only when asked for.
-    expect(scriptSecrets()).not.toContain('ENCRYPTION_MASTER_KEY');
+    expect(bashArray('SECRETS')).not.toContain('ENCRYPTION_MASTER_KEY');
     expect(SCRIPT).toMatch(/--encrypt\) ENCRYPT=1/);
   });
 

@@ -9,7 +9,8 @@
 #
 # Options (or the matching environment variables):
 #   --host <name|ip>   address users open in the browser (RAGEN_HOST);
-#                      default localhost, which works only on the Spark itself
+#                      default localhost, which works only on the Spark itself;
+#                      a re-run without it keeps the address already set
 #   --dir <path>       where to clone when not run from a checkout
 #                      (RAGEN_DIR, default ~/ragen)
 #   --ref <ref>        branch, tag or sha to clone (RAGEN_REF, default main)
@@ -25,7 +26,7 @@
 
 set -euo pipefail
 
-RAGEN_HOST="${RAGEN_HOST:-localhost}"
+RAGEN_HOST="${RAGEN_HOST:-}"
 RAGEN_DIR="${RAGEN_DIR:-$HOME/ragen}"
 RAGEN_REF="${RAGEN_REF:-main}"
 RAGEN_VERSION="${RAGEN_VERSION:-latest}"
@@ -35,14 +36,20 @@ ENCRYPT="${RAGEN_ENCRYPT:-0}"
 REPO_URL="https://github.com/webamigos/RagenAI.git"
 # The small model the GPU check loads; it is in the appliance's default set.
 SMOKE_MODEL="${SMOKE_MODEL:-qwen2.5:7b-instruct}"
+ADMIN_PORT="${ADMIN_PORT:-3200}"
 # Models (~20 GB) plus images; below the hard floor the first pull fails.
+# A re-run whose models are already on the volume needs only room for image
+# updates, so it gets the lower floor.
 DISK_WARN_GB=60
 DISK_MIN_GB=35
+DISK_RERUN_MIN_GB=10
 
-# The secrets create-ragen-app generates. The encryption key is not one of
-# them here: it is opt-in, see --encrypt.
+# The secrets create-ragen-app generates, per file. The encryption key is
+# not one of them here: it is opt-in, see --encrypt.
 # tests/architecture/install-spark-generates-every-appliance-secret.test.ts
-# keeps this list in step with the installer's manifest.
+# keeps these lists in step with the installer's manifest.
+#
+# Root .env.local, read by web, api and the worker:
 SECRETS=(
   BETTER_AUTH_SECRET
   INTERNAL_API_SECRET
@@ -51,6 +58,16 @@ SECRETS=(
   WORKER_SECRET_KEY
   PUBLIC_LINK_TOKEN_SECRET
   MCP_SERVICE_SECRET
+)
+# apps/admin/.env.local, the only file the admin container reads. Its own
+# value, not the root one:
+ADMIN_SECRETS=(
+  BETTER_AUTH_SECRET
+)
+# ...and the same value as the root file, because admin calls web with it
+# (invitation resend, guardrail trials):
+ADMIN_SHARED_SECRETS=(
+  INTERNAL_API_SECRET
 )
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
@@ -68,7 +85,7 @@ while [ $# -gt 0 ]; do
     --version) RAGEN_VERSION="${2:?--version needs a value}"; shift 2 ;;
     --cpu) USE_GPU=0; shift ;;
     --encrypt) ENCRYPT=1; shift ;;
-    -h | --help) sed -n "2,24p" "${BASH_SOURCE[0]:-}" 2>/dev/null | sed "s/^# \{0,1\}//" || echo "Zobacz nagłówek: infra/appliance/install-spark.sh"; exit 0 ;;
+    -h | --help) awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "${BASH_SOURCE[0]:-/dev/null}" 2>/dev/null; exit 0 ;;
     *) die "nieznana opcja: $1 (--help pokazuje listę)" ;;
   esac
 done
@@ -102,14 +119,6 @@ if [ "$USE_GPU" = 1 ]; then
   else
     die "kontener nie widzi GPU. Zainstaluj NVIDIA Container Toolkit (na DGX OS jest domyślnie) albo uruchom z --cpu."
   fi
-fi
-
-docker_root="$(docker info -f '{{.DockerRootDir}}')"
-free_gb=$(($(df -Pk "$docker_root" | awk 'NR==2 {print $4}') / 1024 / 1024))
-if [ "$free_gb" -lt "$DISK_MIN_GB" ]; then
-  die "tylko ${free_gb} GB wolnego w $docker_root; potrzeba co najmniej ${DISK_MIN_GB} GB."
-elif [ "$free_gb" -lt "$DISK_WARN_GB" ]; then
-  warn "${free_gb} GB wolnego w $docker_root — wystarczy na start, ale zalecane ${DISK_WARN_GB} GB."
 fi
 
 # --- 2. The checkout ----------------------------------------------------------
@@ -153,12 +162,31 @@ set_env() {
   fi
 }
 
+# The last value of KEY in a dotenv file, or nothing.
+get_env() {
+  grep -E "^${2}=" "$1" 2>/dev/null | tail -n1 | cut -d= -f2- || true
+}
+
 generated=0
 for key in "${SECRETS[@]}"; do
-  current="$(grep -E "^${key}=" .env.local | tail -n1 | cut -d= -f2- || true)"
-  if [ -z "$current" ]; then
+  if [ -z "$(get_env .env.local "$key")" ]; then
     set_env .env.local "$key" "$(openssl rand -hex 32)"
     generated=$((generated + 1))
+  fi
+done
+
+admin_env=apps/admin/.env.local
+touch "$admin_env"
+chmod 600 "$admin_env"
+for key in "${ADMIN_SECRETS[@]}"; do
+  if [ -z "$(get_env "$admin_env" "$key")" ]; then
+    set_env "$admin_env" "$key" "$(openssl rand -hex 32)"
+    generated=$((generated + 1))
+  fi
+done
+for key in "${ADMIN_SHARED_SECRETS[@]}"; do
+  if [ -z "$(get_env "$admin_env" "$key")" ]; then
+    set_env "$admin_env" "$key" "$(get_env .env.local "$key")"
   fi
 done
 log "Wygenerowane sekrety: $generated (istniejące zostawione bez zmian)"
@@ -168,7 +196,7 @@ log "Wygenerowane sekrety: $generated (istniejące zostawione bez zmian)"
 # unreadable. Without one, the provider is cleared rather than left at the
 # template's `local`, which with no key fails the apps' env check. The
 # containers run with TARGET_ENV=local, where encryption is not required.
-existing_key="$(grep -E '^ENCRYPTION_MASTER_KEY=' .env.local | tail -n1 | cut -d= -f2- || true)"
+existing_key="$(get_env .env.local ENCRYPTION_MASTER_KEY)"
 if [ -n "$existing_key" ]; then
   set_env .env.local ENCRYPTION_PROVIDER local
   log "Szyfrowanie: włączone (klucz już był w .env.local, zostawiam go)"
@@ -181,9 +209,24 @@ else
   log "Szyfrowanie: wyłączone, wiadomości w bazie jawnym tekstem (włączysz je flagą --encrypt)"
 fi
 
+# No --host on a re-run keeps the address the install already has, rather
+# than quietly moving it back to localhost.
 app_url="http://${RAGEN_HOST}:${WEB_PORT}"
+if [ -z "$RAGEN_HOST" ]; then
+  app_url="$(get_env .env APP_URL)"
+  app_url="${app_url:-http://localhost:${WEB_PORT}}"
+fi
 set_env .env.local APP_URL "$app_url"
 set_env .env.local NEXT_PUBLIC_APP_URL "$app_url"
+# The admin panel's own address; compose sets no APP_URL for it, so this
+# file is where it comes from.
+admin_url="http://${RAGEN_HOST}:${ADMIN_PORT}"
+if [ -z "$RAGEN_HOST" ]; then
+  admin_url="$(get_env "$admin_env" APP_URL)"
+  admin_url="${admin_url:-http://localhost:${ADMIN_PORT}}"
+fi
+set_env "$admin_env" APP_URL "$admin_url"
+set_env "$admin_env" NEXT_PUBLIC_APP_URL "$admin_url"
 
 compose_files="docker-compose.yml:docker-compose.fullapp.yml:docker-compose.appliance.yml"
 if [ "$USE_GPU" = 1 ]; then
@@ -198,6 +241,25 @@ set_env .env COMPOSE_FILE "$compose_files"
 set_env .env APP_URL "$app_url"
 set_env .env RAGEN_VERSION "$RAGEN_VERSION"
 set_env .env WEB_PORT "$WEB_PORT"
+set_env .env ADMIN_PORT "$ADMIN_PORT"
+
+# Disk, now that Compose can name the project: a models volume that already
+# exists means the 20 GB pull is behind us.
+docker_root="$(docker info -f '{{.DockerRootDir}}')"
+free_gb=$(($(df -Pk "$docker_root" | awk 'NR==2 {print $4}') / 1024 / 1024))
+project="$(docker compose config 2>/dev/null | sed -n 's/^name: //p' | head -n1)"
+models_volume="$(docker volume ls -q \
+  --filter "label=com.docker.compose.project=${project}" \
+  --filter "label=com.docker.compose.volume=ollama_models" 2>/dev/null || true)"
+min_gb="$DISK_MIN_GB"
+if [ -n "$models_volume" ]; then
+  min_gb="$DISK_RERUN_MIN_GB"
+fi
+if [ "$free_gb" -lt "$min_gb" ]; then
+  die "tylko ${free_gb} GB wolnego w $docker_root; potrzeba co najmniej ${min_gb} GB."
+elif [ -z "$models_volume" ] && [ "$free_gb" -lt "$DISK_WARN_GB" ]; then
+  warn "${free_gb} GB wolnego w $docker_root — wystarczy na start, ale zalecane ${DISK_WARN_GB} GB."
+fi
 
 # --- 4. Images ----------------------------------------------------------------
 
@@ -257,10 +319,13 @@ cat <<EOF
 
 $(printf '\033[1;32m')Ragen działa.$(printf '\033[0m')
 
-  Otwórz:      ${app_url}
-               Pierwsze założone konto zostaje administratorem platformy.
-  Katalog:     ${root}
-  Zarządzanie: cd ${root} && docker compose ps | logs -f | down
+  Otwórz:        ${app_url}
+                 Pierwsze założone konto zostaje administratorem platformy.
+  Panel admina:  ${admin_url}
+  Katalog:       ${root}, a w nim:
+                   docker compose ps
+                   docker compose logs -f
+                   docker compose down
 
 Zanim oddasz instalację klientowi:
 EOF
@@ -278,8 +343,8 @@ EOF
 fi
 
 cat <<EOF
-  - Porty ${WEB_PORT} (web), 3001 (API) i 3200 (panel admina) są otwarte w
-    sieci. Postaw przed web reverse proxy z TLS, a 3001/3200 zamknij
+  - Porty ${WEB_PORT} (web), 3001 (API) i ${ADMIN_PORT} (panel admina) są otwarte
+    w sieci. Postaw przed web reverse proxy z TLS, a 3001/${ADMIN_PORT} zamknij
     firewallem, jeśli nie mają być dostępne z zewnątrz.
   - Reranking jest wyłączony (brak lokalnego rerankera w tym profilu).
   - Dowód, że nic nie wychodzi z maszyny (wymaga Node.js):

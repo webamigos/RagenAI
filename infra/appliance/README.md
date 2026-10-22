@@ -17,11 +17,15 @@ curl -fsSL https://raw.githubusercontent.com/webamigos/RagenAI/main/infra/applia
 [`install-spark.sh`](install-spark.sh) does the manual steps below and checks
 what they assume:
 
-- Docker Compose 2.24+, a GPU visible inside containers, enough disk;
+- Docker Compose 2.24+, a GPU visible inside containers, enough disk: 35 GB
+  for a first install, 10 GB for a re-run whose models volume already exists;
 - every image is for the host's architecture. A missing arm64 image is not an
   error anywhere — Docker emulates the amd64 one, slowly — so the script warns;
 - `.env.local` from the template, with every empty secret generated. A re-run
   keeps the secrets that are there;
+- `apps/admin/.env.local`, the only file the admin container reads: its own
+  `BETTER_AUTH_SECRET`, and the root file's `INTERNAL_API_SECRET`, which it
+  calls web with (invitation resend, guardrail trials);
 - **no encryption key by default**, so a test install leaves nothing that has
   to be kept. The provider is cleared and messages are stored in plaintext,
   which the containers allow because they run with `TARGET_ENV=local`.
@@ -29,7 +33,9 @@ what they assume:
   is always kept;
 - `--host` becomes `APP_URL`, written to `.env` as well as `.env.local`:
   web's `environment:` reads it from `.env` (Compose's own file), and
-  `environment:` wins over `.env.local`;
+  `environment:` wins over `.env.local`. The admin panel gets its own
+  address on port 3200. A re-run without `--host` keeps the address already
+  set;
 - `COMPOSE_FILE` in `.env`, so a bare `docker compose ps`, `logs` or `down` in
   the checkout addresses the whole appliance;
 - after the model pull, one prompt to the small model and `ollama ps`, which
