@@ -1,7 +1,13 @@
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import {
+  APPLIANCE_TIERS,
+  findOffMachineRoutes,
+  findUnroutedModels,
+} from '../../packages/create-ragen-app/src/appliance';
 import {
   MANIFEST,
   type EnvTarget,
@@ -122,4 +128,83 @@ describe('create-ragen-app manifest stays current', () => {
       ).toBe(true);
     },
   );
+
+  // The appliance step is the same shape again, plus a copy of three files the
+  // package cannot read at test time from npm: the route table, the compose
+  // overlay and the env template. Its tiers are data written against them.
+  const applianceKeys = APPLIANCE_TIERS.flatMap((tier) =>
+    Object.keys(tier.envUpdates).map((key) => [tier.id, key] as const),
+  );
+
+  it.each(applianceKeys)(
+    'the %s appliance tier writes %s, which the root .env.example still has',
+    (_tier, key) => {
+      expect(
+        keysByTarget.root.has(key),
+        `packages/create-ragen-app/src/appliance.ts writes ${key} into the root .env.local, but the root .env.example has no such line. applyEnvOverrides treats that as a missing key and stops the install.`,
+      ).toBe(true);
+    },
+  );
 });
+
+/**
+ * An appliance install is what `infra/appliance/` describes, not a second
+ * opinion of it. Step C1 of
+ * docs/specs/2026-10-17-ragen-as-an-on-premises-appliance.md.
+ */
+describe.each(APPLIANCE_TIERS.map((tier) => [tier.id, tier] as const))(
+  'the %s appliance tier',
+  (_id, tier) => {
+    const routeTable = readSource(join(REPO_ROOT, tier.routeFile));
+
+    it('names files that exist', () => {
+      for (const file of [
+        tier.routeFile,
+        ...tier.composeFiles,
+        tier.gpuComposeFile,
+      ]) {
+        expect(existsSync(join(REPO_ROOT, file)), file).toBe(true);
+      }
+    });
+
+    it('installs a route table with nothing that leaves the machine', () => {
+      expect(findOffMachineRoutes(routeTable, tier.localConnections)).toEqual(
+        [],
+      );
+    });
+
+    it('selects only models its route table routes', () => {
+      expect(findUnroutedModels(routeTable, tier.envUpdates)).toEqual([]);
+    });
+
+    it("is the table the appliance's containers read", () => {
+      // The wizard copies the table over routes.yaml for the host; the
+      // containers read the original through LLM_ROUTES_PATH. If the overlay
+      // pointed elsewhere, the two would serve different routes.
+      const overlay = readSource(
+        join(REPO_ROOT, tier.composeFiles.at(-1) as string),
+      );
+      expect(overlay).toContain(`LLM_ROUTES_PATH: /app/${tier.routeFile}`);
+    });
+
+    it('agrees with the appliance env template on every key both set', () => {
+      const template = new Map(
+        readSource(join(REPO_ROOT, 'infra/appliance/appliance.env.example'))
+          .split('\n')
+          .map((line) => /^([A-Z][A-Z0-9_]*)=(.*)$/.exec(line.trim()))
+          .filter((match): match is RegExpExecArray => match !== null)
+          .map((match) => [match[1] as string, match[2] as string]),
+      );
+      const shared = Object.entries(tier.envUpdates).filter(([key]) =>
+        template.has(key),
+      );
+
+      // Most of the tier is in the template; a read that found nothing would
+      // pass the comparison below vacuously.
+      expect(shared.length).toBeGreaterThan(5);
+      for (const [key, value] of shared) {
+        expect(value, key).toBe(template.get(key));
+      }
+    });
+  },
+);

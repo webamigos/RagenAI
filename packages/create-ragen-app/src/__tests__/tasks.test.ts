@@ -55,6 +55,34 @@ describe('startDockerServices', () => {
       { cwd: '/tmp/app', stdio: 'inherit' },
     );
   });
+
+  it('names each compose file with -f, in order, before any profile', async () => {
+    // The appliance is three files on top of each other; Compose merges them
+    // in the order given, so the overlay has to come last.
+    mockedExeca.mockResolvedValueOnce({} as never);
+
+    await startDockerServices({
+      cwd: '/tmp/app',
+      profiles: ['pii'],
+      files: ['docker-compose.yml', 'docker-compose.appliance.yml'],
+    });
+
+    expect(mockedExeca).toHaveBeenCalledWith(
+      'docker',
+      [
+        'compose',
+        '-f',
+        'docker-compose.yml',
+        '-f',
+        'docker-compose.appliance.yml',
+        '--profile',
+        'pii',
+        'up',
+        '-d',
+      ],
+      { cwd: '/tmp/app', stdio: 'inherit' },
+    );
+  });
 });
 
 describe('composeUpCommand', () => {
@@ -67,6 +95,14 @@ describe('composeUpCommand', () => {
     // object store `.env.local` was just pointed at.
     expect(composeUpCommand(['pii', 's3'])).toBe(
       'docker compose --profile pii --profile s3 up -d',
+    );
+  });
+
+  it('prints the same -f list it executes', () => {
+    expect(
+      composeUpCommand(['pii'], ['docker-compose.yml', 'docker-compose.x.yml']),
+    ).toBe(
+      'docker compose -f docker-compose.yml -f docker-compose.x.yml --profile pii up -d',
     );
   });
 });
