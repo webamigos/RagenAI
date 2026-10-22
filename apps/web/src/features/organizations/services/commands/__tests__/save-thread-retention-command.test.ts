@@ -8,7 +8,6 @@ const mocks = vi.hoisted(() => ({
   assertCanManageOrganizationSettings: vi.fn(),
   getThreadRetentionDays: vi.fn(),
   saveThreadRetentionDays: vi.fn(),
-  upsertSchedule: vi.fn(),
   trackAudit: vi.fn(),
 }));
 
@@ -30,10 +29,6 @@ vi.mock('@/features/organizations/services/organization-settings', () => ({
   saveThreadRetentionDays: mocks.saveThreadRetentionDays,
 }));
 
-vi.mock('@/libs/jobs', () => ({
-  jobs: () => ({ upsertSchedule: mocks.upsertSchedule }),
-}));
-
 vi.mock(
   '@/features/audit-logs/services/commands/create-audit-log-command',
   () => ({ trackAudit: mocks.trackAudit }),
@@ -43,7 +38,6 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-import { THREAD_RETENTION_SCHEDULE } from '@ragenai/jobs';
 import { UnauthorizedException } from '@/libs/utils/errors';
 
 import { saveThreadRetentionCommand } from '../save-thread-retention-command';
@@ -55,7 +49,6 @@ beforeEach(() => {
   mocks.assertCanManageOrganizationSettings.mockResolvedValue(undefined);
   mocks.getThreadRetentionDays.mockResolvedValue(null);
   mocks.saveThreadRetentionDays.mockResolvedValue(undefined);
-  mocks.upsertSchedule.mockResolvedValue(undefined);
 });
 
 describe('saveThreadRetentionCommand', () => {
@@ -94,7 +87,6 @@ describe('saveThreadRetentionCommand', () => {
     });
 
     expect(result).toEqual({ success: false, error: 'forbidden' });
-    expect(mocks.upsertSchedule).not.toHaveBeenCalled();
     expect(mocks.saveThreadRetentionDays).not.toHaveBeenCalled();
     expect(mocks.trackAudit).not.toHaveBeenCalled();
   });
@@ -109,7 +101,6 @@ describe('saveThreadRetentionCommand', () => {
     });
 
     expect(result).toEqual({ success: false, error: 'settings-locked' });
-    expect(mocks.upsertSchedule).not.toHaveBeenCalled();
     expect(mocks.saveThreadRetentionDays).not.toHaveBeenCalled();
   });
 
@@ -126,57 +117,18 @@ describe('saveThreadRetentionCommand', () => {
     },
   );
 
-  describe('the daily schedule', () => {
-    // "Runs daily" has to be true on an installation where nobody ran the
-    // worker's ensure script.
-    it('registers it before storing a period', async () => {
-      const order: string[] = [];
-      mocks.upsertSchedule.mockImplementation(async () => {
-        order.push('schedule');
-      });
-      mocks.saveThreadRetentionDays.mockImplementation(async () => {
-        order.push('save');
-      });
+  it('turns retention off by storing null', async () => {
+    mocks.getThreadRetentionDays.mockResolvedValue(90);
 
-      await saveThreadRetentionCommand({ threadRetentionDays: 30 });
-
-      expect(mocks.upsertSchedule).toHaveBeenCalledWith(
-        THREAD_RETENTION_SCHEDULE,
-      );
-      expect(order).toEqual(['schedule', 'save']);
+    const result = await saveThreadRetentionCommand({
+      threadRetentionDays: null,
     });
 
-    // A period with nothing to run it would read as active and delete
-    // nothing.
-    it('stores nothing when the schedule cannot be registered', async () => {
-      mocks.upsertSchedule.mockRejectedValue(new Error('ECONNREFUSED'));
-
-      const result = await saveThreadRetentionCommand({
-        threadRetentionDays: 30,
-      });
-
-      expect(result).toEqual({
-        success: false,
-        error: 'schedule-unavailable',
-      });
-      expect(mocks.saveThreadRetentionDays).not.toHaveBeenCalled();
-    });
-
-    it('is not needed to turn retention off', async () => {
-      mocks.getThreadRetentionDays.mockResolvedValue(90);
-      mocks.upsertSchedule.mockRejectedValue(new Error('ECONNREFUSED'));
-
-      const result = await saveThreadRetentionCommand({
-        threadRetentionDays: null,
-      });
-
-      expect(result).toEqual({ success: true, threadRetentionDays: null });
-      expect(mocks.upsertSchedule).not.toHaveBeenCalled();
-      expect(mocks.saveThreadRetentionDays).toHaveBeenCalledWith(
-        'org-session',
-        null,
-      );
-    });
+    expect(result).toEqual({ success: true, threadRetentionDays: null });
+    expect(mocks.saveThreadRetentionDays).toHaveBeenCalledWith(
+      'org-session',
+      null,
+    );
   });
 
   it('records the change, old and new, in the audit log', async () => {

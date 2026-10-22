@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Non enregistré : cette durée n’est pas disponible. Choisissez l’une des options proposées et enregistrez à nouveau.",
     "error-forbidden": "Non enregistré : seul un propriétaire ou un administrateur de l’organisation peut modifier ce réglage.",
     "error-settings-locked": "Non enregistré : les paramètres de cette organisation sont verrouillés. Demandez à votre administrateur de plateforme de les déverrouiller.",
-    "error-schedule-unavailable": "Non enregistré : la tâche de suppression quotidienne n’a pas pu être enregistrée, donc rien ne s’exécuterait. Vérifiez que la file de tâches en arrière-plan (Redis) est joignable, puis réessayez.",
     "error-save-failed": "Non enregistré : une erreur s’est produite. Réessayez dans un instant."
   }
 }

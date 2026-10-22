@@ -166,7 +166,7 @@ describe('ThreadRetentionSetting', () => {
   it('explains a refusal and keeps the stored period', async () => {
     mocks.save.mockResolvedValue({
       success: false,
-      error: 'schedule-unavailable',
+      error: 'save-failed',
     });
     const user = userEvent.setup();
     renderSetting(null);
@@ -179,9 +179,7 @@ describe('ThreadRetentionSetting', () => {
 
     await waitFor(() =>
       expect(mocks.errorToast).toHaveBeenCalledWith({
-        message: expect.stringContaining(
-          'daily deletion job could not be registered',
-        ),
+        message: expect.stringContaining('something went wrong'),
       }),
     );
     expect(screen.getByTestId('thread-retention-current')).toHaveTextContent(

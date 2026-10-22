@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Non salvato: questo periodo non è disponibile. Scegli una delle opzioni elencate e salva di nuovo.",
     "error-forbidden": "Non salvato: solo il proprietario o un amministratore dell’organizzazione può modificarlo.",
     "error-settings-locked": "Non salvato: le impostazioni di questa organizzazione sono bloccate. Chiedi all’amministratore della piattaforma di sbloccarle.",
-    "error-schedule-unavailable": "Non salvato: non è stato possibile registrare l’attività giornaliera di eliminazione, quindi non verrebbe eseguito nulla. Verifica che la coda delle attività in background (Redis) sia raggiungibile e riprova.",
     "error-save-failed": "Non salvato: qualcosa è andato storto. Riprova tra un momento."
   }
 }

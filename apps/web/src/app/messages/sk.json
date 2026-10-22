@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Neuložené — toto obdobie nie je k dispozícii. Vyberte jednu z uvedených možností a uložte znova.",
     "error-forbidden": "Neuložené — zmeniť to môže iba vlastník alebo administrátor organizácie.",
     "error-settings-locked": "Neuložené — nastavenia tejto organizácie sú uzamknuté. Požiadajte administrátora platformy o odomknutie.",
-    "error-schedule-unavailable": "Neuložené — dennú úlohu mazania sa nepodarilo zaregistrovať, takže by nič neprebehlo. Skontrolujte, či je fronta úloh na pozadí (Redis) dostupná, a skúste to znova.",
     "error-save-failed": "Neuložené — niečo sa pokazilo. Skúste to o chvíľu znova."
   }
 }

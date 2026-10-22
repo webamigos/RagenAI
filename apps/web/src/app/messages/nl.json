@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Niet opgeslagen — die termijn is niet beschikbaar. Kies een van de vermelde opties en sla opnieuw op.",
     "error-forbidden": "Niet opgeslagen — alleen een eigenaar of beheerder van de organisatie kan dit wijzigen.",
     "error-settings-locked": "Niet opgeslagen — de instellingen van deze organisatie zijn vergrendeld. Vraag je platformbeheerder om ze te ontgrendelen.",
-    "error-schedule-unavailable": "Niet opgeslagen — de dagelijkse verwijdertaak kon niet worden geregistreerd, dus er zou niets draaien. Controleer of de achtergrondwachtrij (Redis) bereikbaar is en probeer het opnieuw.",
     "error-save-failed": "Niet opgeslagen — er ging iets mis. Probeer het zo meteen opnieuw."
   }
 }

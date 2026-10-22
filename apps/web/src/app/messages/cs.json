@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Neuloženo — toto období není k dispozici. Vyberte jednu z uvedených možností a uložte znovu.",
     "error-forbidden": "Neuloženo — změnit to může pouze vlastník nebo administrátor organizace.",
     "error-settings-locked": "Neuloženo — nastavení této organizace je uzamčeno. Požádejte administrátora platformy o odemčení.",
-    "error-schedule-unavailable": "Neuloženo — denní úlohu mazání se nepodařilo zaregistrovat, takže by nic neproběhlo. Zkontrolujte, zda je fronta úloh na pozadí (Redis) dostupná, a zkuste to znovu.",
     "error-save-failed": "Neuloženo — něco se pokazilo. Zkuste to za chvíli znovu."
   }
 }

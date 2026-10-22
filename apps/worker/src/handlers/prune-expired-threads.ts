@@ -7,10 +7,10 @@ import type * as activities from '../activities/index.js';
  * 2026-10-17-ragen-as-an-on-premises-appliance, B4): threads with no new
  * message for the organization's chosen number of days are deleted.
  *
- * The schedule is `THREAD_RETENTION_SCHEDULE` in `@ragenai/jobs`, registered
- * by `src/scripts/ensure-thread-retention-schedule.ts` and also by apps/web
- * when an owner or admin turns retention on — so the setting is never on
- * with nothing to run it. Removing this job from the code does not remove the
+ * The schedule is `THREAD_RETENTION_SCHEDULE` in `src/schedules.ts`, which
+ * the worker registers at boot on every installation — an organization with
+ * retention off is skipped, so the setting is never on with nothing to run
+ * it. Removing this job from the code does not remove the
  * schedule; a rollback runs that script with `--delete`.
  *
  * A failed run costs nothing the next one does not recover: the cutoff comes

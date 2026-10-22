@@ -39,8 +39,6 @@ export {
   type ScheduledJobName,
 } from './runtime-contract';
 
-export { THREAD_RETENTION_SCHEDULE } from './schedules';
-
 export {
   type RetryPolicy,
   type StepOptions,

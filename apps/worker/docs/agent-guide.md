@@ -102,8 +102,8 @@ and more in the same shape: `generateDocument`, `optimizeDocument`,
 `cleanupDemoThreads`, `pruneAnalyticsRetrievals`, `memoryPurge` and
 `pruneExpiredThreads` (per-organization thread retention, spec 2026-10-17 B4:
 deletes threads quiet for the organization's chosen period through the same
-`deleteStaleThreads` as the demo cleanup, in batches; its schedule is also
-upserted by apps/web when an owner turns retention on) — and Ragen Brain's
+`deleteStaleThreads` as the demo cleanup, in batches; its schedule is
+registered at boot with the other recurring ones) — and Ragen Brain's
 `brainExtract` (`src/handlers/brain-extract.ts`) — candidate knowledge pages
 from documents' active versions, behind the `brain` flag, which the job
 checks when it runs. Its rules are in `packages/brain-core`; the handler

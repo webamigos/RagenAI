@@ -48,8 +48,6 @@ export function ThreadRetentionSetting({ initialDays }: Props) {
         return t('error-forbidden');
       case 'settings-locked':
         return t('error-settings-locked');
-      case 'schedule-unavailable':
-        return t('error-schedule-unavailable');
       case 'save-failed':
         return t('error-save-failed');
     }

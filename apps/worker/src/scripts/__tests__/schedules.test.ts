@@ -143,11 +143,9 @@ describe('ensure-thread-retention-schedule', () => {
     });
   });
 
-  // apps/web upserts the same schedule when retention is turned on. The two
-  // must be one definition, or the panel's upsert makes a second schedule
-  // instead of a no-op.
-  it('registers exactly the schedule apps/web registers', async () => {
-    const { THREAD_RETENTION_SCHEDULE } = await import('@ragenai/jobs');
+  // Boot registers the same entry, so the script and boot cannot disagree.
+  it('registers exactly the schedule boot registers', async () => {
+    const { THREAD_RETENTION_SCHEDULE } = await import('../../schedules.js');
     await run(script);
     expect(upsertSchedule).toHaveBeenCalledWith(THREAD_RETENTION_SCHEDULE);
   });

@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Ei tallennettu — tämä aika ei ole käytettävissä. Valitse jokin luettelon vaihtoehdoista ja tallenna uudelleen.",
     "error-forbidden": "Ei tallennettu — vain organisaation omistaja tai ylläpitäjä voi muuttaa tätä.",
     "error-settings-locked": "Ei tallennettu — tämän organisaation asetukset on lukittu. Pyydä alustan ylläpitäjää avaamaan ne.",
-    "error-schedule-unavailable": "Ei tallennettu — päivittäistä poistotehtävää ei voitu rekisteröidä, joten mitään ei ajettaisi. Tarkista, että taustatehtävien jono (Redis) on tavoitettavissa, ja yritä uudelleen.",
     "error-save-failed": "Ei tallennettu — jokin meni pieleen. Yritä hetken kuluttua uudelleen."
   }
 }

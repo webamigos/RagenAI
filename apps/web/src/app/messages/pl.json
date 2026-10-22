@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Nie zapisano — ten okres jest niedostępny. Wybierz jedną z opcji z listy i zapisz ponownie.",
     "error-forbidden": "Nie zapisano — zmienić to może tylko właściciel lub administrator organizacji.",
     "error-settings-locked": "Nie zapisano — ustawienia tej organizacji są zablokowane. Poproś administratora platformy o ich odblokowanie.",
-    "error-schedule-unavailable": "Nie zapisano — nie udało się zarejestrować codziennego zadania usuwania, więc nic by się nie uruchomiło. Sprawdź, czy kolejka zadań w tle (Redis) jest dostępna, i spróbuj ponownie.",
     "error-save-failed": "Nie zapisano — coś poszło nie tak. Spróbuj ponownie za chwilę."
   }
 }

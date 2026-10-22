@@ -586,10 +586,10 @@ repeatable demo, and records the gaps as tests.
     deletes, up to 50 batches (5,000 threads) per organization per run; the
     cutoff comes from the clock, so a backlog is finished by later runs. Logs
     ids and counts, never a title. The schedule is `THREAD_RETENTION_SCHEDULE`
-    in `@ragenai/jobs`, registered by `ensure-thread-retention-schedule.ts`
-    and also upserted by apps/web when retention is turned on, so "runs
-    daily" is true on an install where nobody ran the script; if the job
-    runtime cannot be reached the period is not saved.
+    in `apps/worker/src/schedules.ts`, one of the schedules the worker
+    registers at boot (#1671), so "runs daily" is true on every install
+    with a worker; an organization with retention off is skipped. The panel
+    only stores the period — it does not need to reach the job queue.
   - **One PR, no feature key** (ADR-50): the setting itself defaults to off.
 
 ### Phase C: something that can be installed and maintained

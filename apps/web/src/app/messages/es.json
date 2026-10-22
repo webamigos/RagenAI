@@ -3514,7 +3514,6 @@
     "error-invalid-period": "No se ha guardado: ese periodo no está disponible. Elige una de las opciones de la lista y vuelve a guardar.",
     "error-forbidden": "No se ha guardado: solo el propietario o un administrador de la organización puede cambiarlo.",
     "error-settings-locked": "No se ha guardado: la configuración de esta organización está bloqueada. Pide a tu administrador de la plataforma que la desbloquee.",
-    "error-schedule-unavailable": "No se ha guardado: no se pudo registrar la tarea diaria de eliminación, así que no se ejecutaría nada. Comprueba que la cola de tareas en segundo plano (Redis) está accesible e inténtalo de nuevo.",
     "error-save-failed": "No se ha guardado: algo ha fallado. Inténtalo de nuevo en un momento."
   }
 }

@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Ikke gemt — den periode er ikke tilgængelig. Vælg en af de viste muligheder, og gem igen.",
     "error-forbidden": "Ikke gemt — kun en ejer eller administrator af organisationen kan ændre dette.",
     "error-settings-locked": "Ikke gemt — denne organisations indstillinger er låst. Bed din platformsadministrator om at låse dem op.",
-    "error-schedule-unavailable": "Ikke gemt — det daglige sletningsjob kunne ikke registreres, så intet ville køre. Kontrollér, at baggrundskøen (Redis) kan nås, og prøv igen.",
     "error-save-failed": "Ikke gemt — noget gik galt. Prøv igen om lidt."
   }
 }

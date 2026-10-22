@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Retention not saved — that period is not available. Choose one of the listed options and save again.",
     "error-forbidden": "Retention not saved — only an organization owner or admin can change it.",
     "error-settings-locked": "Retention not saved — this organization's settings are locked. Ask your platform administrator to unlock them.",
-    "error-schedule-unavailable": "Retention not saved — the daily deletion job could not be registered, so nothing would run. Check that the background job queue (Redis) is reachable and try again.",
     "error-save-failed": "Retention not saved — something went wrong. Try again in a moment."
   }
 }

@@ -28,11 +28,7 @@ export type ThreadRetentionInput = {
 
 /** Why a save was refused. Each has its own message in the panel. */
 export type SaveThreadRetentionError =
-  | 'invalid-period'
-  | 'forbidden'
-  | 'settings-locked'
-  | 'schedule-unavailable'
-  | 'save-failed';
+  'invalid-period' | 'forbidden' | 'settings-locked' | 'save-failed';
 
 export type SaveThreadRetentionResult =
   | { success: true; threadRetentionDays: ThreadRetentionDays | null }

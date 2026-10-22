@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Ikke lagret — den perioden er ikke tilgjengelig. Velg et av alternativene i listen og lagre på nytt.",
     "error-forbidden": "Ikke lagret — bare en eier eller administrator av organisasjonen kan endre dette.",
     "error-settings-locked": "Ikke lagret — organisasjonens innstillinger er låst. Be plattformadministratoren om å låse dem opp.",
-    "error-schedule-unavailable": "Ikke lagret — den daglige slettejobben kunne ikke registreres, så ingenting ville kjørt. Kontroller at bakgrunnskøen (Redis) kan nås, og prøv igjen.",
     "error-save-failed": "Ikke lagret — noe gikk galt. Prøv igjen om et øyeblikk."
   }
 }

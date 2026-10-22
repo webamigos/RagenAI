@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Nicht gespeichert — dieser Zeitraum ist nicht verfügbar. Wählen Sie eine der aufgeführten Optionen und speichern Sie erneut.",
     "error-forbidden": "Nicht gespeichert — nur Inhaber oder Administratoren der Organisation können dies ändern.",
     "error-settings-locked": "Nicht gespeichert — die Einstellungen dieser Organisation sind gesperrt. Bitten Sie Ihren Plattformadministrator, sie freizugeben.",
-    "error-schedule-unavailable": "Nicht gespeichert — der tägliche Löschauftrag konnte nicht registriert werden, daher würde nichts laufen. Prüfen Sie, ob die Hintergrund-Warteschlange (Redis) erreichbar ist, und versuchen Sie es erneut.",
     "error-save-failed": "Nicht gespeichert — etwas ist schiefgelaufen. Versuchen Sie es gleich noch einmal."
   }
 }

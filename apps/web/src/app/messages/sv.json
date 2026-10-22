@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Inte sparat — den perioden är inte tillgänglig. Välj ett av alternativen i listan och spara igen.",
     "error-forbidden": "Inte sparat — endast organisationens ägare eller administratör kan ändra detta.",
     "error-settings-locked": "Inte sparat — organisationens inställningar är låsta. Be din plattformsadministratör att låsa upp dem.",
-    "error-schedule-unavailable": "Inte sparat — det dagliga raderingsjobbet kunde inte registreras, så inget skulle köras. Kontrollera att bakgrundskön (Redis) går att nå och försök igen.",
     "error-save-failed": "Inte sparat — något gick fel. Försök igen om en stund."
   }
 }

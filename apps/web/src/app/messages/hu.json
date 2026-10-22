@@ -3514,7 +3514,6 @@
     "error-invalid-period": "Nincs mentve — ez az időtartam nem érhető el. Válassz a felsorolt lehetőségek közül, és mentsd újra.",
     "error-forbidden": "Nincs mentve — ezt csak a szervezet tulajdonosa vagy adminisztrátora módosíthatja.",
     "error-settings-locked": "Nincs mentve — a szervezet beállításai zárolva vannak. Kérd meg a platform adminisztrátorát a feloldásukra.",
-    "error-schedule-unavailable": "Nincs mentve — a napi törlési feladatot nem sikerült regisztrálni, így semmi sem futna. Ellenőrizd, hogy a háttérfeladatok sora (Redis) elérhető-e, és próbáld újra.",
     "error-save-failed": "Nincs mentve — hiba történt. Próbáld újra egy pillanat múlva."
   }
 }
