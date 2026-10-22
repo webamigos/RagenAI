@@ -52,6 +52,8 @@ const messages = {
     'sso-sign-in': 'Sign in with {name}',
     'sso-or': 'or',
     'sso-failed': 'Company sign-in failed.',
+    'sso-error-domain': 'Outside the accepted domains.',
+    'sso-error-join-organization-unset': 'Cannot create new accounts.',
   },
 };
 
@@ -137,9 +139,23 @@ describe('LoginForm', () => {
       expect(signInEmail).not.toHaveBeenCalled();
     });
 
-    it('says so when the provider sent the user back with an error', () => {
-      // e.g. `email_not_found` for an address outside the allowed domains.
-      searchParams.current = new URLSearchParams('error=email_not_found');
+    it.each([
+      ['oidc_domain_not_allowed', 'Outside the accepted domains.'],
+      ['oidc_join_organization_unset', 'Cannot create new accounts.'],
+    ])(
+      'says which refusal it was when the callback sent the user back with %s',
+      (code, message) => {
+        searchParams.current = new URLSearchParams(`error=${code}`);
+        renderForm({ sso: { displayName: 'Microsoft' } });
+
+        const alert = screen.getByRole('alert');
+        expect(alert).toHaveTextContent(message);
+        expect(alert).toHaveAttribute('data-error', code);
+      },
+    );
+
+    it('falls back to the general sentence for a code it does not know', () => {
+      searchParams.current = new URLSearchParams('error=state_mismatch');
       renderForm({ sso: { displayName: 'Microsoft' } });
 
       expect(screen.getByRole('alert')).toHaveTextContent(
