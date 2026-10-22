@@ -5,6 +5,7 @@ import {
   isAllowedEmail,
   isOidcCallback,
   oidcConfigFromEnv,
+  profileRefusal,
 } from '../oidc-config';
 
 const valid = {
@@ -177,5 +178,61 @@ describe('isOidcCallback', () => {
         google,
       ),
     ).toEqual({ email: 'jan@acme.pl', emailVerified: true });
+  });
+});
+
+describe('profileRefusal', () => {
+  const domains = ['acme.pl'];
+
+  it('is null for an allowed address', () => {
+    expect(profileRefusal({ email: 'jan@acme.pl' }, domains)).toBeNull();
+  });
+
+  it('names a missing address', () => {
+    expect(profileRefusal({ email: null }, domains)).toBe('email_not_found');
+  });
+
+  it('names an address outside the allowed domains', () => {
+    expect(profileRefusal({ email: 'jan@acme.pl.evil.com' }, domains)).toBe(
+      'oidc_domain_not_allowed',
+    );
+  });
+
+  it('names a hosted domain that is missing or not allowed, when required', () => {
+    const options = { requireHostedDomain: true };
+    expect(profileRefusal({ email: 'jan@acme.pl' }, domains, options)).toBe(
+      'oidc_hosted_domain_mismatch',
+    );
+    expect(
+      profileRefusal(
+        { email: 'jan@acme.pl', hostedDomain: 'other.pl' },
+        domains,
+        options,
+      ),
+    ).toBe('oidc_hosted_domain_mismatch');
+    expect(
+      profileRefusal(
+        { email: 'jan@acme.pl', hostedDomain: 'ACME.pl' },
+        domains,
+        options,
+      ),
+    ).toBeNull();
+  });
+
+  it('refuses exactly what gateProfile empties', () => {
+    // The throw and the empty email are two layers of one gate; they must
+    // never disagree about who is refused.
+    const options = { requireHostedDomain: true };
+    const profiles = [
+      { email: 'jan@acme.pl', hostedDomain: 'acme.pl' },
+      { email: 'jan@acme.pl', hostedDomain: null },
+      { email: 'eve@gmail.com', hostedDomain: 'acme.pl' },
+      { email: null, hostedDomain: 'acme.pl' },
+    ];
+    for (const profile of profiles) {
+      expect(profileRefusal(profile, domains, options) !== null).toBe(
+        gateProfile(profile, domains, options).email === '',
+      );
+    }
   });
 });

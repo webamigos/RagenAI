@@ -81,7 +81,9 @@ describe('registration is closed at the user row', () => {
     // failure. See node_modules/better-auth/dist/db/with-hooks.mjs.
     const hook = userCreateHook(source);
 
-    expect(hook).toMatch(/throw new APIError\(/);
+    // `refusalError` (oidc-auth.ts) builds the `APIError` with the code the
+    // sign-in page reads; its unit test asserts it is one.
+    expect(hook).toMatch(/throw (new APIError|refusalError)\(/);
     expect(hook).not.toMatch(/return false/);
   });
 
