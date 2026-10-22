@@ -213,7 +213,7 @@ fi
 # than quietly moving it back to localhost.
 app_url="http://${RAGEN_HOST}:${WEB_PORT}"
 if [ -z "$RAGEN_HOST" ]; then
-  app_url="$(get_env .env APP_URL)"
+  app_url="$(get_env .env.local APP_URL)"
   app_url="${app_url:-http://localhost:${WEB_PORT}}"
 fi
 set_env .env.local APP_URL "$app_url"
@@ -233,12 +233,11 @@ if [ "$USE_GPU" = 1 ]; then
   compose_files="$compose_files:docker-compose.appliance.gpu.yml"
 fi
 
-# .env is the file Compose itself reads. COMPOSE_FILE makes a bare
-# `docker compose ps|logs|down` here address the whole appliance; APP_URL
-# reaches web's `environment:`, which a value in .env.local cannot.
+# .env is the file Compose itself reads: COMPOSE_FILE makes a bare
+# `docker compose ps|logs|down` here address the whole appliance. APP_URL
+# stays in .env.local, which the containers read (#1670).
 touch .env
 set_env .env COMPOSE_FILE "$compose_files"
-set_env .env APP_URL "$app_url"
 set_env .env RAGEN_VERSION "$RAGEN_VERSION"
 set_env .env WEB_PORT "$WEB_PORT"
 set_env .env ADMIN_PORT "$ADMIN_PORT"

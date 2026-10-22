@@ -341,3 +341,34 @@ App dev ports are web 3000, api 3001, vault 3100, admin 3200, mcp 3300 and docs
 3400. Three of those services read a bare `PORT`, so setting one in the root
 `.env.local` moves all three at once; use `RAGEN_API_PORT` and `RAGEN_MCP_PORT`
 instead.
+
+### Everything in containers (`ragen:up:everything`)
+
+`docker-compose.fullapp.yml` runs web, api, worker and admin as containers on
+top of `docker-compose.yml`. web, api and worker read the root `.env.local`
+through `env_file:` (admin reads `apps/admin/.env.local` instead, so an
+admin-only setting goes there), and then its `environment:` block, which **wins over `.env.local`**,
+replaces the addresses that differ inside the network (`postgres:5432` for
+`localhost:55432`, and so on). So a setting belongs in that block only when
+its container value differs from its host value; anything an operator owns
+stays out of it, or `.env.local` silently loses.
+`tests/architecture/the-container-stack-leaves-operator-settings-to-env-local.test.ts`
+holds the two below to that. To see what a container really gets, read
+`docker compose -f docker-compose.yml -f docker-compose.fullapp.yml config`.
+
+- **`APP_URL`** — the address users reach — comes from `.env.local`, the same
+  value host apps use. Set it to the real origin (`https://ragen.example.com`)
+  or invitation links, emails and the OIDC callback name `localhost`. web reads
+  it, and the fallback `NEXT_PUBLIC_APP_URL`, at runtime, so the published
+  image needs no rebuild. Changing `WEB_PORT` in `.env` does not change it.
+- **PII masking** is opt-in, and in containers the opt-in is a file, not a
+  variable: add `-f docker-compose.pii.yml`. It starts both Presidio services
+  (no `--profile pii` needed) and gives web, api and worker the service-name
+  URLs. The `localhost:5002`/`5003` URLs in `.env.local` are for host apps;
+  inside a container they point at the container itself, so with masking
+  configured but no overlay every chat message fails closed.
+  `FEATURE_FLAG_PII_MASKING=0` in `.env.local` stays the kill switch.
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f docker-compose.pii.yml up -d
+  ```

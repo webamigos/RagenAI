@@ -31,11 +31,9 @@ what they assume:
   which the containers allow because they run with `TARGET_ENV=local`.
   `--encrypt` generates `ENCRYPTION_MASTER_KEY`; a key already in `.env.local`
   is always kept;
-- `--host` becomes `APP_URL`, written to `.env` as well as `.env.local`:
-  web's `environment:` reads it from `.env` (Compose's own file), and
-  `environment:` wins over `.env.local`. The admin panel gets its own
-  address on port 3200. A re-run without `--host` keeps the address already
-  set;
+- `--host` becomes `APP_URL` in `.env.local`, which the containers read
+  (see below). The admin panel gets its own address on port 3200. A re-run
+  without `--host` keeps the address already set;
 - `COMPOSE_FILE` in `.env`, so a bare `docker compose ps`, `logs` or `down` in
   the checkout addresses the whole appliance;
 - after the model pull, one prompt to the small model and `ollama ps`, which
@@ -61,6 +59,26 @@ encryption, `--version` pins the image tag,
 
    On a machine with an NVIDIA GPU and the NVIDIA Container Toolkit, add
    `-f docker-compose.appliance.gpu.yml`.
+
+Two settings worth deciding before the first start:
+
+- **`APP_URL`** in `.env.local` is the address users reach, such as
+  `https://ragen.example.com`. Invitation links, emails and the company
+  sign-in callback are built from it, and the containers read it from that
+  file. Left at `http://localhost:3000`, every link names localhost.
+- **PII masking** is off unless you turn it on. In this stack that is one
+  step: add `-f docker-compose.pii.yml` after the appliance files. It starts
+  Presidio on the machine and points web, api and worker at it by service
+  name. The Presidio URLs in the template are commented out and are for apps
+  run on the host; inside a container `localhost` is the container itself.
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.fullapp.yml -f docker-compose.appliance.yml -f docker-compose.pii.yml up -d
+  ```
+
+To check what a container actually gets, run the same command with `config`
+in place of `up -d`: an `environment:` entry in a compose file wins over
+`.env.local`, and nothing else shows the resolved value.
 
 The first start pulls the models into the `ollama_models` volume, which is
 about 20 GB for the default tier and needs the internet once. The web, api
@@ -142,5 +160,5 @@ inherits:
 | docling | `huggingface.co` | `HF_HUB_OFFLINE` |
 | docling | `mobile.events.data.microsoft.com` | `ORT_DISABLE_TELEMETRY` |
 
-Not covered yet: Brain, the guardrail first pass, the hybrid profile and a
-CI job (A3b in the spec).
+Not covered yet: Brain, the guardrail first pass, PII masking
+(`docker-compose.pii.yml`), the hybrid profile and a CI job (A3b in the spec).

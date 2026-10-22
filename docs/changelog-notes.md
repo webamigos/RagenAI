@@ -77,8 +77,10 @@ archive is the blog.
 
 ## Unreleased
 
-- [brief] The fully local appliance installs on an NVIDIA DGX Spark (or any Linux box with an NVIDIA GPU) with one script, `infra/appliance/install-spark.sh`: it checks the GPU, the disk and the image architectures, generates the secrets, pulls the models, checks that Ollama runs them on the GPU (and warns when it cannot confirm it) and waits for the web app. Nothing is built on the machine.
-- [brief] The container stack (`docker-compose.fullapp.yml`) now takes `APP_URL` from `.env` or the shell. It was fixed to localhost, so links and the sign-in origin check pointed at localhost whatever `.env.local` said.
+- [brief] Running Ragen in containers: `APP_URL` in `.env.local` now reaches the web container, so invitation links, emails and the company sign-in callback can name the real host instead of always `localhost`. PII masking works in containers too: add `-f docker-compose.pii.yml`, which starts Presidio and points the apps at it. Before, the container stack overwrote both settings, and masking an operator had turned on was silently off. Masking stays opt-in, and the appliance template no longer turns it on by default. Thread: on-premises appliance. ([PR #1670](https://github.com/webamigos/RagenAI/pull/1670))
+
+- [brief] The fully local appliance installs on an NVIDIA DGX Spark (or any Linux box with an NVIDIA GPU) with one script, `infra/appliance/install-spark.sh`: it checks the GPU, the disk and the image architectures, generates the secrets, pulls the models, checks that Ollama runs them on the GPU (and warns when it cannot confirm it) and waits for the web app. Nothing is built on the machine. ([PR #1665](https://github.com/webamigos/RagenAI/pull/1665))
+
 - [brief] A chat turn whose model the server cannot call — its provider has no credentials, as on an OpenRouter-only install offered a Vertex model — now says so in the chat instead of showing sources and no answer. The message names the provider and the variables an administrator has to set, never their values.
 
 - [brief] Assistant IDs in the public API are now the bare project UUID: `/v1/assistants` and a thread's `assistant_id` no longer carry the `asst-` prefix. Requests still accept the old `asst-<id>` form, but responses no longer return it, so a client that compares returned IDs against stored `asst-…` values must be updated. (SDK and docs updated alongside.)
