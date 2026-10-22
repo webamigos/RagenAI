@@ -71,5 +71,7 @@ export function ssoErrorMessageKey(
   if (!code) {
     return null;
   }
-  return MESSAGE_KEYS[code] ?? 'sso-failed';
+  // Own keys only: `?error=` comes from the URL, and `constructor`,
+  // `toString` or `__proto__` would otherwise resolve on Object.prototype.
+  return Object.hasOwn(MESSAGE_KEYS, code) ? MESSAGE_KEYS[code] : 'sso-failed';
 }

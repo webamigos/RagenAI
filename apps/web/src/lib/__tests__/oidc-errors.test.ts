@@ -32,6 +32,13 @@ describe('ssoErrorMessageKey', () => {
     expect(ssoErrorMessageKey('sso_failed')).toBe('sso-failed');
   });
 
+  it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty'])(
+    'gives %s, inherited from Object.prototype, the general sentence',
+    (code) => {
+      expect(ssoErrorMessageKey(code)).toBe('sso-failed');
+    },
+  );
+
   it('has a sentence for every refusal the server sends', () => {
     for (const code of Object.values(SIGN_IN_REFUSAL)) {
       expect(ssoErrorMessageKey(code), code).not.toBe('sso-failed');
