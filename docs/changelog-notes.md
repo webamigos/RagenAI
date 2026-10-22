@@ -104,6 +104,7 @@ archive is the blog.
   retrieval analytics and purging expired personal memories — where before
   they ran only if someone had run a setup script, which a container install
   or the appliance never did. `WORKER_DISABLED_SCHEDULES` turns one off.
+  ([PR #1671](https://github.com/webamigos/RagenAI/pull/1671))
 
 - `[brief]` **The published images stop Prisma's update check on their own.**
   The web, API, worker and admin images now set `CHECKPOINT_DISABLE=1`, so a
