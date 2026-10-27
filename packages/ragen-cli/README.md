@@ -240,31 +240,23 @@ the code happens to run on: Node 20 left support on 2026-04-30, and a CLI that
 holds an API key should not invite a runtime that no longer gets security
 fixes. `ragen doctor` checks the same number (`MIN_NODE_MAJOR`).
 
-## Publishing (manual)
+## Publishing
 
-There is no publish job in CI. From a clean checkout:
+Merging a pull request that bumps the version publishes it.
+`.github/workflows/publish-npm.yml` runs when this package's `package.json`
+changes on `main`. If that version is not on npm yet, it publishes it with a
+provenance attestation, then runs `ragen --version` from the registry with
+that exact version. See `packages/create-ragen-app/README.md` ("Publishing")
+for the release steps, how the workflow authenticates, and why the lockfile
+line is edited by hand rather than regenerated. The same applies here, with
+`--workspace=ragen-cli`.
 
-```bash
-npm version <patch|minor|major> --workspace=ragen-cli
-```
+npm versions are immutable: `npm unpublish` is limited to 72 hours and burns
+the version number permanently, so the version lands on `main` before
+anything is published, never after.
 
-Land that on `main` **before** publishing. npm versions are immutable: a
-publish that runs ahead of the repository cannot be corrected by re-publishing,
-only by pushing the commit that should have gone first, and `npm unpublish` is
-limited to 72 hours and burns the version number permanently.
-
-```bash
-npm publish --workspace=ragen-cli
-```
-
-`prepack` runs `clean` before `build` deliberately — `files` publishes `dist`
+`prepack` runs `clean` before `build` deliberately. `files` publishes `dist`
 wholesale, so without the clean a deleted source file lingers in the tarball.
-
-Then exercise what was actually published, not what was packed:
-
-```bash
-npm install -g ragen-cli@latest && ragen --version
-```
 
 ## Licence
 

@@ -259,59 +259,50 @@ wholesale and `tsc` does not remove the output of a source file that no
 longer exists, so without the clean a renamed or deleted module ships as a
 stale `.js` that nothing in the repo can explain.
 
-## Publishing (manual for now)
+## Publishing
 
-There is no publish job in CI (see the project plan's non-goals), so this is a
-checklist rather than one command:
+A release is a pull request that bumps the version; merging it publishes.
+`.github/workflows/publish-npm.yml` runs on every merge that changes this
+package's `package.json`. If the version there is not on npm yet, it publishes
+the tarball built from that commit (with a provenance attestation), waits
+until npm serves it, and scaffolds an install with that exact version.
+`@latest` is never used, because it names the previous release whenever a
+publish did not happen. A version already on npm is skipped, so a merge that
+only touches dependencies publishes nothing.
 
-```bash
-npm version <patch|minor|major> --workspace=create-ragen-app
-npm install --package-lock-only
-git add packages/create-ragen-app/package.json package-lock.json
-git commit -m "chore(release): create-ragen-app <version>"
-```
-
-**Land that on `main` before publishing.** `main` is protected, so it goes
-through a pull request like anything else — and publishing first is precisely
-how the registry ended up ahead of the repository last time. npm versions are
-immutable: once `0.2.0` exists, a repository that still says `0.1.0` cannot be
-corrected by re-publishing, only by pushing the commit that should have gone
-first.
+To cut a release:
 
 ```bash
-git checkout main && git pull
-npm publish --workspace=create-ragen-app
+npm version <patch|minor|major> --workspace=create-ragen-app --no-git-tag-version
 ```
 
-Publishing from a merged `main` also means the tarball is built from the tree
-everyone else can see, rather than from whatever happens to be in the working
-directory.
+Then change this workspace's `"version"` in `package-lock.json` (the
+`"packages/create-ragen-app"` entry) to the same value, by hand, and open a
+pull request titled `chore(release): create-ragen-app <version>`. The release
+diff is two lines, one in each file.
 
-The two middle lines of the first block are there because of what `npm
-version` does _not_ do for a workspace. Both have already cost this package a
-release:
+Two things about that first command have each cost a release:
 
-- **It does not commit, and does not tag.** In a single-package repository it
-  does both; with `--workspace` it rewrites `package.json` and leaves the
-  change unstaged, printing only the new version. 0.2.0 went to npm from a
-  bump that then sat uncommitted on a laptop, so the registry served 0.2.0
-  while `main` still said 0.1.0 — and `npm publish` from `main` would have
-  been rejected as an existing version.
-- **It does not touch `package-lock.json`.** The lockfile keeps its own copy
-  of every workspace's version, so it stayed on `0.1.0`. That is why
-  `git add package-lock.json` staged nothing in that release commit: there was
-  nothing to stage. `npm install --package-lock-only` fixes it and leaves
-  `node_modules` alone.
+- **It does not commit, and does not tag.** With `--workspace` it rewrites
+  `package.json` and leaves the change unstaged. 0.2.0 went to npm from a bump
+  that then sat uncommitted on a laptop, so the registry served 0.2.0 while
+  `main` still said 0.1.0. Publishing from CI after the merge rules that out:
+  the registry can no longer get ahead of `main`.
+- **It does not touch `package-lock.json`.** The lockfile keeps its own copy of
+  every workspace's version. Do not regenerate the lockfile to fix that.
+  `npm install --package-lock-only` rewrites unrelated entries with either npm
+  10 or 11. For 0.10.0 it dropped `@modelcontextprotocol/sdk/node_modules/zod`,
+  which `npm ci` needs (see `.github/actions/use-pinned-npm`). Edit the one
+  line instead.
 
-`npm run build` is deliberately absent: `prepare` already runs `clean &&
-build` on publish, and it has to clean — `files` publishes `dist` wholesale
-and `tsc` does not remove the output of a source file that no longer exists.
+The workflow authenticates with npm trusted publishing (OIDC). The package's
+settings on npmjs.com must list repository `webamigos/RagenAI` and workflow
+`publish-npm.yml` as a trusted publisher. An `NPM_TOKEN` repository secret
+works as a fallback. With neither, the publish step fails with `ENEEDAUTH`,
+nothing is published, and the run goes red. To retry after fixing that, run
+the workflow from the Actions tab (`workflow_dispatch`); it skips anything
+already published.
 
-Then exercise what was actually published, not just what was packed — from
-the repository root:
-
-```bash
-OPENAI_API_KEY=dummy npx create-ragen-app@latest /tmp/verify-release \
-  --provider=openai --skip-docker --skip-install
-node scripts/ci/assert-scaffolded-install.mjs /tmp/verify-release
-```
+If you ever publish by hand anyway, do it from an up-to-date `main` after the
+bump has merged, and check the result with
+`npm view create-ragen-app@<version> version` before you test anything.

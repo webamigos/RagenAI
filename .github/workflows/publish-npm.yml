@@ -1,0 +1,147 @@
+# Publishes the two packages this repository puts on npm, create-ragen-app and
+# ragen-cli, when a merge to main changes the version in their package.json.
+#
+# It replaces a manual checklist that went wrong in both directions: once the
+# registry got ahead of main (0.2.0 published from a laptop before the bump
+# landed), and once nobody could tell whether a publish had happened at all,
+# because the next command in the checklist, `npx create-ragen-app@latest`,
+# quietly ran the previous version and passed. Here every step fails loudly.
+#
+# The release itself is still a pull request that bumps the version (see each
+# package's README). This job only notices that main now names a version the
+# registry does not have, publishes the tarball built from that commit, and
+# then runs what npm actually serves.
+#
+# Authentication is npm trusted publishing (OIDC): no token in the repository.
+# Each package needs this workflow registered as its trusted publisher on
+# npmjs.com (package settings, "Trusted publishing": repository
+# webamigos/RagenAI, workflow `publish-npm.yml`). Until that is done, an
+# `NPM_TOKEN` secret works as a fallback; with neither, the publish step fails
+# with ENEEDAUTH and nothing is published.
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/create-ragen-app/package.json
+      - packages/ragen-cli/package.json
+      - .github/workflows/publish-npm.yml
+  # Re-run after configuring trusted publishing, or after a failed publish.
+  # Safe at any time: a version already on the registry is skipped.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never cancel a publish half way, and never run two for one package at once.
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Trusted publishing and the provenance attestation both need the job's
+      # OIDC token.
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: create-ragen-app
+            dir: packages/create-ragen-app
+          - package: ragen-cli
+            dir: packages/ragen-cli
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Is this version already on npm?
+        id: version
+        env:
+          PACKAGE: ${{ matrix.package }}
+          PACKAGE_DIR: ${{ matrix.dir }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./${PACKAGE_DIR}/package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # `npm view name@version version` prints the version when it exists
+          # and nothing (exit 0 or E404) when it does not.
+          published=$(npm view "${PACKAGE}@${version}" version 2>/dev/null || true)
+          if [ "$published" = "$version" ]; then
+            echo "${PACKAGE}@${version} is already on npm; nothing to publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "${PACKAGE}@${version} is not on npm yet; publishing."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The repository pins npm 10 for installs (use-pinned-npm), which
+      # predates trusted publishing; the publish alone runs on an npm 11 that
+      # supports it. Pinned, like every other tool here.
+      - name: Publish
+        if: steps.version.outputs.publish == 'true'
+        env:
+          PACKAGE: ${{ matrix.package }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$RUNNER_TEMP/.npmrc"
+            export NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc"
+          fi
+          npx --yes npm@11.12.1 publish --workspace="$PACKAGE" --provenance --access public
+
+      # The registry can take a moment to serve a new version everywhere.
+      - name: Wait until npm serves it
+        if: steps.version.outputs.publish == 'true'
+        env:
+          PACKAGE: ${{ matrix.package }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 30); do
+            if [ "$(npm view "${PACKAGE}@${VERSION}" version 2>/dev/null || true)" = "$VERSION" ]; then
+              echo "npm serves ${PACKAGE}@${VERSION}."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "npm still does not serve ${PACKAGE}@${VERSION} after 5 minutes." >&2
+          exit 1
+
+      # What was published, not what was packed: the exact version from the
+      # registry, scaffolding from this commit. Never `@latest`, which is the
+      # previous version whenever the publish did not happen.
+      - name: Scaffold an install with the published installer
+        if: steps.version.outputs.publish == 'true' && matrix.package == 'create-ragen-app'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          COMMIT_SHA: ${{ github.sha }}
+          GIGET_AUTH: ${{ secrets.GITHUB_TOKEN }}
+          # Never reaches a provider: nothing is installed or started.
+          OPENAI_API_KEY: sk-ci-placeholder-never-sent-anywhere
+        run: |
+          set -euo pipefail
+          npx --yes "create-ragen-app@${VERSION}" /tmp/verify-release \
+            --ref="$COMMIT_SHA" --provider=openai --skip-docker --skip-install
+          node scripts/ci/assert-scaffolded-install.mjs /tmp/verify-release
+
+      - name: Run the published CLI
+        if: steps.version.outputs.publish == 'true' && matrix.package == 'ragen-cli'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          reported=$(npx --yes --package="ragen-cli@${VERSION}" ragen --version)
+          if [ "$reported" != "$VERSION" ]; then
+            echo "Published ragen-cli reports $reported, expected $VERSION." >&2
+            exit 1
+          fi
