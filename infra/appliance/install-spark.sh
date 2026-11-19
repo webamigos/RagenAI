@@ -133,7 +133,10 @@ if [ "$(printf '%s\n2.24.0\n' "${compose_version#v}" | sort -V | head -n1)" != "
   die "Docker Compose $compose_version jest za stary; wymagany >= 2.24."
 fi
 
-if [ "$USE_GPU" = 1 ]; then
+if [ "$USE_GPU" = 1 ] && [ "$ENV_ONLY" = 1 ] && [ -z "$GPU_CHECK_IMAGE" ]; then
+  # --env-only pulls nothing, and the default check image would be pulled.
+  warn "--env-only bez RAGEN_GPU_CHECK_IMAGE: pomijam sprawdzenie GPU, bo wymagałoby pobrania obrazu"
+elif [ "$USE_GPU" = 1 ]; then
   if "${gpu_check[@]}" -L >/dev/null 2>&1; then
     log "GPU widoczne w kontenerach: $("${gpu_check[@]}" -L | head -n1)"
   else

@@ -391,8 +391,9 @@ Select them in Knowledge and choose **Reprocess**.
 On a new machine with no internet, install the same release from its
 offline bundle first (section 6): it brings the images, the checkout and
 the models. Then restore the set over it, from step 0's `cp` on. A bundle
-built with `--no-models` brings no models, and without them
-`ollama-models` cannot finish and the apps wait for it.
+built with `--no-models` brings no models. On a machine whose
+`ollama_models` volume is empty, the installer then stops at the model
+step (6.4, step 7) and starts nothing. Use a bundle with models there.
 
 ## 5. Upgrade, online
 

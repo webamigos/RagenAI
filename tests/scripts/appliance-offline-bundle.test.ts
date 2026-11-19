@@ -146,6 +146,10 @@ case "$1" in
     exit 0 ;;
   rmi) rm -f "$S/images/$(enc "$last")"; exit 0 ;;
   inspect)
+    case "$*" in
+      # What the install's containers run: "name<TAB>image id" per line.
+      *Config.Image*) [ ! -f "$S/containers" ] || cat "$S/containers"; exit 0 ;;
+    esac
     if [ "$last" = c-migrate ]; then echo "\${STUB_MIGRATE_EXIT:-0}"; else echo 0; fi
     exit 0 ;;
   volume) exit 0 ;;
@@ -940,6 +944,111 @@ describe.skipIf(!LINUX)('install-offline.sh', () => {
       );
       expect(again.status).toBe(1);
     });
+  });
+
+  // The installer unpacks either archive when it finds it. One dropped into a
+  // bundle built without it is not under the checksums, so it must not pass.
+  it('refuses a models archive that the sums file does not list', () => {
+    const builder = machine('builder-nomodels', 'amd64');
+    const slim = build(builder, '9.9.9', ['--no-models']).out;
+    expect(existsSync(path.join(slim, 'ollama-models.tar'))).toBe(false);
+    writeFileSync(path.join(slim, 'ollama-models.tar'), 'not what was built');
+    const target = machine('target-planted', 'arm64');
+
+    const result = install(target, slim);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('ollama-models.tar');
+    expect(target.log()).toEqual([]);
+  });
+
+  it('keeps the ports an install was moved to through an upgrade', () => {
+    const target = machine('target-ports', 'arm64');
+    expect(install(target, bundle, ['--cpu']).status).toBe(0);
+    const env = path.join(target.dir, '.env');
+    writeFileSync(
+      env,
+      readFileSync(env, 'utf8')
+        .replace(/^WEB_PORT=.*$/m, 'WEB_PORT=8080')
+        .replace(/^ADMIN_PORT=.*$/m, 'ADMIN_PORT=8200'),
+    );
+
+    expect(install(target, upgradeBundle, [], { STUB_GEN: '2' }).status).toBe(
+      0,
+    );
+
+    expect(dotenv(env, 'WEB_PORT')).toBe('8080');
+    expect(dotenv(env, 'ADMIN_PORT')).toBe('8200');
+  });
+
+  // An online install that failed between its pull and its recreate leaves a
+  // tag pointing past the container that still runs the earlier image.
+  it('keeps the image a container runs, not the one its tag has moved to', () => {
+    const target = machine('target-moved-tag', 'arm64');
+    expect(install(target, bundle, ['--cpu']).status).toBe(0);
+    const running = 'sha256:therunningone';
+    writeFileSync(
+      path.join(target.stub, 'images', 'sha256_C_therunningone'),
+      `${running}|linux/arm64\n`,
+    );
+    writeFileSync(
+      path.join(target.stub, 'containers'),
+      `postgres:16\t${running}\n`,
+    );
+    expect(target.image('postgres:16')).not.toContain(running);
+
+    expect(install(target, upgradeBundle, [], { STUB_GEN: '2' }).status).toBe(
+      0,
+    );
+
+    expect(target.image('ragen-rollback/postgres:16--9.9.9')).toContain(
+      running,
+    );
+    // A service with no container falls back to what its name points at.
+    expect(target.image('ragen-rollback/redis:7-alpine--9.9.9')).toBeTruthy();
+  });
+
+  it('keeps the way back when the rolled-back stack fails to start', () => {
+    const target = machine('target-rollback-retry', 'arm64');
+    expect(install(target, bundle, ['--cpu']).status).toBe(0);
+    expect(install(target, upgradeBundle, [], { STUB_GEN: '2' }).status).toBe(
+      0,
+    );
+    const installer = path.join(
+      target.dir,
+      'infra/appliance/bundle/install-offline.sh',
+    );
+    const state = path.join(target.dir, '.ragen-bundle/state.env');
+
+    const failed = target.run(installer, ['--dir', target.dir, '--rollback'], {
+      STUB_MIGRATE_EXIT: '1',
+    });
+    expect(failed.status).toBe(1);
+    expect(dotenv(state, 'PREVIOUS_VERSION')).toBe('9.9.9');
+    expect(dotenv(state, 'CURRENT_VERSION')).toBe('9.9.10');
+
+    const retried = target.run(installer, ['--dir', target.dir, '--rollback']);
+    expect(retried.status).toBe(0);
+    expect(dotenv(state, 'CURRENT_VERSION')).toBe('9.9.9');
+    expect(dotenv(state, 'PREVIOUS_VERSION')).toBe('');
+  });
+
+  // --env-only pulls nothing. Without a check image named from outside, the
+  // GPU check would run the default one, which Docker pulls when missing.
+  it('runs no container from install-spark.sh --env-only without a check image', () => {
+    const target = machine('target-env-only', 'arm64');
+    expect(install(target, bundle, ['--cpu']).status).toBe(0);
+    target.clearLog();
+
+    const result = target.run(
+      path.join(target.dir, 'infra/appliance/install-spark.sh'),
+      ['--env-only', '--version', '9.9.9'],
+    );
+
+    expect(result.status).toBe(0);
+    expect(target.log().some((line) => line.startsWith('docker run'))).toBe(
+      false,
+    );
   });
 
   it('will not roll back onto an image that has been pruned', () => {

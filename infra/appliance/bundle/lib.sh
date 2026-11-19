@@ -196,10 +196,13 @@ verify_bundle() {
 
   listed="$(sums_listed "$dir")"
   required=("${BUNDLE_REQUIRED_FILES[@]}")
-  if [ -s "$dir/models.txt" ]; then
+  # Also when the file is simply there. The installer unpacks either archive
+  # if it finds it, so one added to a bundle built without it must be under
+  # the checksums like the rest, or it is read unverified.
+  if [ -s "$dir/models.txt" ] || [ -f "$dir/ollama-models.tar" ]; then
     required+=(ollama-models.tar)
   fi
-  if [ -n "$(get_env "$dir/manifest.env" BASAL_IMAGE)" ]; then
+  if [ -n "$(get_env "$dir/manifest.env" BASAL_IMAGE)" ] || [ -f "$dir/basal-models.tar" ]; then
     required+=(basal-models.tar)
   fi
   for file in "${required[@]}"; do
@@ -223,7 +226,8 @@ verify_bundle() {
 }
 
 # Files in the bundle directory that SHA256SUMS does not list. The installer
-# never reads one, so this is a warning, not a refusal.
+# reads none of them — the two archives it would read are refused unlisted
+# by verify_bundle — so this is a warning, not a refusal.
 unlisted_files() {
   local listed
   listed="$(sums_listed "$1")"

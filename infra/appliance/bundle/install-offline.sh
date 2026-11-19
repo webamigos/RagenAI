@@ -154,11 +154,15 @@ if [ "$ROLLBACK" = 1 ]; then
     rm -f "$STATE/checkout.sha256"
   fi
   set_env "$DIR/.env" RAGEN_VERSION "$previous"
+
+  # The way back is given up only once the stack is up on it. If the start
+  # fails, the images and the snapshot are still there, and a second
+  # --rollback has to find what it needs to try again: everything above is
+  # safe to repeat.
+  start_stack
   set_env "$STATE/state.env" CURRENT_VERSION "$previous"
   set_env "$STATE/state.env" PREVIOUS_VERSION ""
   printf '%s rollback %s -> %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${current:-?}" "$previous" >>"$STATE/history.log"
-
-  start_stack
   log "Działa wydanie $previous. Starsze zadanie migrate widzi w bazie migracje, których samo nie ma — sprawdź 'docker compose logs migrate' (runbook, sekcja 7)."
   exit 0
 fi
@@ -265,12 +269,20 @@ if [ "$mode" = upgrade ]; then
     # Read before the loop, so a checkout Compose cannot parse stops the
     # upgrade here instead of leaving it with no way back.
     old_images="$(compose config --images | unique_images)"
+    # What each container of the install runs, as "name<TAB>image id". A tag
+    # can have moved past its container: an online install that failed
+    # between its pull and its recreate leaves exactly that, and the way
+    # back is to what was running, not to what the name points at now.
+    in_use="$(compose ps -aq 2>/dev/null | xargs -r docker inspect -f '{{.Config.Image}}{{"\t"}}{{.Image}}' 2>/dev/null || true)"
     : >"$STATE/rollback-images.tsv.tmp"
     while IFS= read -r image; do
       kept="$(rollback_ref "$image" "$installed")" || continue
-      if docker image inspect "$image" >/dev/null 2>&1; then
-        docker tag "$image" "$kept"
-        printf '%s\t%s\t%s\n' "$image" "$kept" "$(docker image inspect -f '{{.Id}}' "$image")" >>"$STATE/rollback-images.tsv.tmp"
+      source_image="$(printf '%s\n' "$in_use" | awk -F'\t' -v name="$image" '$1 == name && $2 != "" { print $2; exit }')"
+      # A service with no container: the name is all there is to go by.
+      source_image="${source_image:-$image}"
+      if docker image inspect "$source_image" >/dev/null 2>&1; then
+        docker tag "$source_image" "$kept"
+        printf '%s\t%s\t%s\n' "$image" "$kept" "$(docker image inspect -f '{{.Id}}' "$source_image")" >>"$STATE/rollback-images.tsv.tmp"
       fi
     done <<<"$old_images"
     tar -czf "$STATE/checkout-$installed.tar.gz" -C "$DIR" \
@@ -341,7 +353,16 @@ fi
 if [ "$ENCRYPT" = 1 ]; then
   env_args+=(--encrypt)
 fi
-RAGEN_GPU_CHECK_IMAGE="$GPU_CHECK_IMAGE" bash "$DIR/infra/appliance/install-spark.sh" "${env_args[@]}"
+# install-spark.sh writes WEB_PORT and ADMIN_PORT from its environment, with
+# 3000 and 3200 when unset. An install moved to other ports has them in its
+# `.env`, not in this shell, and an upgrade must not move it back.
+kept_web_port="${WEB_PORT:-$(get_env "$DIR/.env" WEB_PORT)}"
+kept_admin_port="${ADMIN_PORT:-$(get_env "$DIR/.env" ADMIN_PORT)}"
+env \
+  ${kept_web_port:+WEB_PORT="$kept_web_port"} \
+  ${kept_admin_port:+ADMIN_PORT="$kept_admin_port"} \
+  RAGEN_GPU_CHECK_IMAGE="$GPU_CHECK_IMAGE" \
+  bash "$DIR/infra/appliance/install-spark.sh" "${env_args[@]}"
 if [ -n "$kept_compose_file" ]; then
   set_env "$DIR/.env" COMPOSE_FILE "$kept_compose_file"
 fi
