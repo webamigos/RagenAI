@@ -55,10 +55,39 @@ describe('runFileEmbeddings — a re-embed keeps the active version', () => {
       });
       expect(activities.addDocumentsToVectorStore).toHaveBeenCalled();
       // …and the stored file is never opened.
-      expect(activities.updateParsingStatus).not.toHaveBeenCalled();
       expect(activities.getDocumentParser).not.toHaveBeenCalled();
+      // The bulk re-index reset parsing to NOT_STARTED before it queued the
+      // job. Nothing parses on this path, so it is closed, not left pending.
+      expect(activities.updateParsingStatus).toHaveBeenCalledTimes(1);
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith({
+        fileId: 'file-1',
+        orgId: 'org-1',
+        status: 'COMPLETED',
+      });
     },
   );
+
+  // The version re-index deletes the file's chunks before it writes the new
+  // ones. A re-embed cancelled while it waited must stop before that, as it
+  // does on the parse path, or the document is left with no chunks at all.
+  it('stops before the hand-over when the re-embed was cancelled', async () => {
+    const activities = setup({ documentId: 'doc-1', changeType: 'MANUAL' });
+    const ctx = context(activities);
+    vi.mocked(ctx.checkCancelled).mockResolvedValue(true);
+
+    await expect(
+      runFileEmbeddings({ ...payload, keepActiveVersion: true }, ctx),
+    ).rejects.toMatchObject({ type: 'IngestCancelled' });
+
+    expect(activities.getDocumentContent).not.toHaveBeenCalled();
+    expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
+    expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    expect(activities.updateParsingStatus).toHaveBeenCalledWith({
+      fileId: 'file-1',
+      orgId: 'org-1',
+      status: 'CANCELLED',
+    });
+  });
 
   it('parses the stored file while the active version is still the upload', async () => {
     const activities = setup({ documentId: 'doc-1', changeType: 'UPLOAD' });
