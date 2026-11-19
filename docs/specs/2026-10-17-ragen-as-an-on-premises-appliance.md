@@ -652,7 +652,14 @@ repeatable demo, and records the gaps as tests.
   Partly done: [the runbook](../appliance-runbook.md) covers the manual
   install, the egress check, backup and restore, online upgrade, rollback
   with the additive-migrations rule, model swap with a full re-index, and
-  troubleshooting per failure mode. Still to do:
+  troubleshooting per failure mode. The backup is a script with a nightly
+  systemd timer (`infra/appliance/backup.sh`), and the re-index after an
+  embedding change is one command in the worker image
+  (`reindex-organization.js --all-orgs`). Neither was run against a live
+  stack: the script is tested against a stub `docker` and `curl`, the
+  command's decisions as unit tests. Still to do:
+  - an alert when the nightly backup fails, and re-embedding published
+    Brain pages after an embedding change
   - the offline upgrade, once C2 exists
   - the first-line checklist as a role, once C3 exists (a draft is there)
   - the install through `create-ragen-app`, once C1 lands

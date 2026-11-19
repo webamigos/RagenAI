@@ -11,11 +11,11 @@ this page says so and names the spec step that will build it.
 | --- | --- |
 | [Install](#1-install) | written; the manual path. The installer option is coming (C1) |
 | [Prove nothing leaves the machine](#2-prove-nothing-leaves-the-machine) | written |
-| [Back up](#3-back-up) and [restore](#4-restore) | written |
+| [Back up](#3-back-up) and [restore](#4-restore) | written; a script and a nightly timer |
 | [Upgrade, online](#5-upgrade-online) | written |
 | [Upgrade, offline](#6-upgrade-offline) | placeholder until C2 |
 | [Roll back](#7-roll-back) | written |
-| [Swap a model](#8-swap-a-model) (with re-index) | written |
+| [Swap a model](#8-swap-a-model) (with re-index) | written; one command re-indexes every organization |
 | [Troubleshooting](#9-troubleshooting) | written, one entry per failure mode in the spec |
 | [First-line checklist](#10-first-line-checklist-draft) | draft. The support roles arrive with C3 |
 
@@ -271,7 +271,55 @@ the jobs that were queued at the time (see section 4).
 Qdrant from Wednesday gives files without vectors, or vectors for files that
 no longer exist. Take all three in the same window, with the writers stopped.
 
-### Procedure
+### The script
+
+```bash
+bash infra/appliance/backup.sh                      # one set in /var/backups/ragen
+bash infra/appliance/backup.sh --dir /mnt/nas/ragen --keep 14
+```
+
+It does the manual procedure below, with the parts a person forgets:
+
+- It stops only the writers that are running, and starts exactly those again
+  on every exit, including a failed one.
+- A set is written as `<YYYYMMDD-HHMM>.partial` and renamed when every step
+  succeeded. **A directory with the plain name is a complete set**; a
+  `.partial` is a failed run and is never restored from.
+- It writes `SHA256SUMS` and a `MANIFEST` (release, commit, collections)
+  into the set, and reads the Postgres user, database, Qdrant port and API
+  key from `.env` and `.env.local`.
+- It keeps the newest 7 complete sets (`--keep`, `0` keeps all) and deletes
+  nothing else in the target.
+- With `STORAGE_PROVIDER=s3` it refuses, because the documents are not on
+  the volume. Back the bucket up (notes below) and pass
+  `--storage-elsewhere` to take the set without them.
+
+It does not copy the Ollama models: with the internet they are pulled again,
+and without it they come with the offline bundle.
+
+**Run it every night** with the timer in `infra/appliance/systemd/`:
+
+```bash
+sudo cp infra/appliance/systemd/ragen-backup.service infra/appliance/systemd/ragen-backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now ragen-backup.timer
+systemctl list-timers ragen-backup.timer      # the next run
+journalctl -u ragen-backup.service -n 50      # the last run
+```
+
+It runs at 01:30, before the worker's own nightly jobs, and the apps are
+down for the length of the dump. The units assume `/opt/ragen` and
+`/var/backups/ragen`; edit `ragen-backup.service` for a NAS mount or
+another `--keep`. A failed run exits non-zero, so the unit shows as failed
+in `systemctl --failed`. Nothing sends that anywhere yet: check it, or wire
+the organization's monitoring to it.
+
+A backup on the same disk as the data protects against a bad upgrade, not
+against a dead disk. Point `RAGEN_BACKUP_DIR` at other storage.
+
+### The manual procedure
+
+What the script runs, for a machine where it cannot be used:
 
 ```bash
 B=/var/backups/ragen/$(date +%Y%m%d-%H%M)
@@ -327,8 +375,6 @@ Notes:
 - `$B` holds `ENCRYPTION_MASTER_KEY` next to the encrypted messages. Keep the
   backup target as protected as the machine, or store `.env.local`
   separately.
-- Nothing in the repository schedules this. A backup script and a timer are
-  not built yet.
 
 ## 4. Restore
 
@@ -343,10 +389,14 @@ either, use those values in all three commands, or `dropdb` removes nothing
 and `pg_restore` writes into the wrong database.
 
 ```bash
-B=/var/backups/ragen/<set>
+B=/var/backups/ragen/<set>      # a complete set: no .partial in the name
+
+# A set taken by the script carries its checksums. Check them first.
+(cd "$B" && sha256sum -c --quiet SHA256SUMS)
 
 # 0. On a new machine: section 1.2 at the same release, then
 cp "$B/.env.local" "$B/.env" .
+[ ! -f "$B/admin.env.local" ] || cp "$B/admin.env.local" apps/admin/.env.local
 git apply "$B/local-changes.diff"      # if it is not empty
 
 # 1. Data services only
@@ -572,11 +622,33 @@ not find it.
    docker compose up -d
    ```
 
-4. **Re-ingest every document.** In each organization, an owner or admin
-   opens Knowledge, selects the files and chooses **Reprocess**. The list
-   shows a page of files at a time, so work through each folder and page
-   until every file has been sent. For each file, Reprocess picks the
-   correct job:
+4. **Re-ingest every document.** One command, from the worker image:
+
+   ```bash
+   # what it would start, per organization — reads only
+   docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js --all-orgs --dry-run
+   # start it
+   docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js --all-orgs
+   ```
+
+   It takes every file the index held (embedding completed), in every
+   organization, and prints the cutoff it used. `--org <id>` does one
+   organization. To spread a large knowledge base over several nights, fix
+   the cutoff at the moment of the swap and repeat the same command until
+   it starts nothing:
+
+   ```bash
+   docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js \
+     --all-orgs --before 2026-11-19T01:00:00Z --limit 500
+   ```
+
+   A file re-indexed since the cutoff is not taken again, which is why
+   `--limit` needs `--before`. A file that fails during the re-index shows
+   as failed in Knowledge; **Reprocess** it there.
+
+   The same can be done by hand: in each organization, an owner or admin
+   opens Knowledge, selects the files and chooses **Reprocess**, page by
+   page. Either way, each file gets the correct job:
    - a file whose active version is the upload goes through
      `runFileEmbeddings`, which parses the stored file again;
    - a file whose active version is an edit, an optimization or a rollback
@@ -587,22 +659,28 @@ not find it.
    stored file is still the original upload, and the edit would leave the
    index (AGENTS.md, "Document Versions"). The same choice lives in
    `startFileReindexCommand`, which the bulk action, the single-file action
-   and the folder policy change all use.
+   and the folder policy change all use, and in `reindexStepFor`, which the
+   command uses.
 
    The jobs join the normal ingest queue. Each file is parsed by Docling and
    summarized again, so a large knowledge base takes hours.
 5. **Check**: the knowledge base shows every file done, and a question about
    an old document finds it.
 
-Not covered by Reprocess, and not yet by anything else:
+Not covered by the command or by Reprocess, and not yet by anything else:
 
 - **Published Brain pages.** Their chunks are written by publishing, not by
-  ingest, and the bulk action skips their files. After step 3 they are not
-  in search. Whether re-publishing restores them has not been verified.
-- **An operator command.** The contextual-chunks re-index script
-  ([runbook](runbooks/contextual-chunks-reindex.md)) finds its files by
-  reading Qdrant, so after step 3 it reports nothing to do. No script yet
-  re-indexes a whole organization from the database.
+  ingest, and both skip their files. After step 3 they are not in search.
+  The command prints how many each organization has. Whether re-publishing
+  restores them has not been verified.
+- **Imports and files that were never indexed.** An import searches through
+  its source file, which the command does re-index. A file that was staged,
+  withdrawn, failed or cancelled before the swap was not in the index, and
+  stays out.
+
+The contextual-chunks re-index script
+([runbook](runbooks/contextual-chunks-reindex.md)) is not a substitute: it
+finds its files by reading Qdrant, so after step 3 it reports nothing to do.
 
 To go back: restore the old model, `APPLIANCE_MODELS` and `VECTOR_SIZE`, stop
 web, api and worker, upload the Qdrant snapshots from step 1 (section 4,
@@ -750,9 +828,10 @@ Gaps this runbook works around or points at, in one place:
 
 - **The installer's appliance option (C1)** and **the offline bundle (C2)**.
 - **The support channel and roles (C3).**
-- **A backup script and a schedule** for section 3.
-- **An operator command for a full re-index** after an embedding change, and
-  a way to re-embed published Brain pages (8.2).
+- **An alert when the nightly backup fails**, and a copy of the Ollama
+  models in the set (3).
+- **A way to re-embed published Brain pages** after an embedding change
+  (8.2).
 - **`embeddings-dimension-mismatch` on the appliance** cannot see a model
   change behind `local-embed` (8.2).
 - **The container stack's admin env file and TLS** (1.3).

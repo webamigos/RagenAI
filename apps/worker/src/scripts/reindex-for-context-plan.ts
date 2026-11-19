@@ -110,23 +110,30 @@ export function planReindex(
     if (steps.length >= limit) {
       continue;
     }
-    const edited =
-      file.documentId !== null &&
-      file.activeChangeType !== null &&
-      file.activeChangeType !== 'UPLOAD';
-    steps.push(
-      edited
-        ? {
-            fileId,
-            job: 'reindexDocumentVersion',
-            fileName: file.fileName,
-            projectId: file.projectId,
-            documentId: file.documentId as string,
-          }
-        : { fileId, job: 'runFileEmbeddings' },
-    );
+    steps.push(reindexStepFor(file));
   }
   return { steps, missing };
+}
+
+/**
+ * The job that re-indexes one file without changing what it says: the rule
+ * in `planReindex`'s comment, for one file. `reindex-organization.ts` uses it
+ * too, so the two operator scripts cannot disagree about an edited document.
+ */
+export function reindexStepFor(file: ReindexCandidate): ReindexStep {
+  const edited =
+    file.documentId !== null &&
+    file.activeChangeType !== null &&
+    file.activeChangeType !== 'UPLOAD';
+  return edited
+    ? {
+        fileId: file.id,
+        job: 'reindexDocumentVersion',
+        fileName: file.fileName,
+        projectId: file.projectId,
+        documentId: file.documentId as string,
+      }
+    : { fileId: file.id, job: 'runFileEmbeddings' };
 }
 
 export interface StartStepDeps<State> {

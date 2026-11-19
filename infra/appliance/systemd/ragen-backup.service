@@ -1,0 +1,17 @@
+# One backup set of the appliance (docs/appliance-runbook.md, section 3).
+# Install:
+#   sudo cp infra/appliance/systemd/ragen-backup.service infra/appliance/systemd/ragen-backup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now ragen-backup.timer
+# The paths assume the checkout at /opt/ragen; edit both if yours differs.
+[Unit]
+Description=Ragen appliance backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/ragen
+# Where the sets go and how many to keep. A NAS mount belongs here.
+Environment=RAGEN_BACKUP_DIR=/var/backups/ragen
+Environment=RAGEN_BACKUP_KEEP=7
+ExecStart=/usr/bin/env bash /opt/ragen/infra/appliance/backup.sh

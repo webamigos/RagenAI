@@ -1,0 +1,12 @@
+# Daily at 01:30 local time: the apps are down for the length of the dump,
+# and the worker's own nightly jobs start at 03:00 Europe/Warsaw.
+[Unit]
+Description=Daily Ragen appliance backup
+
+[Timer]
+OnCalendar=*-*-* 01:30:00
+# A machine that was off at 01:30 takes the set when it comes back.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
