@@ -659,7 +659,8 @@
       "no-connectors": "Inga tillgängliga kopplingar. Kontakta administratören.",
       "hint": "Omarkerade kopplingar ärver applikationens standardinställningar. Endast kopplingar aktiverade av administratören visas.",
       "read-only": "Kopplingsinställningarna är skrivskyddade för den här organisationen."
-    }
+    },
+    "data-retention": "Datalagring"
   },
   "settings-page": {
     "title": "Inställningar",
@@ -3490,5 +3491,29 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Lagring av trådar",
+    "description": "Radera samtal automatiskt när ingen har lagt till något under en viss tid. Avstängt som standard: trådar sparas tills någon raderar dem.",
+    "what-is-deleted": "Raderingen är permanent. En tråd tas bort tillsammans med dess meddelanden, deras källor, delningar, offentliga länk och de personliga minnen den senast uppdaterade. Den kan inte återställas.",
+    "which-threads": "Gäller alla trådar i den här organisationen, även delade, stjärnmärkta, chattbot- och API-samtal. Dokument i kunskapsbasen påverkas inte.",
+    "when": "En tråd raderas när den inte har fått något nytt meddelande under det valda antalet dagar. Kontrollen körs en gång om dagen.",
+    "current-off": "Avstängt: trådar sparas tills någon raderar dem.",
+    "current-on": "Påslaget: trådar raderas efter {days} dagar utan nytt meddelande.",
+    "option-off": "Av",
+    "option-off-description": "Spara trådar tills någon raderar dem",
+    "option-days": "{days} dagar",
+    "option-days-description": "Radera en tråd efter {days} dagar utan nytt meddelande",
+    "save": "Spara lagringstid",
+    "saving": "Sparar…",
+    "confirm-title": "Radera trådar efter {days} dagar?",
+    "confirm-description": "Vid nästa dagliga körning raderas varje tråd i den här organisationen utan nytt meddelande de senaste {days} dagarna permanent, tillsammans med dess meddelanden, källor, delningar och offentliga länk. Det går inte att ångra.",
+    "confirm-action": "Radera efter {days} dagar",
+    "saved-off": "Lagring av trådar avstängd. Inga trådar raderas automatiskt.",
+    "saved-on": "Sparat. Trådar utan nytt meddelande på {days} dagar raderas vid nästa dagliga körning.",
+    "error-invalid-period": "Inte sparat — den perioden är inte tillgänglig. Välj ett av alternativen i listan och spara igen.",
+    "error-forbidden": "Inte sparat — endast organisationens ägare eller administratör kan ändra detta.",
+    "error-settings-locked": "Inte sparat — organisationens inställningar är låsta. Be din plattformsadministratör att låsa upp dem.",
+    "error-save-failed": "Inte sparat — något gick fel. Försök igen om en stund."
   }
 }

@@ -953,11 +953,30 @@ const getOptimizationJobSuggestions = async ({
  * column, so a plain `created_at < cutoff` would delete a conversation that
  * started before the cutoff and is still being typed into — during a live
  * demo, which is exactly when it would be noticed.
+ *
+ * Two callers: the demo cleanup, which takes every stale thread at once, and
+ * per-organization thread retention (spec 2026-10-17, B4), which passes
+ * `limit` so one transaction — and the row locks it holds against new
+ * messages — stays bounded however large the backlog. With a limit, the
+ * caller repeats until a batch comes back short.
+ *
+ * Beyond the thread, its messages and their cascades, two plain-column
+ * references go too, because nothing else would ever remove them:
+ * `visitor_messages` (a visitor id against a message id) and the
+ * "thread shared with you" notifications, whose body and metadata carry the
+ * thread's title and whose link would lead nowhere. `ai_usage.thread_id`,
+ * `audit_logs` and `security_events` are deliberately left: they are the
+ * usage ledger and the audit and security records, they hold a thread id and
+ * counts but no conversation content, and erasing them is not what a
+ * retention period on conversations promises.
  */
 const deleteStaleThreads = async (
   organizationId: string,
   staleBefore: Date,
+  options: { limit?: number } = {},
 ): Promise<{ threadsDeleted: number; messagesDeleted: number }> => {
+  const { limit } = options;
+
   return await getPrisma().$transaction(async (tx) => {
     /**
      * The staleness question, asked twice: once to pick candidates and once
@@ -972,6 +991,14 @@ const deleteStaleThreads = async (
      *
      * `= ANY(…::uuid[])` rather than `IN (…)`: the ids bind as one array
      * parameter, which casts cleanly against a uuid column.
+     *
+     * `t.created_at < staleBefore` in the `WHERE` changes no answer — a
+     * thread's last activity is never earlier than its creation — but it
+     * keeps threads created inside the window out of the aggregate, which on
+     * a large organization is most of them.
+     *
+     * The limit applies to the first question only, oldest activity first:
+     * the second is asked of those candidates and cannot grow past them.
      */
     const staleAmong = async (ids: string[] | null): Promise<string[]> => {
       const rows = await tx.$queryRaw<{ id: string }[]>`
@@ -979,9 +1006,15 @@ const deleteStaleThreads = async (
         FROM threads t
         LEFT JOIN messages m ON m.thread_id = t.id
         WHERE t.organization_id = ${organizationId}
+          AND t.created_at < ${staleBefore}
           ${ids === null ? Prisma.empty : Prisma.sql`AND t.id = ANY(${ids}::uuid[])`}
         GROUP BY t.id, t.created_at
         HAVING COALESCE(MAX(m.created_at), t.created_at) < ${staleBefore}
+        ${
+          ids === null && limit !== undefined
+            ? Prisma.sql`ORDER BY COALESCE(MAX(m.created_at), t.created_at), t.id LIMIT ${limit}`
+            : Prisma.empty
+        }
       `;
 
       return rows.map((row) => row.id);
@@ -1032,12 +1065,40 @@ const deleteStaleThreads = async (
     // the only key that could read them — goes away with the thread row.
     // `document_citations` cascade from `messages`, not from `threads`, so
     // they only go when the messages do.
+    //
+    // `visitor_messages.message_id` is a plain text column with no foreign
+    // key, so it goes first, while the messages it names can still be found
+    // through their threads — and through the threads' organization, which is
+    // what scopes the statement.
+    await tx.$executeRaw`
+      DELETE FROM visitor_messages
+      WHERE message_id IN (
+        SELECT m.id::text
+        FROM messages m
+        JOIN threads t ON t.id = m.thread_id
+        WHERE t.organization_id = ${organizationId}
+          AND t.id = ANY(${threadIds}::uuid[])
+      )
+    `;
+
     const { count: messagesDeleted } = await tx.message.deleteMany({
       where: { threadId: { in: threadIds } },
     });
 
     await tx.threadDocument.deleteMany({
       where: { threadId: { in: threadIds } },
+    });
+
+    // The "shared with you" notification carries the thread's title in its
+    // body and metadata and links to `/threads/<id>` (apps/api's
+    // ThreadSharingService writes exactly that URL), so it would outlive the
+    // conversation as both content and a dead link.
+    await tx.notification.deleteMany({
+      where: {
+        organizationId,
+        type: 'THREAD_SHARED_NEW_MESSAGE',
+        resourceUrl: { in: threadIds.map((id) => `/threads/${id}`) },
+      },
     });
 
     // Scoped by organizationId as well as id. The ids already came from an
@@ -1130,6 +1191,55 @@ const deleteExpiredDocumentRetrievals = async (
   return { organizationsScanned: organizations.length, retrievalsDeleted };
 };
 
+/** How many organization ids one settings read names, so `IN` stays small. */
+const RETENTION_POLICY_CHUNK = 500;
+
+/**
+ * Every organization that has a thread retention period set, with the raw
+ * value — validating it is the caller's job, so a value it does not
+ * recognise is reported rather than silently filtered out here.
+ *
+ * Organizations are listed first and the settings read with a non-empty
+ * `organizationId: { in }`, for the reason `deleteExpiredDocumentRetrievals`
+ * gives: `organization_settings` is tenant-scoped, and a bare
+ * `threadRetentionDays: { not: null }` across every tenant is the cross-org
+ * read the guard exists to report.
+ */
+const getThreadRetentionPolicies = async (): Promise<
+  { organizationId: string; threadRetentionDays: number }[]
+> => {
+  const organizations = await getPrisma().organization.findMany({
+    select: { id: true },
+    orderBy: { id: 'asc' },
+  });
+  const ids = organizations.map((organization) => organization.id);
+  const policies: { organizationId: string; threadRetentionDays: number }[] =
+    [];
+
+  for (let start = 0; start < ids.length; start += RETENTION_POLICY_CHUNK) {
+    const rows = await getPrisma().organizationSettings.findMany({
+      where: {
+        organizationId: {
+          in: ids.slice(start, start + RETENTION_POLICY_CHUNK),
+        },
+        threadRetentionDays: { not: null },
+      },
+      select: { organizationId: true, threadRetentionDays: true },
+    });
+
+    for (const row of rows) {
+      if (row.threadRetentionDays !== null) {
+        policies.push({
+          organizationId: row.organizationId,
+          threadRetentionDays: row.threadRetentionDays,
+        });
+      }
+    }
+  }
+
+  return policies;
+};
+
 export const db = {
   getUserFile,
   getFileAccessRows,
@@ -1163,4 +1273,5 @@ export const db = {
   deleteStaleThreads,
   restoreOrganizationRestrictions,
   deleteExpiredDocumentRetrievals,
+  getThreadRetentionPolicies,
 };

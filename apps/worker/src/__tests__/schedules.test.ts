@@ -7,6 +7,7 @@ import {
   DEMO_CLEANUP_SCHEDULE,
   MEMORY_PURGE_SCHEDULE,
   RECURRING_SCHEDULES,
+  THREAD_RETENTION_SCHEDULE,
   disabledScheduleIds,
   registerRecurringSchedules,
 } from '../schedules.js';
@@ -81,6 +82,7 @@ describe('registerRecurringSchedules', () => {
     expect(upserted()).toEqual([
       ANALYTICS_RETENTION_SCHEDULE.id,
       MEMORY_PURGE_SCHEDULE.id,
+      THREAD_RETENTION_SCHEDULE.id,
     ]);
     expect(result.skipped).toEqual([DEMO_CLEANUP_SCHEDULE.id]);
     expect(deleteSchedule).not.toHaveBeenCalled();
@@ -109,7 +111,10 @@ describe('registerRecurringSchedules', () => {
       },
     });
 
-    expect(upserted()).toEqual([MEMORY_PURGE_SCHEDULE.id]);
+    expect(upserted()).toEqual([
+      MEMORY_PURGE_SCHEDULE.id,
+      THREAD_RETENTION_SCHEDULE.id,
+    ]);
     expect(deleteSchedule.mock.calls.map(([id]) => id)).toEqual([
       DEMO_CLEANUP_SCHEDULE.id,
       ANALYTICS_RETENTION_SCHEDULE.id,

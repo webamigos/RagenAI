@@ -659,7 +659,8 @@
       "no-connectors": "Ingen tilgængelige konnektorer. Kontakt administratoren.",
       "hint": "Umarkerede konnektorer arver applikationens standardindstillinger. Kun konnektorer aktiveret af administratoren vises.",
       "read-only": "Konnektorindstillingerne er skrivebeskyttede for denne organisation."
-    }
+    },
+    "data-retention": "Dataopbevaring"
   },
   "settings-page": {
     "title": "Indstillinger",
@@ -3490,5 +3491,29 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Opbevaring af tråde",
+    "description": "Slet automatisk samtaler, som ingen har tilføjet noget til i en bestemt periode. Slået fra som standard: tråde bevares, indtil nogen sletter dem.",
+    "what-is-deleted": "Sletningen er permanent. En tråd fjernes sammen med dens beskeder, deres kilder, delinger, offentlige link og de personlige minder, den sidst opdaterede. Den kan ikke gendannes.",
+    "which-threads": "Gælder alle tråde i denne organisation, også delte, stjernemarkerede, chatbot- og API-samtaler. Dokumenter i vidensbasen påvirkes ikke.",
+    "when": "En tråd slettes, når den ikke har fået en ny besked i det valgte antal dage. Kontrollen kører én gang om dagen.",
+    "current-off": "Slået fra: tråde bevares, indtil nogen sletter dem.",
+    "current-on": "Slået til: tråde slettes efter {days} dage uden en ny besked.",
+    "option-off": "Fra",
+    "option-off-description": "Bevar tråde, indtil nogen sletter dem",
+    "option-days": "{days} dage",
+    "option-days-description": "Slet en tråd efter {days} dage uden en ny besked",
+    "save": "Gem opbevaringsperiode",
+    "saving": "Gemmer…",
+    "confirm-title": "Slet tråde efter {days} dage?",
+    "confirm-description": "Ved næste daglige kørsel slettes hver tråd i denne organisation uden en ny besked i de sidste {days} dage permanent sammen med dens beskeder, kilder, delinger og offentlige link. Det kan ikke fortrydes.",
+    "confirm-action": "Slet efter {days} dage",
+    "saved-off": "Opbevaring af tråde er slået fra. Ingen tråde slettes automatisk.",
+    "saved-on": "Gemt. Tråde uden en ny besked i {days} dage slettes ved næste daglige kørsel.",
+    "error-invalid-period": "Ikke gemt — den periode er ikke tilgængelig. Vælg en af de viste muligheder, og gem igen.",
+    "error-forbidden": "Ikke gemt — kun en ejer eller administrator af organisationen kan ændre dette.",
+    "error-settings-locked": "Ikke gemt — denne organisations indstillinger er låst. Bed din platformsadministrator om at låse dem op.",
+    "error-save-failed": "Ikke gemt — noget gik galt. Prøv igen om lidt."
   }
 }

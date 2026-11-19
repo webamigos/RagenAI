@@ -36,6 +36,8 @@ import {
   savePiiIngestionMode,
 } from '@/features/organizations/services/organization-settings';
 import type { PiiIngestionMode } from '@/features/organizations/contracts/organization.types';
+import type { SaveThreadRetentionResult } from '@/features/organizations/contracts/thread-retention.types';
+import { saveThreadRetentionCommand } from '@/features/organizations/services/commands/save-thread-retention-command';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
@@ -452,6 +454,17 @@ export async function getPiiIngestionModeAction(): Promise<PiiIngestionMode> {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return getPiiIngestionMode(orgId);
+}
+
+/**
+ * Thread retention (spec 2026-10-17, B4). The command takes the organization
+ * from the session and checks the capability itself; this only forwards the
+ * period, which it validates as untrusted input.
+ */
+export async function saveThreadRetentionAction(
+  threadRetentionDays: number | null,
+): Promise<SaveThreadRetentionResult> {
+  return saveThreadRetentionCommand({ threadRetentionDays });
 }
 
 /**
