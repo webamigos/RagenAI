@@ -24,7 +24,6 @@ vi.mock('next/image', () => ({
     src: string;
     alt: string;
     [key: string]: unknown;
-     
   }) => {
     // `unoptimized` and `priority` are next/image props, not attributes.
     const { unoptimized: _u, priority: _p, ...rest } = props;

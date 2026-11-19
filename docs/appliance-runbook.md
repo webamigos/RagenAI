@@ -9,13 +9,13 @@ this page says so and names the spec step that will build it.
 
 | Section | State |
 | --- | --- |
-| [Install](#1-install) | written; the manual path. The installer option is coming (C1) |
+| [Install](#1-install) | written: the installer, the script, and the manual path |
 | [Prove nothing leaves the machine](#2-prove-nothing-leaves-the-machine) | written |
-| [Back up](#3-back-up) and [restore](#4-restore) | written |
+| [Back up](#3-back-up) and [restore](#4-restore) | written; a script and a nightly timer |
 | [Upgrade, online](#5-upgrade-online) | written |
 | [Install and upgrade, offline](#6-install-and-upgrade-offline) | written; the scripts are tested against a stand-in Docker and have not been run on a machine yet |
 | [Roll back](#7-roll-back) | written |
-| [Swap a model](#8-swap-a-model) (with re-index) | written |
+| [Swap a model](#8-swap-a-model) (with re-index) | written; one command re-indexes every organization |
 | [Troubleshooting](#9-troubleshooting) | written, one entry per failure mode in the spec |
 | [First-line checklist](#10-first-line-checklist-draft) | draft. The support roles arrive with C3 |
 
@@ -46,11 +46,33 @@ this page says so and names the spec step that will build it.
 
 ## 1. Install
 
-`create-ragen-app` is getting an "appliance" option that asks local or hybrid
-and the tier, and writes the profile, the route file and the env (spec step
-C1, in progress). Until it lands, the install is the manual path below. It is
-the path [`infra/appliance/README.md`](../infra/appliance/README.md)
-describes, and that the Phase 0 demo and the A3 egress check run.
+There are three ways in, and they end in the same stack:
+
+- **The installer**, on a machine with Node and the internet:
+
+  ```bash
+  cd /opt
+  npx create-ragen-app ragen --appliance --yes          # CPU only
+  npx create-ragen-app ragen --appliance --gpu --yes    # NVIDIA GPU
+  ```
+
+  It clones the repository into `/opt/ragen`, asks for no API key,
+  generates the secrets, writes `.env.local` with the appliance's values,
+  names the compose files in `.env` (`COMPOSE_FILE`), and starts the stack.
+  It offers the local profile and the default tier only: hybrid waits for
+  its compose profile (A1b), and more tiers for their sizing (A5). It does
+  not turn PII masking on and it sets up no TLS; see 1.3 for both. What it
+  asks and writes, in full:
+  [`packages/create-ragen-app/README.md`](../packages/create-ragen-app/README.md#appliance).
+- **The script**, on an NVIDIA DGX Spark or any Linux host with an NVIDIA
+  GPU: `bash infra/appliance/install-spark.sh --host <address>`. It checks
+  the GPU, the disk and the image architectures before it starts anything
+  ([`infra/appliance/README.md`](../infra/appliance/README.md)).
+- **By hand**, the steps below. It is what the other two do, and what the
+  Phase 0 demo and the A3 egress check run.
+
+Whichever you used, go on from 1.5: the first account, the checks, and then
+section 2. The rest of this runbook assumes the checkout at `/opt/ragen`.
 
 ### 1.1 What the machine needs
 
@@ -275,7 +297,67 @@ the jobs that were queued at the time (see section 4).
 Qdrant from Wednesday gives files without vectors, or vectors for files that
 no longer exist. Take all three in the same window, with the writers stopped.
 
-### Procedure
+### The script
+
+```bash
+bash infra/appliance/backup.sh                      # one set in /var/backups/ragen
+bash infra/appliance/backup.sh --dir /mnt/nas/ragen --keep 14
+```
+
+It does the manual procedure below, with the parts a person forgets:
+
+- It stops only the writers that are running, and starts exactly those again
+  on every exit, including a failed one.
+- A set is written as `<YYYYMMDD-HHMM>.partial` and renamed when every step
+  succeeded. **A directory with the plain name is a complete set**; a
+  `.partial` is a failed run and is never restored from.
+- It writes `SHA256SUMS` and a `MANIFEST` (release, commit, collections)
+  into the set, and reads the Postgres user, database, Qdrant port and API
+  key from `.env` and `.env.local`.
+- It keeps the newest 7 complete sets (`--keep`, `0` keeps all) and deletes
+  nothing else in the target.
+- With `STORAGE_PROVIDER=s3` it refuses, because the documents are not on
+  the volume. Back the bucket up (notes below) and pass
+  `--storage-elsewhere` to take the set without them.
+
+It does not copy the Ollama models unless told to: with the internet they
+are pulled again. On a machine with no internet, add `--with-models`. The
+set then carries `ollama-models.tar`, about 20 GB for the default models,
+and the volume is no longer the only copy. One such set is enough until the
+models change, so the nightly timer does not need the flag. **Take that set
+into a directory of its own**, where the nightly rotation does not reach
+it:
+
+```bash
+bash infra/appliance/backup.sh --with-models --dir /var/backups/ragen-models --keep 0
+```
+
+In the nightly directory it would be the oldest set after a week, and
+`--keep` would delete the only copy of the models.
+
+**Run it every night** with the timer in `infra/appliance/systemd/`:
+
+```bash
+sudo cp infra/appliance/systemd/ragen-backup.service infra/appliance/systemd/ragen-backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now ragen-backup.timer
+systemctl list-timers ragen-backup.timer      # the next run
+journalctl -u ragen-backup.service -n 50      # the last run
+```
+
+It runs at 01:30, before the worker's own nightly jobs, and the apps are
+down for the length of the dump. The units assume `/opt/ragen` and
+`/var/backups/ragen`; edit `ragen-backup.service` for a NAS mount or
+another `--keep`. A failed run exits non-zero, so the unit shows as failed
+in `systemctl --failed`. Nothing sends that anywhere yet: check it, or wire
+the organization's monitoring to it.
+
+A backup on the same disk as the data protects against a bad upgrade, not
+against a dead disk. Point `RAGEN_BACKUP_DIR` at other storage.
+
+### The manual procedure
+
+What the script runs, for a machine where it cannot be used:
 
 ```bash
 B=/var/backups/ragen/$(date +%Y%m%d-%H%M)
@@ -331,8 +413,6 @@ Notes:
 - `$B` holds `ENCRYPTION_MASTER_KEY` next to the encrypted messages. Keep the
   backup target as protected as the machine, or store `.env.local`
   separately.
-- Nothing in the repository schedules this. A backup script and a timer are
-  not built yet.
 
 ## 4. Restore
 
@@ -347,10 +427,14 @@ either, use those values in all three commands, or `dropdb` removes nothing
 and `pg_restore` writes into the wrong database.
 
 ```bash
-B=/var/backups/ragen/<set>
+B=/var/backups/ragen/<set>      # a complete set: no .partial in the name
+
+# A set taken by the script carries its checksums. Check them first.
+(cd "$B" && sha256sum -c --quiet SHA256SUMS)
 
 # 0. On a new machine: section 1.2 at the same release, then
 cp "$B/.env.local" "$B/.env" .
+[ ! -f "$B/admin.env.local" ] || cp "$B/admin.env.local" apps/admin/.env.local
 git apply "$B/local-changes.diff"      # if it is not empty
 
 # 1. Data services only
@@ -375,6 +459,12 @@ done
 # 4. Documents on the local volume (for RustFS, see section 3's notes)
 docker compose run --rm --no-deps -T --user root --entrypoint sh worker \
   -c 'find /data/storage -mindepth 1 -delete && tar -C /data/storage -xf -' < "$B/storage.tar"
+
+# 4b. The models, when the set carries them (`--with-models`)
+[ ! -f "$B/ollama-models.tar" ] || {
+  docker compose up -d ollama
+  docker compose exec -T ollama tar -C /root/.ollama -xf - < "$B/ollama-models.tar"
+}
 
 # 5. Everything
 docker compose up -d
@@ -772,11 +862,34 @@ not find it.
    docker compose up -d
    ```
 
-4. **Re-ingest every document.** In each organization, an owner or admin
-   opens Knowledge, selects the files and chooses **Reprocess**. The list
-   shows a page of files at a time, so work through each folder and page
-   until every file has been sent. For each file, Reprocess picks the
-   correct job:
+4. **Re-ingest every document.** One command, from the worker image:
+
+   ```bash
+   # what it would start, per organization — reads only
+   docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js --all-orgs --dry-run
+   # start it
+   docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js --all-orgs
+   ```
+
+   It takes every file the index held (embedding completed) and every
+   published Brain page, in every organization, and prints the cutoff it
+   used. `--org <id>` does one
+   organization. To spread a large knowledge base over several nights, fix
+   the cutoff at the moment of the swap and repeat the same command until
+   it starts nothing:
+
+   ```bash
+   docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js \
+     --all-orgs --before 2026-11-19T01:00:00Z --limit 500
+   ```
+
+   A file re-indexed since the cutoff is not taken again, which is why
+   `--limit` needs `--before`. A file that fails during the re-index shows
+   as failed in Knowledge; **Reprocess** it there.
+
+   The same can be done by hand: in each organization, an owner or admin
+   opens Knowledge, selects the files and chooses **Reprocess**, page by
+   page. Either way, each file gets the correct job:
    - a file whose active version is the upload goes through
      `runFileEmbeddings`, which parses the stored file again;
    - a file whose active version is an edit, an optimization or a rollback
@@ -787,22 +900,33 @@ not find it.
    stored file is still the original upload, and the edit would leave the
    index (AGENTS.md, "Document Versions"). The same choice lives in
    `startFileReindexCommand`, which the bulk action, the single-file action
-   and the folder policy change all use.
+   and the folder policy change all use, and in `reindexStepFor`, which the
+   command uses.
 
    The jobs join the normal ingest queue. Each file is parsed by Docling and
    summarized again, so a large knowledge base takes hours.
 5. **Check**: the knowledge base shows every file done, and a question about
    an old document finds it.
 
-Not covered by Reprocess, and not yet by anything else:
+**Published Brain pages** are written by publishing, not by ingest, so
+Reprocess skips their files. The command starts each page's publish job
+again at the generation the page is on, which deletes its chunks and writes
+them with the new model. A page that was withdrawn stays out. While its job
+runs the page's file reads as being written; if the job gives up it reads
+failed, and the page is published again from Brain. Starting those jobs was
+run against a real queue; a job running to the end, against a model server,
+was not.
 
-- **Published Brain pages.** Their chunks are written by publishing, not by
-  ingest, and the bulk action skips their files. After step 3 they are not
-  in search. Whether re-publishing restores them has not been verified.
-- **An operator command.** The contextual-chunks re-index script
-  ([runbook](runbooks/contextual-chunks-reindex.md)) finds its files by
-  reading Qdrant, so after step 3 it reports nothing to do. No script yet
-  re-indexes a whole organization from the database.
+Not covered by the command or by Reprocess:
+
+- **Imports and files that were never indexed.** An import searches through
+  its source file, which the command does re-index. A file that was staged,
+  withdrawn, failed or cancelled before the swap was not in the index, and
+  stays out.
+
+The contextual-chunks re-index script
+([runbook](runbooks/contextual-chunks-reindex.md)) is not a substitute: it
+finds its files by reading Qdrant, so after step 3 it reports nothing to do.
 
 To go back: restore the old model, `APPLIANCE_MODELS` and `VECTOR_SIZE`, stop
 web, api and worker, upload the Qdrant snapshots from step 1 (section 4,
@@ -950,14 +1074,12 @@ Work through this in order, and escalate with what you found.
 
 Gaps this runbook works around or points at, in one place:
 
-- **The installer's appliance option (C1).**
+- **The installer's hybrid profile and further tiers (C1b, C1c).**
 - **A real run of the offline bundle (C2).** Section 6 is tested against a
   stand-in Docker only. Also missing from a bundle: Presidio, a signature,
   and more than one step of rollback.
 - **The support channel and roles (C3).**
-- **A backup script and a schedule** for section 3.
-- **An operator command for a full re-index** after an embedding change, and
-  a way to re-embed published Brain pages (8.2).
+- **An alert when the nightly backup fails** (3).
 - **A same-size embedding swap** is invisible to the setup page, and so is
   an index built with the previous model (8.2).
 - **The container stack's admin env file and TLS** (1.3).
