@@ -631,8 +631,9 @@ not find it.
    docker compose run --rm --no-deps worker node dist/scripts/reindex-organization.js --all-orgs
    ```
 
-   It takes every file the index held (embedding completed), in every
-   organization, and prints the cutoff it used. `--org <id>` does one
+   It takes every file the index held (embedding completed) and every
+   published Brain page, in every organization, and prints the cutoff it
+   used. `--org <id>` does one
    organization. To spread a large knowledge base over several nights, fix
    the cutoff at the moment of the swap and repeat the same command until
    it starts nothing:
@@ -667,12 +668,17 @@ not find it.
 5. **Check**: the knowledge base shows every file done, and a question about
    an old document finds it.
 
-Not covered by the command or by Reprocess, and not yet by anything else:
+**Published Brain pages** are written by publishing, not by ingest, so
+Reprocess skips their files. The command starts each page's publish job
+again at the generation the page is on, which deletes its chunks and writes
+them with the new model. A page that was withdrawn stays out. While its job
+runs the page's file reads as being written; if the job gives up it reads
+failed, and the page is published again from Brain. Starting those jobs was
+run against a real queue; a job running to the end, against a model server,
+was not.
 
-- **Published Brain pages.** Their chunks are written by publishing, not by
-  ingest, and both skip their files. After step 3 they are not in search.
-  The command prints how many each organization has. Whether re-publishing
-  restores them has not been verified.
+Not covered by the command or by Reprocess:
+
 - **Imports and files that were never indexed.** An import searches through
   its source file, which the command does re-index. A file that was staged,
   withdrawn, failed or cancelled before the swap was not in the index, and
@@ -830,8 +836,6 @@ Gaps this runbook works around or points at, in one place:
 - **The support channel and roles (C3).**
 - **An alert when the nightly backup fails**, and a copy of the Ollama
   models in the set (3).
-- **A way to re-embed published Brain pages** after an embedding change
-  (8.2).
 - **`embeddings-dimension-mismatch` on the appliance** cannot see a model
   change behind `local-embed` (8.2).
 - **The container stack's admin env file and TLS** (1.3).

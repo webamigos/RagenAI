@@ -678,14 +678,13 @@ repeatable demo, and records the gaps as tests.
   troubleshooting per failure mode. The backup is a script with a nightly
   systemd timer (`infra/appliance/backup.sh`), and the re-index after an
   embedding change is one command in the worker image
-  (`reindex-organization.js --all-orgs`). Both were run against a real
+  (`reindex-organization.js --all-orgs`), published Brain pages included. Both were run against a real
   Postgres, Qdrant and Redis: a backup set, a restore of it after deleting
   the rows, a collection and the documents, the failed-dump path, and the
   command in three batches. Not covered by that run: the published worker
   image (a stand-in image held the documents volume, and the command ran
   through `tsx`) and jobs running to completion. Still to do:
-  - an alert when the nightly backup fails, and re-embedding published
-    Brain pages after an embedding change
+  - an alert when the nightly backup fails
   - the offline upgrade, once C2 exists
   - the first-line checklist as a role, once C3 exists (a draft is there)
   - the install through `create-ragen-app`, once C1 lands

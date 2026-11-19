@@ -26,8 +26,9 @@
  * active version is an edit, an optimization or a rollback goes through
  * `reindexDocumentVersion`, because the stored file still holds the original
  * upload. Which files it takes: `fullReindexWhere`. Jobs join the ordinary
- * ingest queue and run after the script exits. Published Brain pages are not
- * covered — their chunks are written by publishing.
+ * ingest queue and run after the script exits. Published Brain pages are
+ * written again by their publish job, at the generation they are on
+ * (`brainRepublishWhere`).
  */
 import { nanoid } from 'nanoid';
 
@@ -39,6 +40,7 @@ import {
   type ReindexStep,
 } from './reindex-for-context-plan.js';
 import {
+  brainRepublishWhere,
   fullReindexWhere,
   parseFullReindexArgs,
   renderOrgPlan,
@@ -96,6 +98,96 @@ async function stepsFor(
   return { steps, total };
 }
 
+interface BrainPage {
+  publicId: string;
+  generation: number;
+  fileId: string;
+}
+
+async function brainPagesFor(
+  orgId: string,
+  before: Date,
+  limit: number,
+): Promise<{ pages: BrainPage[]; total: number }> {
+  const prisma = getPrisma();
+  const where = brainRepublishWhere(orgId, before);
+  const total = await prisma.knowledgePage.count({ where });
+  if (limit <= 0) {
+    return { pages: [], total };
+  }
+  const rows = await prisma.knowledgePage.findMany({
+    where,
+    orderBy: { id: 'asc' },
+    ...(Number.isFinite(limit) ? { take: limit } : {}),
+    select: {
+      publicId: true,
+      publicationGeneration: true,
+      publishedFileId: true,
+    },
+  });
+  return {
+    pages: rows.flatMap((row) =>
+      row.publishedFileId
+        ? [
+            {
+              publicId: row.publicId,
+              generation: row.publicationGeneration,
+              fileId: row.publishedFileId,
+            },
+          ]
+        : [],
+    ),
+    total,
+  };
+}
+
+/**
+ * Starts the publish job for each page. The file reads STARTED first, as it
+ * does after a publish from the panel, so a job that gives up leaves it
+ * FAILED and the panel offers to publish again — instead of COMPLETED with
+ * nothing in the index. Only a file still COMPLETED is touched.
+ */
+async function republishBrainPages(
+  orgId: string,
+  pages: readonly BrainPage[],
+): Promise<{ started: number; skipped: number; failed: unknown[] }> {
+  const prisma = getPrisma();
+  const report = { started: 0, skipped: 0, failed: [] as unknown[] };
+  for (const page of pages) {
+    const { count } = await prisma.userFile.updateMany({
+      where: {
+        id: page.fileId,
+        organizationId: orgId,
+        embeddingStatus: 'COMPLETED',
+      },
+      data: { embeddingStatus: 'STARTED' },
+    });
+    if (count === 0) {
+      report.skipped += 1;
+      continue;
+    }
+    try {
+      await jobs().start(
+        'brainPublishPage',
+        `reindex-org-brain-${page.publicId}-${page.generation}-${nanoid()}`,
+        { orgId, pageId: page.publicId, generation: page.generation },
+      );
+      report.started += 1;
+    } catch (error) {
+      report.failed.push(error);
+      await prisma.userFile.updateMany({
+        where: {
+          id: page.fileId,
+          organizationId: orgId,
+          embeddingStatus: 'STARTED',
+        },
+        data: { embeddingStatus: 'COMPLETED' },
+      });
+    }
+  }
+  return report;
+}
+
 async function main() {
   // Validated before any read, let alone a job.
   const args = parseFullReindexArgs(process.argv.slice(2));
@@ -125,25 +217,35 @@ async function main() {
       break;
     }
     const { steps, total } = await stepsFor(orgId, before, budget);
-    const brainPages = await prisma.userFile.count({
-      where: { organizationId: orgId, publishedPages: { some: {} } },
-    });
-    if (total === 0 && brainPages === 0) {
+    budget -= steps.length;
+    const brain = await brainPagesFor(orgId, before, budget);
+    budget -= brain.pages.length;
+    if (total === 0 && brain.total === 0) {
       continue;
     }
     console.log(
       renderOrgPlan({
         orgId,
         steps,
-        remaining: total - steps.length,
-        brainPages,
+        remaining: total - steps.length + brain.total - brain.pages.length,
+        brainPages: brain.pages.length,
         dryRun: args.dryRun,
       }),
     );
-    budget -= steps.length;
     if (args.dryRun) {
       continue;
     }
+
+    const republished = await republishBrainPages(orgId, brain.pages);
+    started += republished.started;
+    skipped += republished.skipped;
+    failed.push(
+      ...republished.failed.map((error) => ({
+        orgId,
+        fileId: 'a Brain page',
+        error,
+      })),
+    );
 
     const report = await startReindexSteps(steps, {
       newWorkflowId: () => `reindex-org-${nanoid()}`,

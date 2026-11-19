@@ -115,6 +115,33 @@ export function fullReindexWhere(organizationId: string, before: Date) {
   };
 }
 
+/**
+ * The published Brain pages a full re-index writes again.
+ *
+ * A page's chunks are written by publishing, not by ingest, so its file is
+ * left out of `fullReindexWhere`. It is re-embedded by starting the publish
+ * job at the page's current generation: the job deletes that generation's
+ * chunks and writes them again, and does nothing if the page was withdrawn
+ * or republished meanwhile. Publishing stamps the file's
+ * `embeddingCompletedAt`, so the same cutoff tells done from not done.
+ */
+export function brainRepublishWhere(organizationId: string, before: Date) {
+  return {
+    organizationId,
+    publishedAt: { not: null },
+    publishedFile: {
+      is: {
+        organizationId,
+        embeddingStatus: 'COMPLETED' as const,
+        OR: [
+          { embeddingCompletedAt: null },
+          { embeddingCompletedAt: { lt: before } },
+        ],
+      },
+    },
+  };
+}
+
 export function renderOrgPlan({
   orgId,
   steps,
@@ -137,9 +164,7 @@ export function renderOrgPlan({
     line += `; ${remaining} more past --limit`;
   }
   if (brainPages > 0) {
-    line +=
-      `; ${brainPages} published Brain page${brainPages === 1 ? '' : 's'} ` +
-      'not covered — publish again to return them to search';
+    line += `; ${brainPages} published Brain page${brainPages === 1 ? '' : 's'}`;
   }
   return line;
 }

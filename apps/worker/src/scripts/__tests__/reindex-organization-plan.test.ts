@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { reindexStepFor } from '../reindex-for-context-plan.js';
 import {
+  brainRepublishWhere,
   fullReindexWhere,
   parseFullReindexArgs,
   renderOrgPlan,
@@ -129,6 +130,29 @@ describe('fullReindexWhere', () => {
   });
 });
 
+describe('brainRepublishWhere', () => {
+  const before = new Date('2026-11-19T01:00:00Z');
+  const where = brainRepublishWhere('org-1', before);
+
+  it('is scoped to the organization, on the page and on its file', () => {
+    expect(where.organizationId).toBe('org-1');
+    expect(where.publishedFile.is.organizationId).toBe('org-1');
+  });
+
+  // A withdrawn page must come back only through publish.
+  it('takes only pages that are published now', () => {
+    expect(where.publishedAt).toEqual({ not: null });
+  });
+
+  it('takes a page whose file was written before the cutoff, and is not mid-write', () => {
+    expect(where.publishedFile.is.embeddingStatus).toBe('COMPLETED');
+    expect(where.publishedFile.is.OR).toEqual([
+      { embeddingCompletedAt: null },
+      { embeddingCompletedAt: { lt: before } },
+    ]);
+  });
+});
+
 describe('reindexStepFor', () => {
   const file = {
     id: 'f-1',
@@ -191,6 +215,6 @@ describe('renderOrgPlan', () => {
     });
     expect(line).toContain('starting 3');
     expect(line).toContain('40 more past --limit');
-    expect(line).toContain('1 published Brain page not covered');
+    expect(line).toContain('; 1 published Brain page');
   });
 });
