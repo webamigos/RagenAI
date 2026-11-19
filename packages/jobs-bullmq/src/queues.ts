@@ -15,6 +15,7 @@ const MAINTENANCE_JOBS = new Set<JobName>([
   'cleanupDemoThreads',
   'pruneAnalyticsRetrievals',
   'memoryPurge',
+  'pruneExpiredThreads',
 ]);
 
 export function queueNameFor(job: JobName): string {

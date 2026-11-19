@@ -82,6 +82,7 @@ const PAYLOADS: { [N in JobName]: JobPayloads[N] } = {
   },
   memoryPurge: undefined,
   syncDocumentAccess: { orgId: 'org-1', fileIds: ['file-1'] },
+  pruneExpiredThreads: undefined,
 };
 
 /** The activity that proves the pipeline ran, not merely that the job did. */
@@ -99,6 +100,7 @@ const EVIDENCE: Record<JobName, string> = {
   memoryExtract: 'runMemoryExtraction',
   memoryPurge: 'purgeExpiredMemories',
   syncDocumentAccess: 'syncFileAccess',
+  pruneExpiredThreads: 'pruneExpiredThreads',
 };
 
 describe('every job runs', () => {

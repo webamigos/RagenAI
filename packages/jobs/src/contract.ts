@@ -79,6 +79,7 @@ export const JOB_NAMES = [
   'memoryExtract',
   'memoryPurge',
   'syncDocumentAccess',
+  'pruneExpiredThreads',
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -298,6 +299,26 @@ export interface MemoryPurgeResult {
   changesOlderThan: string;
 }
 
+/**
+ * The daily per-organization thread retention run (spec
+ * 2026-10-17-ragen-as-an-on-premises-appliance, B4). Counts only — a result
+ * is stored by the engine, and a thread title is content.
+ */
+export interface PruneExpiredThreadsResult {
+  /** Organizations with a retention period set. */
+  organizationsWithRetention: number;
+  threadsDeleted: number;
+  messagesDeleted: number;
+  /** Organizations whose run threw; the rest still ran. */
+  organizationsFailed: number;
+  /**
+   * Organizations that still had expired threads when their per-run batch
+   * ceiling was reached. The next run continues from the clock, so this is
+   * a backlog being worked through, not lost work.
+   */
+  organizationsCapped: number;
+}
+
 /** Why an extraction wrote nothing; `null` when it ran. Never any content. */
 export type MemoryExtractSkip =
   | 'disabled'
@@ -389,6 +410,7 @@ export interface JobPayloads {
   memoryExtract: MemoryExtractPayload;
   memoryPurge: void;
   syncDocumentAccess: SyncDocumentAccessPayload;
+  pruneExpiredThreads: void;
 }
 
 /**
@@ -412,4 +434,5 @@ export interface JobResults {
   memoryExtract: MemoryExtractResult;
   memoryPurge: MemoryPurgeResult;
   syncDocumentAccess: SyncDocumentAccessResult;
+  pruneExpiredThreads: PruneExpiredThreadsResult;
 }

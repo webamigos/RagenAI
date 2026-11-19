@@ -659,7 +659,8 @@
       "no-connectors": "Nincs elérhető kapcsoló. Lépj kapcsolatba az adminisztrátorral.",
       "hint": "A nem bejelölt kapcsolók az alkalmazás alapértelmezett beállításait öröklik. Csak az adminisztrátor által bekapcsolt kapcsolók jelennek meg.",
       "read-only": "A csatlakozók beállításai ennél a szervezetnél csak olvashatók."
-    }
+    },
+    "data-retention": "Adatmegőrzés"
   },
   "settings-page": {
     "title": "Beállítások",
@@ -3490,5 +3491,29 @@
     "paired-toast": "Files paired.",
     "removed-toast": "Pair removed.",
     "error": "Could not update the pair. It may already be paired, or you may not manage both files."
+  },
+  "thread-retention": {
+    "title": "Beszélgetések megőrzése",
+    "description": "A beszélgetések automatikus törlése, ha egy megadott ideig senki nem írt beléjük. Alapértelmezés szerint ki van kapcsolva: a beszélgetések megmaradnak, amíg valaki nem törli őket.",
+    "what-is-deleted": "A törlés végleges. A beszélgetés az üzeneteivel, azok forrásaival, megosztásaival, nyilvános linkjével és az általa utoljára frissített személyes emlékekkel együtt törlődik. Nem állítható vissza.",
+    "which-threads": "A szervezet minden beszélgetésére vonatkozik, beleértve a megosztott, csillagozott, chatbot- és API-beszélgetéseket is. A tudásbázis dokumentumait nem érinti.",
+    "when": "Egy beszélgetés akkor törlődik, ha a választott számú napig nem érkezett bele új üzenet. Az ellenőrzés naponta egyszer fut.",
+    "current-off": "Jelenleg kikapcsolva: a beszélgetések megmaradnak, amíg valaki nem törli őket.",
+    "current-on": "Jelenleg bekapcsolva: a beszélgetések {days} nap új üzenet nélkül törlődnek.",
+    "option-off": "Kikapcsolva",
+    "option-off-description": "A beszélgetések megőrzése, amíg valaki nem törli őket",
+    "option-days": "{days} nap",
+    "option-days-description": "Beszélgetés törlése {days} nap új üzenet nélkül",
+    "save": "Megőrzési idő mentése",
+    "saving": "Mentés…",
+    "confirm-title": "Törlöd a beszélgetéseket {days} nap után?",
+    "confirm-description": "A következő napi futáskor a szervezet minden olyan beszélgetése, amelybe az elmúlt {days} napban nem érkezett új üzenet, véglegesen törlődik az üzeneteivel, forrásaival, megosztásaival és nyilvános linkjével együtt. Ez nem vonható vissza.",
+    "confirm-action": "Törlés {days} nap után",
+    "saved-off": "A beszélgetések megőrzése kikapcsolva. Semmilyen beszélgetés nem törlődik automatikusan.",
+    "saved-on": "Mentve. A {days} napja új üzenet nélküli beszélgetések a következő napi futáskor törlődnek.",
+    "error-invalid-period": "Nincs mentve — ez az időtartam nem érhető el. Válassz a felsorolt lehetőségek közül, és mentsd újra.",
+    "error-forbidden": "Nincs mentve — ezt csak a szervezet tulajdonosa vagy adminisztrátora módosíthatja.",
+    "error-settings-locked": "Nincs mentve — a szervezet beállításai zárolva vannak. Kérd meg a platform adminisztrátorát a feloldásukra.",
+    "error-save-failed": "Nincs mentve — hiba történt. Próbáld újra egy pillanat múlva."
   }
 }

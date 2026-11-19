@@ -171,6 +171,14 @@ export {
 } from './memory/limits';
 
 export {
+  THREAD_RETENTION_DAYS_OPTIONS,
+  isThreadRetentionDays,
+  isThreadRetentionTightening,
+  threadRetentionCutoff,
+} from './retention/thread-retention';
+export type { ThreadRetentionDays } from './retention/thread-retention';
+
+export {
   CHAT_TURN_STEP,
   evaluateCeilings,
   usageMonthStart,

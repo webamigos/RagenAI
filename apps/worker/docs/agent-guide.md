@@ -98,8 +98,12 @@ Ten pipelines. The two ingest paths:
 - **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
 
 and more in the same shape: `generateDocument`, `optimizeDocument`,
-`reindexDocumentVersion`, the two scheduled ones,
-`cleanupDemoThreads` and `pruneAnalyticsRetrievals`, and Ragen Brain's
+`reindexDocumentVersion`, the scheduled ones on the maintenance queue —
+`cleanupDemoThreads`, `pruneAnalyticsRetrievals`, `memoryPurge` and
+`pruneExpiredThreads` (per-organization thread retention, spec 2026-10-17 B4:
+deletes threads quiet for the organization's chosen period through the same
+`deleteStaleThreads` as the demo cleanup, in batches; its schedule is
+registered at boot with the other recurring ones) — and Ragen Brain's
 `brainExtract` (`src/handlers/brain-extract.ts`) — candidate knowledge pages
 from documents' active versions, behind the `brain` flag, which the job
 checks when it runs. Its rules are in `packages/brain-core`; the handler

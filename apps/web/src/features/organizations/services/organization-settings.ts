@@ -1,4 +1,8 @@
 import { isPiiMaskingConfigured } from '@ragenai/env';
+import {
+  isThreadRetentionDays,
+  type ThreadRetentionDays,
+} from '@ragenai/platform-contracts';
 import db from '@ragenai/prisma-client';
 import {
   DEFAULT_MONTHLY_COST_LIMIT_CENTS,
@@ -760,6 +764,31 @@ export async function applyDefaultRagSettingsToOrg(
     rerankingEnabled: defaults.rerankingEnabled,
   };
   await upsertSettings(orgId, data);
+}
+
+// --- Thread retention (spec 2026-10-17, B4) ---
+
+/**
+ * The organization's thread retention period, or `null` for off.
+ *
+ * A stored value that is not one of the presets reads as off, because that
+ * is what it is: the worker skips it rather than guess. Showing it as a
+ * period would be a label the backend does not enforce.
+ */
+export async function getThreadRetentionDays(
+  orgId: string,
+): Promise<ThreadRetentionDays | null> {
+  const settings = await getSettings(orgId);
+  const days = settings?.threadRetentionDays ?? null;
+  return isThreadRetentionDays(days) ? days : null;
+}
+
+/** Callers validate `days` first; the column takes nothing but a preset or null. */
+export async function saveThreadRetentionDays(
+  orgId: string,
+  days: ThreadRetentionDays | null,
+): Promise<void> {
+  await upsertSettings(orgId, { threadRetentionDays: days });
 }
 
 // --- PII Ingestion Mode ---
