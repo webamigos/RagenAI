@@ -15,6 +15,19 @@ import { getParserStatusQuery } from '@/features/parsing/services/queries/get-pa
 import { backfillClaimIfAdminExists, isInstallClaimed } from '../install-claim';
 
 /**
+ * `dimensions` on the embedding model's route, when the table declares one.
+ * No readable route table is not this check's finding to make, so it answers
+ * "not declared" and the check falls back to the models it knows by name.
+ */
+function declaredEmbeddingDimensions(modelId: string): number | undefined {
+  try {
+    return gatewayFromEnv().routeFor(modelId)?.dimensions;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Everything the first-run screens need to tell an operator where they stand.
  *
  * Deliberately never throws. This runs on the sign-in path, and the whole point
@@ -22,7 +35,9 @@ import { backfillClaimIfAdminExists, isInstallClaimed } from '../install-claim';
  * crashes when the thing it diagnoses is broken would be worse than none.
  */
 export async function getSetupStatusQuery(): Promise<SetupStatus> {
-  const report = inspectEnvironment(process.env);
+  const report = inspectEnvironment(process.env, {
+    embeddingDimensions: declaredEmbeddingDimensions,
+  });
 
   let database: DatabaseProbe = { reachable: true };
   let adminExists: boolean | null = null;

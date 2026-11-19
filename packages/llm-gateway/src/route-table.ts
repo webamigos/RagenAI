@@ -54,6 +54,14 @@ const routeSchema = z.object({
     )
     .optional(),
   capabilities: z.array(z.enum(ROUTE_CAPABILITIES)).optional(),
+  dimensions: z
+    .number()
+    .int()
+    .positive()
+    .describe(
+      'Only for an embedding route: the size of the vectors its model returns. The setup page compares it with VECTOR_SIZE.',
+    )
+    .optional(),
 });
 
 /**

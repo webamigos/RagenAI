@@ -111,7 +111,19 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
  * encryption groups are alternatives, not a checklist. A `required` group needs
  * all of them, since those genuinely have no fallback.
  */
-export function inspectEnvironment(env: Env): SetupReport {
+export interface InspectOptions {
+  /**
+   * The vector size the route table declares for an embedding model id
+   * (`dimensions` on its route), when it declares one. Passed in rather than
+   * read here so this stays a function of its arguments.
+   */
+  embeddingDimensions?: (modelId: string) => number | undefined;
+}
+
+export function inspectEnvironment(
+  env: Env,
+  options: InspectOptions = {},
+): SetupReport {
   const findings: SetupFinding[] = [];
 
   for (const check of REQUIRED) {
@@ -127,7 +139,10 @@ export function inspectEnvironment(env: Env): SetupReport {
     }
   }
 
-  const embeddingsMismatch = findEmbeddingsMismatch(env);
+  const embeddingsMismatch = findEmbeddingsMismatch(
+    env,
+    options.embeddingDimensions,
+  );
   if (embeddingsMismatch) {
     findings.push(embeddingsMismatch);
   }
@@ -267,7 +282,10 @@ function findMissingJobRuntime(env: Env): SetupFinding | null {
  * rejects every upsert with a dimension error that names neither variable, so
  * it is worth saying so up front.
  */
-function findEmbeddingsMismatch(env: Env): SetupFinding | null {
+function findEmbeddingsMismatch(
+  env: Env,
+  declaredDimensions?: (modelId: string) => number | undefined,
+): SetupFinding | null {
   // Both variables have runtime defaults, so setting only one is the more
   // dangerous case, not a safer one: EMBEDDINGS_MODEL=cohere-embed-multilingual-v3
   // on its own leaves VECTOR_SIZE at 3584 and every upsert is rejected. Resolve
@@ -279,7 +297,10 @@ function findEmbeddingsMismatch(env: Env): SetupFinding | null {
     ? env.VECTOR_SIZE.trim()
     : String(DEFAULT_VECTOR_SIZE);
 
-  const expected = KNOWN_MODEL_DIMENSIONS[model];
+  // The route's own declaration first: an install that put its own model
+  // behind an id (`local-embed` on the appliance) is the only one that knows
+  // its size, and the names below are cloud models.
+  const expected = declaredDimensions?.(model) ?? KNOWN_MODEL_DIMENSIONS[model];
   if (expected === undefined || String(expected) === configured) {
     return null;
   }

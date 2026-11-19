@@ -72,6 +72,10 @@ routes:
     provider: openai-compatible
     connection: ollama
     model: bge-m3
+    # The size of bge-m3's vectors. Change it together with `model:`: the
+    # setup page compares it with VECTOR_SIZE, and a swap to a model of
+    # another size shows there instead of as rejected writes in Qdrant.
+    dimensions: 1024
     display: BGE-M3
 
   # --- Ids the application hardcodes or defaults to ----------------------------
