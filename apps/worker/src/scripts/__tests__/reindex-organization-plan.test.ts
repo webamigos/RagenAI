@@ -172,7 +172,7 @@ describe('reindexStepFor', () => {
   });
 
   // Re-parsing the stored upload would put the original text back in search.
-  it.each(['EDIT', 'OPTIMIZATION', 'ROLLBACK'])(
+  it.each(['MANUAL', 'AI_REWRITE', 'AI_OPTIMIZE', 'ROLLBACK'])(
     'embeds the version text when the active version is %s',
     (activeChangeType) => {
       expect(reindexStepFor({ ...file, activeChangeType })).toEqual({
