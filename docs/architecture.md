@@ -93,6 +93,7 @@ apps/web/src/
 │   ├── audit-logs/               # The operational audit log, state before and after
 │   ├── brain/                    # Ragen Brain: knowledge pages, review, publishing, access
 │   ├── brain-assistant/          # The assistant that proposes Brain changes in a thread
+│   ├── branding/                 # Instance branding: product name, logo, palette (instance-wide)
 │   ├── chatbots/                 # Embeddable website chatbots and their visitor threads
 │   ├── connectors/               # External connectors (Google Drive, etc.)
 │   ├── documents/                # Document & file management

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const send = vi.hoisted(() => vi.fn());
 const cookieGet = vi.hoisted(() => vi.fn());
 const headerGet = vi.hoisted(() => vi.fn());
+const emailBranding = vi.hoisted(() => vi.fn());
 
 vi.mock('@/libs/mail', () => ({
   getMailProvider: () => ({ send }),
@@ -19,6 +20,16 @@ vi.mock('next/headers', () => ({
 vi.mock('../../utils/base-url', () => ({
   getBaseUrl: () => 'https://app.example.test',
 }));
+vi.mock(
+  '@/features/branding/services/queries/get-email-branding-query',
+  () => ({ getEmailBrandingQuery: () => emailBranding() }),
+);
+
+const RAGEN_BRANDING = {
+  productName: 'Ragen AI',
+  logoUrl: null,
+  isCustom: false,
+};
 
 import {
   sendInvitationEmail,
@@ -44,6 +55,7 @@ describe('mailer subjects', () => {
     headerGet.mockReturnValue(null);
     delete process.env.SECURITY_ALERT_LOCALE;
     process.env.SECURITY_ALERT_EMAIL = 'ops@example.com';
+    emailBranding.mockResolvedValue(RAGEN_BRANDING);
   });
 
   it('writes an invitation subject in the locale it is given, with the organization', async () => {
@@ -148,5 +160,71 @@ describe('mailer subjects', () => {
     expect(await sendWelcomeEmail({ to: 'a@b.co', name: 'Ada' })).toEqual({
       error: 'Failed to send welcome email',
     });
+  });
+});
+
+/**
+ * Instance branding (spec B2): the subject, the masthead and the signature
+ * carry the install's name, and nothing changes without it.
+ */
+describe('mailer branding', () => {
+  const sentHtml = () =>
+    render(send.mock.calls.at(-1)?.[0].react as React.ReactElement);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    cookieGet.mockReturnValue(undefined);
+    headerGet.mockReturnValue(null);
+  });
+
+  it('keeps Ragen’s logo, name and signature with no branding', async () => {
+    emailBranding.mockResolvedValue(RAGEN_BRANDING);
+
+    await sendWelcomeEmail({ to: 'a@b.co', name: 'Ada', locale: 'en' });
+    const html = await sentHtml();
+
+    expect(html).toContain('ragen-logo-on-light-bg.svg');
+    expect(html).toContain('Ragen AI by Web Amigos');
+  });
+
+  it('names the install in the subject and draws its logo', async () => {
+    emailBranding.mockResolvedValue({
+      productName: 'Acme Knowledge',
+      logoUrl: 'https://app.example.test/api/branding/logo?v=1',
+      isCustom: true,
+    });
+
+    await sendInvitationEmail({
+      to: 'a@b.co',
+      organizationName: 'Acme',
+      role: 'member',
+      invitationId: 'inv_1',
+      expiresAt: new Date('2026-12-24'),
+      locale: 'de',
+    });
+    const html = await sentHtml();
+
+    expect(sentSubject()).toBe('Einladung zu Acme bei Acme Knowledge');
+    expect(html).toContain('https://app.example.test/api/branding/logo?v=1');
+    expect(html).not.toContain('ragen-logo-on-light-bg.svg');
+    expect(html).not.toContain('Web Amigos');
+  });
+
+  it('writes the name as the masthead when there is no logo', async () => {
+    emailBranding.mockResolvedValue({
+      productName: 'Acme Knowledge',
+      logoUrl: null,
+      isCustom: true,
+    });
+
+    await sendPasswordResetEmailViaMailer({
+      to: 'a@b.co',
+      resetUrl: 'https://x.test/r',
+      locale: 'en',
+    });
+    const html = await sentHtml();
+
+    expect(html).toMatch(/<h1[^>]*>Acme Knowledge<\/h1>/);
+    expect(html).not.toContain('ragen-logo-on-light-bg.svg');
   });
 });

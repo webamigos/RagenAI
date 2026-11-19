@@ -48,6 +48,27 @@ model Settings {
   @@map("settings")
 }
 
+/// The install's own product name, logo and palette (spec
+/// 2026-10-17-ragen-as-an-on-premises-appliance, D5 and B2). Instance-wide by
+/// design and holding no tenant data, so it is not in TENANT_SCOPED_MODELS.
+///
+/// One row at most: `id` is always 1, and the migration adds a CHECK that
+/// says so, which Prisma cannot express. No row — and any row while the
+/// `instanceBranding` feature key is off — means today's Ragen branding.
+/// A null field means the default for that field alone.
+model InstanceBranding {
+  id             Int      @id @default(1)
+  /// Shown in the sidebar, page titles and emails. Null: "Ragen AI".
+  productName    String?  @map("product_name")
+  /// Key in @ragenai/storage. The extension names the type it is served as.
+  logoStorageKey String?  @map("logo_storage_key")
+  /// One of INSTANCE_PALETTES in @ragenai/platform-contracts. Null: `ragen`.
+  primaryToken   String?  @map("primary_token")
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("instance_branding")
+}
+
 model Message {
   id                   String              @id @default(uuid()) @db.Uuid
   createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz

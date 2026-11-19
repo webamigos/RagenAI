@@ -46,6 +46,7 @@ export const ROUTES = {
   connectorHealth: '/connector-health',
   mcpCatalogue: '/mcp-catalogue',
   ragSettings: '/rag-settings',
+  branding: '/branding',
   guardrails: '/guardrails',
   assistantTemplates: '/assistant-templates',
   templateAccess: '/template-access',
