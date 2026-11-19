@@ -235,6 +235,8 @@ describe('infra/appliance/backup.sh', () => {
     expect(deletes[0]).toContain(
       '/collections/org-a/snapshots/snap-1.snapshot',
     );
+    // Bounded, because it runs before the writers come back.
+    expect(deletes[0]).toContain('--max-time 30');
     expect(callLog()).toContain('docker compose start web api worker');
   });
 

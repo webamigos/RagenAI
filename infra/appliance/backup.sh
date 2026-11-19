@@ -137,7 +137,9 @@ restart_writers() {
   if [ -n "$pending_snapshot" ]; then
     # A download that failed leaves the snapshot on the server, where it
     # grows the container on every failed night.
-    qdrant -X DELETE "$QDRANT/collections/${pending_snapshot%%/*}/snapshots/${pending_snapshot#*/}" >/dev/null 2>&1 ||
+    # Bounded: this runs before the writers come back, and a Qdrant that
+    # accepts the connection and never answers must not keep them down.
+    qdrant --max-time "${RAGEN_BACKUP_CLEANUP_TIMEOUT:-30}" -X DELETE "$QDRANT/collections/${pending_snapshot%%/*}/snapshots/${pending_snapshot#*/}" >/dev/null 2>&1 ||
       warn "migawka ${pending_snapshot#*/} została w Qdrancie (kolekcja ${pending_snapshot%%/*})"
   fi
   if [ "${#stopped[@]}" -gt 0 ]; then

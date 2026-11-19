@@ -320,7 +320,16 @@ It does not copy the Ollama models unless told to: with the internet they
 are pulled again. On a machine with no internet, add `--with-models`. The
 set then carries `ollama-models.tar`, about 20 GB for the default models,
 and the volume is no longer the only copy. One such set is enough until the
-models change; the nightly timer does not need the flag.
+models change, so the nightly timer does not need the flag. **Take that set
+into a directory of its own**, where the nightly rotation does not reach
+it:
+
+```bash
+bash infra/appliance/backup.sh --with-models --dir /var/backups/ragen-models --keep 0
+```
+
+In the nightly directory it would be the oldest set after a week, and
+`--keep` would delete the only copy of the models.
 
 **Run it every night** with the timer in `infra/appliance/systemd/`:
 

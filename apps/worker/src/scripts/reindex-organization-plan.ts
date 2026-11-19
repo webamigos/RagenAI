@@ -142,6 +142,34 @@ export function brainRepublishWhere(organizationId: string, before: Date) {
   };
 }
 
+/** A published page as the plan read it. */
+export interface BrainPage {
+  publicId: string;
+  generation: number;
+  fileId: string;
+}
+
+/**
+ * The file a page's re-publish may mark as being written: still COMPLETED,
+ * and its page still published at the generation the plan read. If the page
+ * was published again or withdrawn in between, this matches nothing.
+ */
+export function brainClaimWhere(organizationId: string, page: BrainPage) {
+  return {
+    id: page.fileId,
+    organizationId,
+    embeddingStatus: 'COMPLETED' as const,
+    publishedPages: {
+      some: {
+        organizationId,
+        publicId: page.publicId,
+        publicationGeneration: page.generation,
+        publishedAt: { not: null },
+      },
+    },
+  };
+}
+
 export function renderOrgPlan({
   orgId,
   steps,

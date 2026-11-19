@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { reindexStepFor } from '../reindex-for-context-plan.js';
 import {
+  brainClaimWhere,
   brainRepublishWhere,
   fullReindexWhere,
   parseFullReindexArgs,
@@ -150,6 +151,36 @@ describe('brainRepublishWhere', () => {
       { embeddingCompletedAt: null },
       { embeddingCompletedAt: { lt: before } },
     ]);
+  });
+});
+
+describe('brainClaimWhere', () => {
+  const where = brainClaimWhere('org-1', {
+    publicId: 'page-1',
+    generation: 4,
+    fileId: 'file-1',
+  });
+
+  it('claims one file, in the organization, while it is still COMPLETED', () => {
+    expect(where).toMatchObject({
+      id: 'file-1',
+      organizationId: 'org-1',
+      embeddingStatus: 'COMPLETED',
+    });
+  });
+
+  // A publish since the plan bumped the generation; an unpublish cleared
+  // publishedAt. Either way the job would write nothing, and a STARTED set
+  // here would stay.
+  it('only while the page is still published at the planned generation', () => {
+    expect(where.publishedPages).toEqual({
+      some: {
+        organizationId: 'org-1',
+        publicId: 'page-1',
+        publicationGeneration: 4,
+        publishedAt: { not: null },
+      },
+    });
   });
 });
 

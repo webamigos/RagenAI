@@ -39,7 +39,9 @@ import {
   startReindexSteps,
   type ReindexStep,
 } from './reindex-for-context-plan.js';
+import type { BrainPage } from './reindex-organization-plan.js';
 import {
+  brainClaimWhere,
   brainRepublishWhere,
   fullReindexWhere,
   parseFullReindexArgs,
@@ -98,12 +100,6 @@ async function stepsFor(
   return { steps, total };
 }
 
-interface BrainPage {
-  publicId: string;
-  generation: number;
-  fileId: string;
-}
-
 async function brainPagesFor(
   orgId: string,
   before: Date,
@@ -145,7 +141,12 @@ async function brainPagesFor(
  * Starts the publish job for each page. The file reads STARTED first, as it
  * does after a publish from the panel, so a job that gives up leaves it
  * FAILED and the panel offers to publish again — instead of COMPLETED with
- * nothing in the index. Only a file still COMPLETED is touched.
+ * nothing in the index.
+ *
+ * The claim holds only while the page is still published at the generation
+ * that was planned. A publish or an unpublish since then owns the file's
+ * status: the job started here would find its generation stale and write
+ * nothing, and a STARTED left behind by this claim would never be cleared.
  */
 async function republishBrainPages(
   orgId: string,
@@ -155,11 +156,7 @@ async function republishBrainPages(
   const report = { started: 0, skipped: 0, failed: [] as unknown[] };
   for (const page of pages) {
     const { count } = await prisma.userFile.updateMany({
-      where: {
-        id: page.fileId,
-        organizationId: orgId,
-        embeddingStatus: 'COMPLETED',
-      },
+      where: brainClaimWhere(orgId, page),
       data: { embeddingStatus: 'STARTED' },
     });
     if (count === 0) {
