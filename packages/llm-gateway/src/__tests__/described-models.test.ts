@@ -111,6 +111,16 @@ describe('the description fields', () => {
     );
   });
 
+  it('accepts the vector size of an embedding route', () => {
+    expect(loadRouteTable(table({ dimensions: 1024 })).m.dimensions).toBe(1024);
+  });
+
+  it.each([0, -1, 1.5, '1024'])('rejects dimensions %j', (dimensions) => {
+    expect(() => loadRouteTable(table({ dimensions }))).toThrow(
+      InvalidRouteTableError,
+    );
+  });
+
   it('rejects a capability it does not know', () => {
     expect(() =>
       loadRouteTable(table({ display: 'M', capabilities: ['telepathy'] })),

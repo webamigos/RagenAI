@@ -63,8 +63,12 @@ on the install's own hardware. Such a route can describe itself:
 - `capabilities` — `chat` and/or `vision`. Only a route with `chat` is offered
   as a chat model; a described route without it is never offered, and removes
   a catalogue entry of the same id. No `capabilities` means none.
+- `dimensions` — on an embedding route, the size of the vectors its model
+  returns. No model call reads it. The setup page compares it with
+  `VECTOR_SIZE` when `EMBEDDINGS_MODEL` names the route, which is the only
+  way it can know the size of a model an install put behind its own id.
 
-A route with neither field behaves exactly as before.
+A route with none of these fields behaves exactly as before.
 
 ## Running only OpenAI
 

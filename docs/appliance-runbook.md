@@ -540,19 +540,22 @@ two models are not comparable. With the same size, nothing errors; search
 quietly returns the wrong passages. With a different size, Qdrant rejects
 every write and every query.
 
-The setup check `embeddings-dimension-mismatch` will not catch either case
-on an appliance. It knows only the sizes of the cloud default and of
-`cohere-embed-multilingual-v3`, and the appliance keeps `EMBEDDINGS_MODEL`
-as the route id `local-embed` whatever model sits behind it. Updating that
-check is a known gap (spec, Failure modes).
+The setup page catches the second case and not the first. The `local-embed`
+route declares its model's vector size (`dimensions:`, beside `model:`), and
+the check `embeddings-dimension-mismatch` compares it with `VECTOR_SIZE`.
+So a swap that changes `dimensions` and forgets `VECTOR_SIZE`, or the other
+way round, blocks on the setup page instead of failing in Qdrant. It cannot
+see a model of the same size, and it cannot see that the collections were
+built with the old model: neither is written anywhere it reads. The
+re-index below is still yours to do.
 
 Do it in a maintenance window. Until a document is re-indexed, search does
 not find it.
 
 1. **Back up** (section 3). The Qdrant snapshots are how you go back.
-2. **Change the model**: `model:` on `local-embed`, `APPLIANCE_MODELS` in
-   `.env`, and `VECTOR_SIZE` in `.env.local` to the new model's dimension
-   (`bge-m3` is 1024). Then pull it:
+2. **Change the model**: `model:` and `dimensions:` on `local-embed`,
+   `APPLIANCE_MODELS` in `.env`, and `VECTOR_SIZE` in `.env.local` to the
+   new model's dimension (`bge-m3` is 1024). Then pull it:
 
    ```bash
    docker compose up -d ollama-models
@@ -753,8 +756,8 @@ Gaps this runbook works around or points at, in one place:
 - **A backup script and a schedule** for section 3.
 - **An operator command for a full re-index** after an embedding change, and
   a way to re-embed published Brain pages (8.2).
-- **`embeddings-dimension-mismatch` on the appliance** cannot see a model
-  change behind `local-embed` (8.2).
+- **A same-size embedding swap** is invisible to the setup page, and so is
+  an index built with the previous model (8.2).
 - **The container stack's admin env file and TLS** (1.3).
 - **Sizing per tier (A5)**, the vLLM variant, a local reranker and the hybrid
   profile (A1b), and the rest of the egress check (A3b).

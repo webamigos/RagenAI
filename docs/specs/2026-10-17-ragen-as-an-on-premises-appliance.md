@@ -267,9 +267,12 @@ holds no tenant data.
 - **Model too slow for the user count.** Measured in A3. The tier table
   records concurrency at an agreed time-to-first-token, not a guess.
 - **Embedding model changed after ingest.** The vector size no longer
-  matches. The setup check `embeddings-dimension-mismatch` must know the
-  appliance embedding models' sizes, and today it knows only the default.
-  Changing the model means a re-index, and the upgrade runbook says so.
+  matches. The `local-embed` route declares its model's size (`dimensions`),
+  and the setup check `embeddings-dimension-mismatch` compares it with
+  `VECTOR_SIZE`, so a swap that changes one and not the other blocks on the
+  setup page. A swap to a model of the same size, and an index built with
+  the previous model, are not detected: nothing records which model wrote a
+  collection. Changing the model means a re-index, and the runbook says so.
 - **Docling fails on a document.** `DOCLING_STRICT=1` makes it a visible
   ingest failure, not a silent cloud call.
 - **Hybrid EU endpoint unreachable.** Chat fails with the gateway's

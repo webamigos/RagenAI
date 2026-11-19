@@ -290,6 +290,70 @@ describe('inspectEnvironment', () => {
     it('stays quiet when neither is set', () => {
       expect(idsOf(completeEnv)).not.toContain('embeddings-dimension-mismatch');
     });
+
+    // The appliance keeps EMBEDDINGS_MODEL as a route id (`local-embed`)
+    // whatever model sits behind it, so only the route knows the size.
+    describe('a model whose route declares its dimensions', () => {
+      const declared = (modelId: string) =>
+        modelId === 'local-embed' ? 1024 : undefined;
+      const inspect = (env: Record<string, string | undefined>) =>
+        inspectEnvironment(env, { embeddingDimensions: declared });
+
+      it('blocks when VECTOR_SIZE disagrees with the route', () => {
+        const report = inspect({
+          ...completeEnv,
+          EMBEDDINGS_MODEL: 'local-embed',
+          VECTOR_SIZE: '768',
+        });
+        const finding = report.findings.find(
+          (f) => f.id === 'embeddings-dimension-mismatch',
+        );
+
+        expect(report.hasBlockingIssues).toBe(true);
+        expect(finding?.values).toEqual({
+          model: 'local-embed',
+          expected: 1024,
+          configured: '768',
+        });
+        expect(finding?.example).toBe('VECTOR_SIZE=1024');
+      });
+
+      it('stays quiet when they agree', () => {
+        const report = inspect({
+          ...completeEnv,
+          EMBEDDINGS_MODEL: 'local-embed',
+          VECTOR_SIZE: '1024',
+        });
+        expect(report.findings.map((f) => f.id)).not.toContain(
+          'embeddings-dimension-mismatch',
+        );
+      });
+
+      it('lets the route speak over the size known by name', () => {
+        const report = inspectEnvironment(
+          {
+            ...completeEnv,
+            EMBEDDINGS_MODEL: 'cohere-embed-multilingual-v3',
+            VECTOR_SIZE: '1024',
+          },
+          { embeddingDimensions: () => 384 },
+        );
+        expect(report.findings.map((f) => f.id)).toContain(
+          'embeddings-dimension-mismatch',
+        );
+      });
+
+      it('falls back to the size known by name when the route declares none', () => {
+        const report = inspect({
+          ...completeEnv,
+          EMBEDDINGS_MODEL: 'cohere-embed-multilingual-v3',
+          VECTOR_SIZE: String(DEFAULT_VECTOR_SIZE),
+        });
+        expect(report.findings.map((f) => f.id)).toContain(
+          'embeddings-dimension-mismatch',
+        );
+      });
+    });
   });
 
   describe('object storage credentials', () => {

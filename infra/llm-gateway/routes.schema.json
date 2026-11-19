@@ -54,6 +54,12 @@
               "type": "string",
               "enum": ["chat", "vision"]
             }
+          },
+          "dimensions": {
+            "description": "Only for an embedding route: the size of the vectors its model returns. The setup page compares it with VECTOR_SIZE.",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": ["provider", "model"],
