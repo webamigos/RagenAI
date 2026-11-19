@@ -19,6 +19,7 @@ import {
   type DocumentDiagnostics,
 } from '../services/document-diagnostics.js';
 import { getFileExtension } from '../utils/get-file-extension.js';
+import { reindexDocumentVersion } from './reindex-document-version.js';
 import { DOCLING_SUPPORTED_TYPES } from '../utils/docling.js';
 import { DOCLING_GATE_STEP_TIMEOUT } from '../utils/docling-gate.js';
 import {
@@ -63,6 +64,7 @@ export async function runFileEmbeddings(
     // activities/db
     bindFileWithDocument,
     computeFileAccessPrincipals,
+    getActiveDocumentVersion,
     getFileRecord,
     createInitialDocumentVersion,
     mergeFileMetadata,
@@ -213,6 +215,33 @@ export async function runFileEmbeddings(
 
   const fileName = file.fileName;
   const projectId = file.projectId;
+
+  // A re-embed was told to keep what the document says. Its producer chose
+  // this job because the active version was the upload — when it enqueued.
+  // If someone has edited, optimized or rolled the document back since, the
+  // stored file is no longer its text, and parsing it would put the original
+  // back in the index (AGENTS.md, "Document Versions"). Re-index the active
+  // version instead. Not asked for an upload or a Drive sync, which bring
+  // new content and leave `keepActiveVersion` unset.
+  if (payload.keepActiveVersion) {
+    const active = await getActiveDocumentVersion({ fileId, orgId });
+    if (active && active.changeType !== 'UPLOAD') {
+      ctx.log.info(
+        `re-embed of ${fileId}: the active version is ${active.changeType}, not the upload — re-indexing that version instead of parsing the stored file`,
+      );
+      return reindexDocumentVersion(
+        {
+          orgId,
+          fileId,
+          fileName,
+          projectId,
+          userId: null,
+          documentId: active.documentId,
+        },
+        ctx,
+      );
+    }
+  }
   // Bound once: the narrowing from the guard above does not survive into the
   // nested scopes further down, and `ownerId` is read in two of them.
   const ownerId = file.ownerId ?? null;

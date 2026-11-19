@@ -213,6 +213,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [A packer that measures one row through a header-aware renderer charges every row for a separator no chunk contains](lessons/measuring-a-row-through-a-header-aware-renderer-halves-the-budget.md)
 
 - [A tool-calling loop can end on its step limit without a word of answer, and a model may ignore the setting meant to stop it](lessons/a-tool-loop-can-end-without-an-answer.md)
+- [A job chosen when it is enqueued is a decision that ages in the queue](lessons/a-job-chosen-at-enqueue-is-a-decision-that-ages.md)
 
 ### testing
 

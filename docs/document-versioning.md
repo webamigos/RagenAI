@@ -49,6 +49,22 @@ retrieval cites reverted text. It refuses empty content rather than emptying
 the index, and marks the embedding `FAILED` if it breaks after the delete —
 visible in the UI, and recoverable by re-running.
 
+### A re-embed chooses its job twice
+
+A re-embed changes no content: Reprocess in the panel, a PII-policy change,
+an operator's re-index. Its producer (`startFileReindexCommand`) picks
+`runFileEmbeddings` while the active version is the upload and
+`reindexDocumentVersion` once it is an edit — and it picks when it enqueues.
+The job can wait in the queue, and an edit made meanwhile would be replaced
+in the index by the original upload.
+
+So a re-embed starts `runFileEmbeddings` with `keepActiveVersion: true`, and
+the handler reads the active version again when it starts. If it is no longer
+the upload, it re-indexes that version's text and never opens the stored
+file. A producer that brings new content — an upload, a Drive import or
+sync — leaves the flag unset: there, parsing the stored file is the point,
+whatever the active version was.
+
 ## RAG optimization (Suggest & Accept)
 
 `optimizeDocument` (a background job) generates candidate edits against the same rubric

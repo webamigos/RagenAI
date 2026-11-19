@@ -394,6 +394,26 @@ const getDocumentContent = async (
 };
 
 /**
+ * The active version of the document parsed from this file: which document,
+ * and how that version came to be (`UPLOAD`, or an edit of some kind). `null`
+ * for a file with no document or no version yet. Scoped by organization on
+ * the version and on the document.
+ */
+const getActiveDocumentVersion = async (
+  fileId: string,
+  orgId: string,
+): Promise<{ documentId: string; changeType: string } | null> => {
+  return await getPrisma().documentVersion.findFirst({
+    where: {
+      organizationId: orgId,
+      isActive: true,
+      document: { fileId, organizationId: orgId },
+    },
+    select: { documentId: true, changeType: true },
+  });
+};
+
+/**
  * The file a document was parsed from, or `null` for a document written in
  * the panel. Scoped by organization like every read here: a document id from
  * a job payload is not trusted to belong to the payload's organization.
@@ -1245,6 +1265,7 @@ export const db = {
   getFileAccessRows,
   getFileIdsUnderFolders,
   getDocumentContent,
+  getActiveDocumentVersion,
   getFileIdForDocument,
   isIngestCancelled,
   createFileDetailsInDB,
