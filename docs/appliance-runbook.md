@@ -294,8 +294,11 @@ It does the manual procedure below, with the parts a person forgets:
   the volume. Back the bucket up (notes below) and pass
   `--storage-elsewhere` to take the set without them.
 
-It does not copy the Ollama models: with the internet they are pulled again,
-and without it they come with the offline bundle.
+It does not copy the Ollama models unless told to: with the internet they
+are pulled again. On a machine with no internet, add `--with-models`. The
+set then carries `ollama-models.tar`, about 20 GB for the default models,
+and the volume is no longer the only copy. One such set is enough until the
+models change; the nightly timer does not need the flag.
 
 **Run it every night** with the timer in `infra/appliance/systemd/`:
 
@@ -421,6 +424,12 @@ done
 # 4. Documents on the local volume (for RustFS, see section 3's notes)
 docker compose run --rm --no-deps -T --user root --entrypoint sh worker \
   -c 'find /data/storage -mindepth 1 -delete && tar -C /data/storage -xf -' < "$B/storage.tar"
+
+# 4b. The models, when the set carries them (`--with-models`)
+[ ! -f "$B/ollama-models.tar" ] || {
+  docker compose up -d ollama
+  docker compose exec -T ollama tar -C /root/.ollama -xf - < "$B/ollama-models.tar"
+}
 
 # 5. Everything
 docker compose up -d
@@ -834,8 +843,7 @@ Gaps this runbook works around or points at, in one place:
 
 - **The installer's appliance option (C1)** and **the offline bundle (C2)**.
 - **The support channel and roles (C3).**
-- **An alert when the nightly backup fails**, and a copy of the Ollama
-  models in the set (3).
+- **An alert when the nightly backup fails** (3).
 - **`embeddings-dimension-mismatch` on the appliance** cannot see a model
   change behind `local-embed` (8.2).
 - **The container stack's admin env file and TLS** (1.3).

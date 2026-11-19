@@ -44,6 +44,7 @@ case "$*" in
   "compose start"*) [ -z "\${FAIL_START:-}" ] || exit 1 ;;
   *pg_dump*) [ -z "\${FAIL_PG:-}" ] || exit 1; printf 'PGDUMP' ;;
   *"--entrypoint tar worker"*) printf 'TARBYTES' ;;
+  *"exec -T ollama tar"*) printf 'MODELBYTES' ;;
 esac
 `;
 
@@ -273,6 +274,42 @@ describe('infra/appliance/backup.sh', () => {
     expect(held.status).not.toBe(3);
     expect(held.stderr).toContain('już trwa');
     expect(callLog()).toEqual([]);
+  });
+
+  it('leaves the models out unless asked, and says so', () => {
+    run();
+
+    const dir = join(target, sets()[0]);
+    expect(existsSync(join(dir, 'ollama-models.tar'))).toBe(false);
+    expect(readFileSync(join(dir, 'MANIFEST'), 'utf8')).toContain(
+      'ollama_models=not included',
+    );
+  });
+
+  it('copies the Ollama models with --with-models, under the same checksums', () => {
+    const result = run(['--with-models'], {
+      RUNNING: 'postgres qdrant redis ollama web',
+    });
+
+    expect(result.status).toBe(0);
+    const dir = join(target, sets()[0]);
+    expect(readFileSync(join(dir, 'ollama-models.tar'), 'utf8')).toBe(
+      'MODELBYTES',
+    );
+    expect(readFileSync(join(dir, 'MANIFEST'), 'utf8')).toContain(
+      'ollama_models=included',
+    );
+    expect(readFileSync(join(dir, 'SHA256SUMS'), 'utf8')).toContain(
+      'ollama-models.tar',
+    );
+  });
+
+  it('refuses --with-models when Ollama is not running, having stopped nothing', () => {
+    const result = run(['--with-models']);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('ollama');
+    expect(callLog().some((line) => line.includes('compose stop'))).toBe(false);
   });
 
   it('refuses when Postgres is not running, having stopped nothing', () => {

@@ -14,6 +14,9 @@
 #                          (RAGEN_BACKUP_KEEP, default 7; 0 keeps every set)
 #   --storage-elsewhere    documents live in S3 (STORAGE_PROVIDER=s3) and are
 #                          backed up there; take the set without them
+#   --with-models          also copy the Ollama models (about 20 GB for the
+#                          default set). Worth it on a machine with no
+#                          internet, where the volume is the only copy
 #
 # A set is a directory named <YYYYMMDD-HHMM>. It is written as
 # <name>.partial and renamed once every step succeeded, so a directory with
@@ -27,6 +30,7 @@ set -euo pipefail
 BACKUP_DIR="${RAGEN_BACKUP_DIR:-/var/backups/ragen}"
 KEEP="${RAGEN_BACKUP_KEEP:-7}"
 STORAGE_ELSEWHERE=0
+WITH_MODELS=0
 # The services that write to the three stores. Postgres, Qdrant and Ollama
 # keep running: the dump and the snapshots are taken from them.
 WRITERS=(web api worker admin)
@@ -43,6 +47,7 @@ while [ $# -gt 0 ]; do
     --dir) BACKUP_DIR="${2:?--dir needs a value}"; shift 2 ;;
     --keep) KEEP="${2:?--keep needs a value}"; shift 2 ;;
     --storage-elsewhere) STORAGE_ELSEWHERE=1; shift ;;
+    --with-models) WITH_MODELS=1; shift ;;
     -h | --help) awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) die "nieznana opcja: $1 (--help pokazuje listę)" ;;
   esac
@@ -168,6 +173,9 @@ for service in "${WRITERS[@]}"; do
 done
 printf '%s\n' "$running" | grep -qx postgres || die "postgres nie działa — nie ma z czego zrobić zrzutu"
 printf '%s\n' "$running" | grep -qx qdrant || die "qdrant nie działa — nie ma z czego zrobić migawek"
+if [ "$WITH_MODELS" -eq 1 ]; then
+  printf '%s\n' "$running" | grep -qx ollama || die "--with-models: usługa ollama nie działa, a to przez nią czytam wolumen z modelami"
+fi
 
 if [ "${#stopped[@]}" -gt 0 ]; then
   log "Zatrzymuję zapisujących: ${stopped[*]}"
@@ -205,6 +213,14 @@ else
   warn "dokumenty są w $STORAGE_PROVIDER i nie wchodzą do tego zestawu (--storage-elsewhere)"
 fi
 
+if [ "$WITH_MODELS" -eq 1 ]; then
+  log "Modele Ollamy (wolumen ollama_models)"
+  # Through the running service, so the volume's name (it carries the Compose
+  # project) never has to be guessed. Ollama only reads these files; a model
+  # pulled during the copy is the one thing that would tear it.
+  docker compose exec -T ollama tar -C /root/.ollama -cf - models >"$PARTIAL/ollama-models.tar"
+fi
+
 log "Konfiguracja"
 cp .env.local "$PARTIAL/.env.local"
 [ ! -f .env ] || cp .env "$PARTIAL/.env"
@@ -223,6 +239,7 @@ fi
   printf 'postgres_db=%s\n' "$PG_DB"
   printf 'qdrant_collections=%s\n' "$count"
   printf 'storage=%s\n' "$([ "$STORAGE_PROVIDER" = "local" ] && echo included || echo "not included ($STORAGE_PROVIDER)")"
+  printf 'ollama_models=%s\n' "$([ "$WITH_MODELS" -eq 1 ] && echo included || echo "not included")"
 } >"$PARTIAL/MANIFEST"
 
 # Checked on restore: a set copied to a NAS and back is not assumed intact.
