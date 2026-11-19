@@ -267,9 +267,12 @@ holds no tenant data.
 - **Model too slow for the user count.** Measured in A3. The tier table
   records concurrency at an agreed time-to-first-token, not a guess.
 - **Embedding model changed after ingest.** The vector size no longer
-  matches. The setup check `embeddings-dimension-mismatch` must know the
-  appliance embedding models' sizes, and today it knows only the default.
-  Changing the model means a re-index, and the upgrade runbook says so.
+  matches. The `local-embed` route declares its model's size (`dimensions`),
+  and the setup check `embeddings-dimension-mismatch` compares it with
+  `VECTOR_SIZE`, so a swap that changes one and not the other blocks on the
+  setup page. A swap to a model of the same size, and an index built with
+  the previous model, are not detected: nothing records which model wrote a
+  collection. Changing the model means a re-index, and the runbook says so.
 - **Docling fails on a document.** `DOCLING_STRICT=1` makes it a visible
   ingest failure, not a silent cloud call.
 - **Hybrid EU endpoint unreachable.** Chat fails with the gateway's
@@ -293,12 +296,27 @@ holds no tenant data.
 - **OIDC issuer unreachable.** Password sign-in stays available for the
   local admin account, so a broken identity provider cannot lock the
   organization out of the install.
-- **Offline update applied over a running stack.** The bundle runs
-  migrations first (the `ragen-migrate` image), and the runbook shows how to
-  return to the previous image set.
-- **basal weights missing on first boot without internet.** The image bundle
-  carries a pre-seeded `basal_models` volume. Without one the first pass is
-  skipped: it can clear a turn, never block one.
+- **Offline update applied over a running stack.** The bundle's installer
+  runs the `migrate` job alone (the `ragen-migrate` image) and starts the
+  apps only if it exits 0; until then the previous release keeps serving.
+  The runbook shows how to return to the previous image set.
+- **A bundle damaged or replaced on the way.** The installer verifies every
+  checksum before it asks Docker for anything, and changes nothing on a
+  mismatch. The sums alone catch damage; the sum of `SHA256SUMS`, sent by
+  another road and passed as `--expect-sha256`, catches a replacement. The
+  bundle is not signed.
+- **A bundle for the wrong architecture.** Docker would load it and emulate
+  it without a word. The builder refuses an image the registry returned for
+  another platform, and the installer refuses a bundle whose platform is not
+  the machine's.
+- **A file edited on the machine, overwritten by an upgrade.** A model swap
+  edits the route table. The offline installer compares the install with the
+  sums its bundle recorded and refuses until told which version stays.
+- **basal weights missing on first boot without internet.** A bundle built
+  with `--with-basal` carries a pre-seeded `basal_models` volume, and the
+  entrypoint serves a completed download without calling Hugging Face.
+  Without one the first pass is skipped: it can clear a turn, never block
+  one.
 
 ## Phases
 
@@ -647,6 +665,81 @@ repeatable demo, and records the gaps as tests.
   pre-seeded basal volume, the default tier's model weights and a checksum
   manifest. The bundle installs and upgrades with no network, and runs
   migrations first.
+  - [x] **C2a (written and tested against a stand-in Docker).**
+    `infra/appliance/bundle/build-bundle.sh` runs on a connected machine and
+    writes a directory: `images.tar` (one `docker save`, one architecture),
+    `ollama-models.tar`, `checkout.tar.gz` (the repository at the release's
+    commit, because the compose files and route tables come from the
+    checkout and an offline machine cannot clone), a manifest
+    (`manifest.env`, `images.tsv` with each image's id and platform,
+    `models.txt`) and `SHA256SUMS`. The image list is `docker compose config
+    --images` over the release's own appliance files, and the weights are
+    pulled by the release's own `ollama-models` job, so neither list exists
+    in the scripts. `--platform` names the target (the Spark is arm64); the
+    builder pulls for it and refuses an image that came back for another.
+
+    `install-offline.sh`, shipped inside the bundle, verifies every checksum
+    first and refuses on a mismatch; loads the images; unpacks the checkout;
+    writes the environment through `install-spark.sh --env-only`, so the
+    secrets list stays in one place; restores the weights into the
+    install's own models volume through its running Ollama, which is what
+    makes `COMPOSE_PROJECT_NAME` irrelevant; runs `migrate` alone; and starts
+    the apps only if it exited 0. Every start carries `--pull never
+    --no-build`. The same script upgrades, and is safe to re-run.
+
+    **Rollback is kept on the machine, not carried in the bundle.** The spec
+    said bundles "carry the previous image tags". The previous images are
+    already on the machine being upgraded, so carrying them would double
+    every bundle. What is actually at risk is their names: `docker load`
+    moves `postgres:16` to the new image and leaves the old one with none.
+    So before loading, an upgrade tags each running image
+    `ragen-rollback/<image>:<tag>--<old version>`, saves the installed
+    files, and records the old version. `--rollback` re-tags, puts the files
+    back and restarts, with no bundle and no network. One step back is kept.
+
+    **basal is opt-in, `--with-basal`.** basal is behind a profile, NVIDIA
+    only, and has no published image, so a default bundle has nothing to
+    pre-seed. With the flag the builder builds the image (it must be the
+    target's architecture), runs the image's own entrypoint with
+    `BASAL_DOWNLOAD_ONLY=1` to fetch one pinned revision into a volume, and
+    bundles both. The entrypoint now marks a finished download and serves a
+    marked folder without calling the Hub; before, it called
+    `snapshot_download` on every start, which needs the network even with
+    every file present.
+
+    Guards: `the-offline-bundle-is-derived-from-the-appliance-stack` (no
+    copied image or model list, every service of the stack has a published
+    image, the installer never pulls), and
+    `tests/scripts/appliance-offline-bundle.test.ts`, which runs both
+    scripts end to end against a `docker` that is a shell script: build,
+    fresh install, re-run, refusals (bad checksum, wrong announced sum,
+    unlisted file, bad manifest value, wrong architecture, missing model,
+    failed migration, local edit), upgrade, and rollback.
+
+    **How verified: not on a real stack.** The tests prove the order of the
+    steps and the refusals against a stand-in `docker`; the
+    `docker compose config` parsing is also tested against the real Compose.
+    No bundle has been built or installed for real: the application images
+    and the model registry were not reachable from where this was written.
+    Two of the assumptions were checked on a real daemon afterwards: the
+    pinned Ollama image (`ollama/ollama:0.35.1`) has GNU `tar`, and an
+    image keeps its id through `docker save` and `docker load` on the same
+    image store (containerd).
+  - [ ] **C2b. Still to do:**
+    - one real run: build on a connected machine, install on a machine with
+      the network unplugged, upgrade it, roll it back. In particular,
+      unverified: that image ids survive `save`/`load` between two
+      different image stores (a mismatch is a warning for that reason), and
+      that the GPU check works with the Ollama image in place of
+      `ubuntu:24.04`
+    - the egress check against an install made from a bundle, sealed from
+      the first command
+    - basal end to end: whether `basal-serve` starts with no network, and
+      whether its image builds for arm64 at all
+    - Presidio in the bundle, which needs a published analyzer image
+    - a signature on the bundle, in place of a sum sent separately
+    - a release job that builds and publishes the bundle for both
+      architectures; today it is built by hand
 - [ ] **C3.** Support channel (D4): an outbound-only tunnel from the machine,
   so the organization opens no inbound port. Its admin switches it on and off
   in `apps/admin`, and it can be time-limited. It carries two roles:
@@ -674,9 +767,10 @@ repeatable demo, and records the gaps as tests.
 
   Partly done: [the runbook](../appliance-runbook.md) covers the manual
   install, the egress check, backup and restore, online upgrade, rollback
-  with the additive-migrations rule, model swap with a full re-index, and
+  with the additive-migrations rule, model swap with a full re-index, the
+  offline install, upgrade and rollback from a bundle (section 6), and
   troubleshooting per failure mode. Still to do:
-  - the offline upgrade, once C2 exists
+  - section 6 corrected by its first real run (C2b)
   - the first-line checklist as a role, once C3 exists (a draft is there)
   - the install through `create-ragen-app`, once C1 lands
 
@@ -711,9 +805,14 @@ repeatable demo, and records the gaps as tests.
   the local admin password still works.
 - B2 needs a migration that adds one table, and no existing table changes.
   Rollback means the feature key off, with the row ignored.
-- C2 bundles carry the previous image tags, so going back on an install is
-  re-tagging and restarting. Migrations are additive, so the older app runs
-  on the newer schema. The runbook must state that rule, and every
+- A C2 upgrade keeps the previous images on the machine under rollback
+  names, so going back on an install is re-tagging and restarting
+  (`install-offline.sh --rollback`). Migrations are additive, so the older
+  app runs on the newer schema. The runbook must state that rule, and every
   migration in this programme has to keep it.
+- C2 itself is additive files plus two small changes to existing ones:
+  `install-spark.sh --env-only`, which nothing calls unless asked, and
+  basal's entrypoint, which skips a download only where an earlier run of
+  the same entrypoint marked it complete. Rollback is removing them.
 - `create-ragen-app` changes (C1, plus the env fragment in A) are named in
   the PR description, per the post-task workflow.

@@ -177,6 +177,27 @@ describe('getInstanceBrandingQuery', () => {
     );
   });
 
+  it('holds the fallback for the failure window after a read that was slow to fail', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-19T12:00:00Z'));
+    let failSlowRead: (error: Error) => void = () => {};
+    findUnique.mockReturnValueOnce(
+      new Promise<typeof ROW>((_, reject) => {
+        failSlowRead = reject;
+      }),
+    );
+    const slowRead = getInstanceBrandingQuery();
+    await vi.waitFor(() => expect(findUnique).toHaveBeenCalledTimes(1));
+
+    // Longer than the failure window itself.
+    vi.setSystemTime(new Date('2026-10-19T12:00:15Z'));
+    failSlowRead(new Error('statement timeout'));
+    await slowRead;
+
+    await getInstanceBrandingQuery();
+    expect(findUnique).toHaveBeenCalledTimes(1);
+  });
+
   it('touches no database while next build collects page data', async () => {
     process.env.NEXT_PHASE = 'phase-production-build';
 
