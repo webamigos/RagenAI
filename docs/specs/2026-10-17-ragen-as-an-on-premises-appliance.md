@@ -690,18 +690,22 @@ repeatable demo, and records the gaps as tests.
     unlisted file, bad manifest value, wrong architecture, missing model,
     failed migration, local edit), upgrade, and rollback.
 
-    **How verified: not on Docker.** The environment this was written in has
-    a Docker CLI and no daemon. The tests prove the order of the steps and
-    the refusals; the `docker compose config` parsing is also tested against
-    the real Compose, which needs no daemon. Nothing has been pulled, saved,
-    loaded or started for real.
+    **How verified: not on a real stack.** The tests prove the order of the
+    steps and the refusals against a stand-in `docker`; the
+    `docker compose config` parsing is also tested against the real Compose.
+    No bundle has been built or installed for real: the application images
+    and the model registry were not reachable from where this was written.
+    Two of the assumptions were checked on a real daemon afterwards: the
+    pinned Ollama image (`ollama/ollama:0.35.1`) has GNU `tar`, and an
+    image keeps its id through `docker save` and `docker load` on the same
+    image store (containerd).
   - [ ] **C2b. Still to do:**
     - one real run: build on a connected machine, install on a machine with
       the network unplugged, upgrade it, roll it back. In particular,
-      unverified: that the Ollama image has `tar` (the weights are packed
-      and unpacked through it), that image ids survive `save`/`load` across
-      image stores (a mismatch is a warning for that reason), and that the
-      GPU check works with the Ollama image in place of `ubuntu:24.04`
+      unverified: that image ids survive `save`/`load` between two
+      different image stores (a mismatch is a warning for that reason), and
+      that the GPU check works with the Ollama image in place of
+      `ubuntu:24.04`
     - the egress check against an install made from a bundle, sealed from
       the first command
     - basal end to end: whether `basal-serve` starts with no network, and
