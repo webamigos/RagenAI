@@ -9,10 +9,13 @@ import {
   PLATFORM_FEATURE_DEFAULTS_KEY,
   flattenFeatures,
   resolveFeatures,
+  resolveInstanceFeature,
   sanitizeFeatureOverrides,
   type FeatureFlags,
   type FeatureKey,
   type FeatureResolution,
+  type InstanceFeatureKey,
+  type PlatformFeatureDefaults,
 } from '../../contracts/features.types';
 
 /**
@@ -20,7 +23,7 @@ import {
  * organization override. A missing row means every key inherits, which is the
  * state of an installation whose operator has never opened the panel.
  */
-async function readPlatformDefaults() {
+export async function getPlatformFeatureDefaultsQuery(): Promise<PlatformFeatureDefaults> {
   const row = await db.settings.findUnique({
     where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
   });
@@ -79,7 +82,7 @@ export const resolveFeaturesForOrgQuery = cache(
         where: { referenceId: organizationId },
         select: { plan: true, status: true, periodStart: true },
       }),
-      readPlatformDefaults(),
+      getPlatformFeatureDefaultsQuery(),
     ]);
 
     // Pick the "best" subscription for this org. Many orgs end up with
@@ -129,4 +132,19 @@ export async function isFeatureEnabledQuery(
 ): Promise<boolean> {
   const flags = await getEffectiveFeaturesQuery(organizationId);
   return flags[feature];
+}
+
+/**
+ * An instance-wide flag (`INSTANCE_FEATURE_KEYS`): the platform default, then
+ * the code default. There is no organization to ask — the answer is needed on
+ * a sign-in page and in an email — so the two organization layers are not
+ * read at all, rather than read and ignored.
+ */
+export async function isInstanceFeatureEnabledQuery(
+  feature: InstanceFeatureKey,
+): Promise<boolean> {
+  return resolveInstanceFeature(
+    feature,
+    await getPlatformFeatureDefaultsQuery(),
+  ).value;
 }

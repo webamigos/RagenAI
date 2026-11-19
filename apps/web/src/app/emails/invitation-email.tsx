@@ -1,5 +1,6 @@
 import { Button, Hr, Text } from '@react-email/components';
 import { ORG_ADMIN_ROLE } from '@ragenai/platform-contracts';
+import type { EmailBranding } from '@/features/branding/contracts/branding.types';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 import { strong, type EmailTranslator } from './utils/email-translator';
@@ -15,6 +16,8 @@ type Props = {
   locale: string;
   /** The `emails.invitation` strings in `locale`. */
   t: EmailTranslator;
+  /** The install's branding; absent is Ragen's (spec B2). */
+  branding?: EmailBranding;
 };
 
 const InvitationEmail = ({
@@ -26,6 +29,7 @@ const InvitationEmail = ({
   expiresAt,
   locale,
   t,
+  branding,
 }: Props) => {
   const acceptUrl = `${getBaseUrl()}/accept-invitation?token=${invitationId}`;
   const expiryDate = new Date(expiresAt).toLocaleDateString(locale, {
@@ -40,6 +44,7 @@ const InvitationEmail = ({
   return (
     <EmailLayout
       locale={locale}
+      branding={branding}
       preview={t('preview', { organization: organizationName })}
     >
       <Text className="text-base leading-6 text-[#525f7f]">

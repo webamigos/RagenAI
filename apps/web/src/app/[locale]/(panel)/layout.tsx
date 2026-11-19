@@ -35,6 +35,8 @@ import { isAppAdmin, canManageOrg, canOwnOrg } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
 import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
+import { InstanceBrandingProvider } from '@/context/InstanceBrandingContext';
+import { getInstanceBrandingQuery } from '@/features/branding/services/queries/get-instance-branding-query';
 import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
 import { Badge } from '@/components/ui/badge';
@@ -59,11 +61,14 @@ export default async function PanelLayout({ children }: Props) {
   // finalizeOnboardingCommand hasn't run yet)
   await ensureOnboardingComplete();
 
-  const [t, user, activeOrgId, organizations] = await Promise.all([
+  const [t, user, activeOrgId, organizations, branding] = await Promise.all([
     getTranslations('sidebar'),
     getCurrentUser(),
     getOrgIdFromAuth(),
     getUserOrganizationsQuery(),
+    // Instance-wide and cached per process, so this costs nothing on most
+    // renders; it never throws (see the query).
+    getInstanceBrandingQuery(),
   ]);
 
   const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
@@ -284,18 +289,20 @@ export default async function PanelLayout({ children }: Props) {
   );
 
   return (
-    <OrgFeaturesProvider features={features}>
-      {/* useSearchParams needs a boundary; it renders nothing either way. */}
-      <Suspense fallback={null}>
-        <RememberLastPage />
-      </Suspense>
-      <PanelLayoutWrapper
-        navbar={navbar}
-        sidebar={sidebar}
-        showBrain={canUseBrain({ role: member?.role, flags: features })}
-      >
-        {children}
-      </PanelLayoutWrapper>
-    </OrgFeaturesProvider>
+    <InstanceBrandingProvider branding={branding}>
+      <OrgFeaturesProvider features={features}>
+        {/* useSearchParams needs a boundary; it renders nothing either way. */}
+        <Suspense fallback={null}>
+          <RememberLastPage />
+        </Suspense>
+        <PanelLayoutWrapper
+          navbar={navbar}
+          sidebar={sidebar}
+          showBrain={canUseBrain({ role: member?.role, flags: features })}
+        >
+          {children}
+        </PanelLayoutWrapper>
+      </OrgFeaturesProvider>
+    </InstanceBrandingProvider>
   );
 }
