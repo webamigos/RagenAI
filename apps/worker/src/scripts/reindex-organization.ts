@@ -284,6 +284,9 @@ async function main() {
           ? jobs().start('runFileEmbeddings', workflowId, {
               fileId: step.fileId,
               orgId,
+              // The plan is minutes old by the time the job runs: an edit
+              // made since must not be parsed away from the stored upload.
+              keepActiveVersion: true,
             })
           : jobs().start('reindexDocumentVersion', workflowId, {
               orgId,

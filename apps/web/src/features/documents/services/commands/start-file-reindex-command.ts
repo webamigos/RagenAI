@@ -80,6 +80,9 @@ export async function startFileReindexCommand({
     await jobs().start(Workflow.RUN_FILE_EMBEDDINGS, workflowId, {
       fileId: file.id,
       orgId: organizationId,
+      // The choice above holds for the moment it was made. The job may run
+      // after an edit; this has the worker check again when it starts.
+      keepActiveVersion: true,
     });
   }
   return job;

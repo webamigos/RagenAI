@@ -127,7 +127,7 @@ describe('reembedFileCommand', () => {
     expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
       'reembed-test-nano-id',
-      { fileId: 'file-1', orgId: 'org-1' },
+      { fileId: 'file-1', orgId: 'org-1', keepActiveVersion: true },
     );
   });
 
@@ -164,7 +164,7 @@ describe('reembedFileCommand', () => {
     expect(mockJobStart).toHaveBeenCalledWith(
       'runFileEmbeddings',
       'reembed-test-nano-id',
-      { fileId: 'file-1', orgId: 'org-1' },
+      { fileId: 'file-1', orgId: 'org-1', keepActiveVersion: true },
     );
     expect(result).toEqual({ workflowId: 'reembed-test-nano-id' });
   });
@@ -200,7 +200,13 @@ describe('reembedFileCommand', () => {
     await reembedFileCommand('file-1', 'org-1');
 
     const payload = mockJobStart.mock.calls[0][2] as Record<string, unknown>;
-    expect(payload).toEqual({ fileId: 'file-1', orgId: 'org-1' });
+    // The intent, not a field of the row: this is a re-embed, so the worker
+    // looks at the active version again when the job runs.
+    expect(payload).toEqual({
+      fileId: 'file-1',
+      orgId: 'org-1',
+      keepActiveVersion: true,
+    });
     // No row fields rode along: a stale copy of any of these is what the
     // handler reading the row exists to prevent.
     expect(payload).not.toHaveProperty('piiPolicy');

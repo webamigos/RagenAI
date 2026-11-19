@@ -202,6 +202,8 @@ export function createMockActivities() {
       title: 'Restored',
     }),
     getFileRecord: vi.fn(),
+    // No document yet, which is every first upload.
+    getActiveDocumentVersion: vi.fn().mockResolvedValue(null),
     // Who may retrieve the file's chunks. A plausible non-empty answer rather
     // than `[]`, so a handler that drops it on the way to `prepareMetadata`
     // shows up as missing principals rather than as an empty list that is

@@ -113,6 +113,22 @@ export type JobName = (typeof JOB_NAMES)[number];
 export interface RunFileEmbeddingsPayload {
   fileId: string;
   orgId: string;
+  /**
+   * Set by a producer that re-embeds a file whose content it did not change:
+   * Reprocess in the panel, a PII-policy change, an operator's re-index.
+   *
+   * Such a producer picks this job only while the document's active version
+   * is the upload, because the job re-parses the stored file — and it picks
+   * when it enqueues. A job can wait in the queue, and an edit, an
+   * optimization or a rollback made meanwhile would be overwritten in the
+   * index by the original text. With this set, the handler reads the active
+   * version when it starts and re-indexes that version's text instead.
+   *
+   * Left unset by a producer that brings new content — an upload, a Drive
+   * import or sync — where parsing the stored file is the point, whatever
+   * the active version was.
+   */
+  keepActiveVersion?: boolean;
 }
 
 export interface ScrapeWebsitePayload {

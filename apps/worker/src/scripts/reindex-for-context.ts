@@ -185,6 +185,7 @@ async function main() {
         ? jobs().start('runFileEmbeddings', workflowId, {
             fileId: step.fileId,
             orgId,
+            keepActiveVersion: true,
           })
         : jobs().start('reindexDocumentVersion', workflowId, {
             orgId,
