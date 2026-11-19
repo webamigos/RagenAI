@@ -140,8 +140,12 @@ export interface StartStepDeps<State> {
   newWorkflowId(): string;
   /** The row's run state before the reset; null when the row is gone. */
   readState(fileId: string): Promise<State | null>;
-  /** Sets both statuses to NOT_STARTED and the row's run id. */
-  reset(fileId: string, workflowId: string): Promise<void>;
+  /**
+   * Sets both statuses to NOT_STARTED and the row's run id. A caller whose
+   * reset is conditional answers `false` when it changed no row; the step is
+   * then skipped, not started. `void` means "always resets".
+   */
+  reset(fileId: string, workflowId: string): Promise<boolean | void>;
   /**
    * Writes `state` back, only while the row still carries `workflowId`, so a
    * restore never overwrites a later producer.
@@ -152,6 +156,8 @@ export interface StartStepDeps<State> {
 
 export interface StartReport {
   started: number;
+  /** Steps whose conditional reset found the row no longer eligible. */
+  skipped: number;
   failed: { fileId: string; error: unknown }[];
 }
 
@@ -167,7 +173,7 @@ export async function startReindexSteps<State>(
   steps: readonly ReindexStep[],
   deps: StartStepDeps<State>,
 ): Promise<StartReport> {
-  const report: StartReport = { started: 0, failed: [] };
+  const report: StartReport = { started: 0, skipped: 0, failed: [] };
   for (const step of steps) {
     const previous = await deps.readState(step.fileId);
     if (!previous) {
@@ -175,7 +181,10 @@ export async function startReindexSteps<State>(
       continue;
     }
     const workflowId = deps.newWorkflowId();
-    await deps.reset(step.fileId, workflowId);
+    if ((await deps.reset(step.fileId, workflowId)) === false) {
+      report.skipped += 1;
+      continue;
+    }
     try {
       await deps.start(step, workflowId);
       report.started += 1;

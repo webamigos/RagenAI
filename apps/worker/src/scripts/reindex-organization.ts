@@ -102,8 +102,8 @@ async function main() {
   const before = args.before ?? new Date();
   const prisma = getPrisma();
 
-  const orgIds = args.orgId
-    ? [args.orgId]
+  const orgIds = !args.allOrgs
+    ? [args.orgId as string]
     : (
         await prisma.organization.findMany({
           select: { id: true },
@@ -118,6 +118,7 @@ async function main() {
 
   let budget = args.limit;
   let started = 0;
+  let skipped = 0;
   const failed: { orgId: string; fileId: string; error: unknown }[] = [];
   for (const orgId of orgIds) {
     if (budget <= 0) {
@@ -155,15 +156,23 @@ async function main() {
             workflowId: true,
           },
         }),
+      // Only while the file is still what the plan selected. One that was
+      // withdrawn, staged or restarted since the plan was read is not this
+      // run's to reset, and its job is not started.
       reset: async (fileId, workflowId) => {
-        await prisma.userFile.updateMany({
-          where: { id: fileId, organizationId: orgId },
+        const { count } = await prisma.userFile.updateMany({
+          where: {
+            id: fileId,
+            organizationId: orgId,
+            embeddingStatus: 'COMPLETED',
+          },
           data: {
             parsingStatus: 'NOT_STARTED',
             embeddingStatus: 'NOT_STARTED',
             workflowId,
           },
         });
+        return count > 0;
       },
       restore: async (fileId, state, workflowId) => {
         await prisma.userFile.updateMany({
@@ -187,12 +196,18 @@ async function main() {
             }),
     });
     started += report.started;
+    skipped += report.skipped;
     failed.push(...report.failed.map((f) => ({ orgId, ...f })));
   }
 
   if (args.dryRun) {
     console.log('Dry run: nothing was started.');
     return;
+  }
+  if (skipped > 0) {
+    console.log(
+      `${skipped} changed status after the plan was read and were left alone.`,
+    );
   }
   console.log(
     `Started ${started}. They run on the ordinary ingest queue. For the next ` +

@@ -14,7 +14,10 @@ export interface FullReindexArgs {
   before: Date | null;
 }
 
-export function parseFullReindexArgs(argv: readonly string[]): FullReindexArgs {
+export function parseFullReindexArgs(
+  argv: readonly string[],
+  now: Date = new Date(),
+): FullReindexArgs {
   const operand = (flag: string): string | undefined => {
     const i = argv.indexOf(flag);
     if (i === -1) {
@@ -28,6 +31,11 @@ export function parseFullReindexArgs(argv: readonly string[]): FullReindexArgs {
   };
 
   const orgId = operand('--org') ?? null;
+  // `--org ""` is what an unset shell variable turns into. It must not read
+  // as "no organization named", which is one step from "all of them".
+  if (orgId !== null && orgId.trim() === '') {
+    throw new Error('--org needs an organization id, not an empty value');
+  }
   const allOrgs = argv.includes('--all-orgs');
   if ((orgId === null) === !allOrgs) {
     throw new Error(
@@ -53,6 +61,14 @@ export function parseFullReindexArgs(argv: readonly string[]): FullReindexArgs {
     if (Number.isNaN(before.getTime())) {
       throw new Error(
         `--before must be a date and time such as 2026-11-19T01:00:00Z, not ${rawBefore}`,
+      );
+    }
+    // A re-indexed file is told apart by being embedded after the cutoff. A
+    // cutoff still ahead never lets one go, and every run would start the
+    // same files again.
+    if (before.getTime() > now.getTime()) {
+      throw new Error(
+        `--before must not be in the future (${rawBefore}): it is the moment the model changed`,
       );
     }
   }

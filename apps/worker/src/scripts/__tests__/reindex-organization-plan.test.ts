@@ -18,6 +18,32 @@ describe('parseFullReindexArgs', () => {
     );
   });
 
+  // An unset shell variable: `--org "$ORG"`.
+  it('refuses an empty organization id', () => {
+    for (const empty of ['', '  ']) {
+      expect(() => parseFullReindexArgs(['--org', empty])).toThrow(
+        'not an empty value',
+      );
+    }
+  });
+
+  // A cutoff still ahead never lets a re-indexed file leave the selection.
+  it('refuses a cutoff in the future', () => {
+    const now = new Date('2026-11-19T12:00:00Z');
+    expect(() =>
+      parseFullReindexArgs(
+        ['--all-orgs', '--before', '2026-11-19T12:00:01Z'],
+        now,
+      ),
+    ).toThrow('must not be in the future');
+    expect(
+      parseFullReindexArgs(
+        ['--all-orgs', '--before', '2026-11-19T12:00:00Z'],
+        now,
+      ).before,
+    ).toEqual(now);
+  });
+
   it('reads one organization, or all of them', () => {
     expect(parseFullReindexArgs(['--org', 'o-1'])).toEqual({
       orgId: 'o-1',

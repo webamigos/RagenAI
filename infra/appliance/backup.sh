@@ -74,7 +74,12 @@ PG_DB="${PG_DB:-ragen}"
 QDRANT_PORT="$(get_env .env QDRANT_PORT)"
 QDRANT="http://127.0.0.1:${QDRANT_PORT:-6333}"
 QDRANT_API_KEY="$(get_env .env.local QDRANT_API_KEY)"
-STORAGE_PROVIDER="$(get_env .env.local STORAGE_PROVIDER)"
+# What the containers actually get: docker-compose.fullapp.yml sets
+# `STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}` in `environment:`, which
+# Compose fills from the shell and then `.env`, and which wins over
+# `.env.local`. Reading `.env.local` here would archive an empty volume on an
+# install whose documents are in S3, and call the set complete.
+STORAGE_PROVIDER="${STORAGE_PROVIDER:-$(get_env .env STORAGE_PROVIDER)}"
 STORAGE_PROVIDER="${STORAGE_PROVIDER:-local}"
 
 if [ "$STORAGE_PROVIDER" != "local" ] && [ "$STORAGE_ELSEWHERE" -ne 1 ]; then
@@ -98,11 +103,14 @@ mkdir -p "$BACKUP_DIR"
 # Everything below is readable by the owner only: the set carries secrets.
 umask 077
 
-# One run at a time. A second one would stop the writers the first is about
-# to start, and both would snapshot into the same minute's directory.
+# One run at a time, per install and not per target: a manual run into
+# another --dir that starts while the nightly one has the writers stopped
+# would find nothing to stop, and the nightly one would start them again in
+# the middle of its dump. The lock is the checkout directory itself, so it
+# needs no file and survives no crash.
 if command -v flock >/dev/null 2>&1; then
-  exec 9>"$BACKUP_DIR/.lock"
-  flock -n 9 || die "inny backup już trwa (blokada: $BACKUP_DIR/.lock)"
+  exec 9<"$PWD"
+  flock -n 9 || die "inny backup tej instalacji już trwa ($PWD)"
 fi
 
 SET="$(date +%Y%m%d-%H%M)"
@@ -116,16 +124,38 @@ mkdir -p "$PARTIAL/qdrant"
 # success and on every failure. A machine left with its apps down is worse
 # than a missing backup.
 stopped=()
+# The snapshot Qdrant is holding for us right now, as "collection/name".
+pending_snapshot=""
 restart_writers() {
   status=$?
+  trap - EXIT
+  if [ -n "$pending_snapshot" ]; then
+    # A download that failed leaves the snapshot on the server, where it
+    # grows the container on every failed night.
+    qdrant -X DELETE "$QDRANT/collections/${pending_snapshot%%/*}/snapshots/${pending_snapshot#*/}" >/dev/null 2>&1 ||
+      warn "migawka ${pending_snapshot#*/} została w Qdrancie (kolekcja ${pending_snapshot%%/*})"
+  fi
   if [ "${#stopped[@]}" -gt 0 ]; then
     log "Uruchamiam z powrotem: ${stopped[*]}"
-    docker compose start "${stopped[@]}" >/dev/null ||
-      warn "nie udało się uruchomić: ${stopped[*]} — zrób to ręcznie: docker compose start ${stopped[*]}"
+    started=0
+    for attempt in 1 2 3; do
+      if docker compose start "${stopped[@]}" >/dev/null; then
+        started=1
+        break
+      fi
+      [ "$attempt" -eq 3 ] || sleep "${RAGEN_BACKUP_RETRY_SECONDS:-5}"
+    done
+    if [ "$started" -ne 1 ]; then
+      # Louder than a failed backup: the apps are down. Never exit 0 here,
+      # or the timer reports a good night with the install stopped.
+      warn "NIE udało się uruchomić: ${stopped[*]} — aplikacje stoją. Uruchom ręcznie: docker compose start ${stopped[*]}"
+      [ "$status" -ne 0 ] || status=1
+    fi
   fi
-  if [ "$status" -ne 0 ]; then
+  if [ ! -d "$B" ]; then
     warn "backup NIE powstał; niepełny zestaw został w $PARTIAL"
   fi
+  exit "$status"
 }
 trap restart_writers EXIT
 
@@ -154,11 +184,13 @@ count=0
 for collection in $collections; do
   snapshot="$(qdrant -X POST "$QDRANT/collections/$collection/snapshots" | names | head -n1)"
   [ -n "$snapshot" ] || die "Qdrant nie zwrócił nazwy migawki dla kolekcji $collection"
+  pending_snapshot="$collection/$snapshot"
   qdrant "$QDRANT/collections/$collection/snapshots/$snapshot" -o "$PARTIAL/qdrant/$collection.snapshot"
   # Qdrant keeps the snapshot inside its container, not on the volume, so a
   # snapshot left behind grows the container until it is recreated.
   qdrant -X DELETE "$QDRANT/collections/$collection/snapshots/$snapshot" >/dev/null ||
     warn "nie udało się usunąć migawki $snapshot z Qdranta (kolekcja $collection)"
+  pending_snapshot=""
   count=$((count + 1))
 done
 log "Qdrant: $count kolekcji"

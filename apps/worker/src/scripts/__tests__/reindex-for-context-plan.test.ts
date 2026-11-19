@@ -148,6 +148,7 @@ describe('startReindexSteps', () => {
     const { deps: d, writes } = deps();
     expect(await startReindexSteps(steps, d)).toEqual({
       started: 2,
+      skipped: 0,
       failed: [],
     });
     expect(writes).toEqual([
@@ -197,8 +198,23 @@ describe('startReindexSteps', () => {
     const { deps: d, writes } = deps({ readState: async () => null });
     expect(await startReindexSteps([steps[0]], d)).toEqual({
       started: 0,
+      skipped: 0,
       failed: [{ fileId: 'f-1', error: 'no file row' }],
     });
     expect(writes).toEqual([]);
+  });
+
+  // A conditional reset: the row changed between the plan and the start, so
+  // the caller's update matched nothing. Its job must not run.
+  it('does not start a step whose reset changed no row', async () => {
+    const { deps: d, writes } = deps({
+      reset: async (fileId) => fileId !== 'f-1',
+    });
+    expect(await startReindexSteps(steps, d)).toEqual({
+      started: 1,
+      skipped: 1,
+      failed: [],
+    });
+    expect(writes).toEqual(['start f-2 run-2']);
   });
 });
