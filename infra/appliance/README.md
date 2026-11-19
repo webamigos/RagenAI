@@ -45,7 +45,57 @@ what they assume:
 
 `--cpu` skips the GPU check and overlay, `--encrypt` turns on message
 encryption, `--version` pins the image tag,
-`--dir` and `--ref` choose where and what to clone.
+`--dir` and `--ref` choose where and what to clone. `--env-only` checks the
+host and writes the environment, then stops; the offline installer below
+calls it, so the secrets are generated in one place.
+
+### With no network (the offline bundle)
+
+A machine that cannot reach a registry is installed from a bundle built
+elsewhere. On a connected machine, from a checkout that has the release's
+tag:
+
+```bash
+bash infra/appliance/bundle/build-bundle.sh --version <X.Y.Z> --platform linux/arm64
+```
+
+That writes `ragen-bundle-<X.Y.Z>-arm64/`: every image of the stack in one
+`docker save` tarball, the default tier's model weights, the checkout at the
+release's commit, a manifest and `SHA256SUMS`. Carry the directory over and
+run the installer inside it:
+
+```bash
+bash ragen-bundle-<X.Y.Z>-arm64/install-offline.sh --expect-sha256 <printed by the builder> --host <address>
+```
+
+[`install-offline.sh`](bundle/install-offline.sh) verifies every checksum
+before it asks Docker for anything, loads the images, unpacks the checkout,
+writes the environment through `install-spark.sh --env-only`, puts the
+models into the volume, runs the `migrate` job alone and starts the apps
+only if it exits 0. It never pulls and never builds. Run on an existing
+install it upgrades it, and first gives the running images names that
+survive the load, so `--rollback` can go back with a re-tag and a restart.
+
+- `--platform` is the target's architecture. The builder refuses an image
+  the registry returned for another one.
+- The image list and the model list are not written in the scripts. The
+  builder asks Compose for the images of the release's own compose files and
+  runs the release's own `ollama-models` job.
+  `tests/architecture/the-offline-bundle-is-derived-from-the-appliance-stack.test.ts`
+  keeps it that way.
+- `--no-models` builds an upgrade bundle without the 20 GB of weights.
+- `--with-basal` adds basal's image and pre-seeded weights. Unverified; see
+  the runbook.
+- Not in a bundle: Presidio (its analyzer has no published image) and a
+  signature. The sums catch a damaged copy; `--expect-sha256`, with the
+  value sent separately, catches a replaced one.
+
+**Neither script has been run against a real Docker daemon yet.** They are
+tested against a stand-in `docker`
+(`tests/scripts/appliance-offline-bundle.test.ts`), which proves the order
+of the steps and the refusals. The procedure, what each step does and how
+rollback works are in
+[the runbook, section 6](../../docs/appliance-runbook.md#6-install-and-upgrade-offline).
 
 ### By hand
 
@@ -85,7 +135,8 @@ in place of `up -d`: an `environment:` entry in a compose file wins over
 The first start pulls the models into the `ollama_models` volume, which is
 about 20 GB for the default tier and needs the internet once. The web, api
 and worker containers wait for that pull to finish. Later starts find the
-models already there and need no network.
+models already there and need no network. The offline bundle puts them there
+without the pull.
 
 Docker Compose 2.24 or newer is required, because `docker-compose.fullapp.yml`
 uses the `env_file: path:` form.
