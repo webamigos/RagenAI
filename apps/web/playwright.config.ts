@@ -58,6 +58,20 @@ for (const [name, value] of Object.entries(E2E_LLM_ENV)) {
 }
 
 /**
+ * The secret apps/web's internal endpoints check, so `smoke-22` can save
+ * instance branding the way `apps/admin` does — through
+ * `/api/internal/instance-branding`, the only writer, and the only path that
+ * clears the branding cache at once. Writing the row with Prisma instead would
+ * sit behind a 60-second cache that a server already serving earlier specs has
+ * filled (the trap `p0-29` documents).
+ *
+ * Assigned only when absent, like the gateway's half above, so an explicit
+ * value wins. The web server inherits it, and so does the apps/api that
+ * `global.setup.ts` starts with this process's environment, so the two agree.
+ */
+process.env.INTERNAL_API_SECRET ??= 'e2e-internal-secret';
+
+/**
  * Company sign-in against the mock issuer the first `webServer` entry starts
  * on 4300
  * (p0-38). On for the whole suite, as it would be on an install that uses it:

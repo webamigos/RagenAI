@@ -9,6 +9,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { defaultLocale } from '@/app/config';
 import { isLocale, resolveEmailLocale } from '../utils/email-locale';
 import { getEmailTranslator } from '../utils/email-translator';
+import { getEmailBrandingQuery } from '@/features/branding/services/queries/get-email-branding-query';
 
 const FROM_EMAIL =
   process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
@@ -132,7 +133,12 @@ export const sendSecurityAlertEmail = async ({
     // Not the request's language: an alert goes to the people who run the
     // installation, and the request that raised it may be an attacker's.
     const locale = securityAlertLocale();
-    const t = await getEmailTranslator(locale, 'security-alert');
+    const branding = await getEmailBrandingQuery();
+    const t = await getEmailTranslator(
+      locale,
+      'security-alert',
+      branding.productName,
+    );
 
     await getMailProvider().send({
       from: SECURITY_FROM_EMAIL,
@@ -150,6 +156,7 @@ export const sendSecurityAlertEmail = async ({
         ipAddress: event.ipAddress,
         requestId: event.requestId,
         createdAtIso: event.createdAt.toISOString(),
+        branding,
       }),
     });
     return { data: true };
@@ -173,13 +180,14 @@ export const sendWelcomeEmail = async ({
 }) => {
   try {
     const locale = await resolveEmailLocale(requestedLocale);
-    const t = await getEmailTranslator(locale, 'welcome');
+    const branding = await getEmailBrandingQuery();
+    const t = await getEmailTranslator(locale, 'welcome', branding.productName);
 
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
       subject: t('subject'),
-      react: WelcomeEmail({ name, locale, t }),
+      react: WelcomeEmail({ name, locale, t, branding }),
     });
 
     return { data: true };
@@ -237,13 +245,18 @@ export const sendPasswordResetEmailViaMailer = async ({
 }) => {
   try {
     const locale = await resolveEmailLocale(requestedLocale);
-    const t = await getEmailTranslator(locale, 'password-reset');
+    const branding = await getEmailBrandingQuery();
+    const t = await getEmailTranslator(
+      locale,
+      'password-reset',
+      branding.productName,
+    );
 
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
       subject: t('subject'),
-      react: PasswordResetEmail({ resetUrl, locale, t }),
+      react: PasswordResetEmail({ resetUrl, locale, t, branding }),
     });
 
     return { data: true };
@@ -264,13 +277,18 @@ export const sendVerificationEmail = async ({
 }) => {
   try {
     const locale = await resolveEmailLocale(requestedLocale);
-    const t = await getEmailTranslator(locale, 'verification');
+    const branding = await getEmailBrandingQuery();
+    const t = await getEmailTranslator(
+      locale,
+      'verification',
+      branding.productName,
+    );
 
     await getMailProvider().send({
       from: FROM_EMAIL,
       to,
       subject: t('subject'),
-      react: VerificationEmail({ verificationUrl, locale, t }),
+      react: VerificationEmail({ verificationUrl, locale, t, branding }),
     });
 
     return { data: true };
@@ -304,7 +322,12 @@ export const sendInvitationEmail = async ({
     );
 
     const locale = await resolveEmailLocale(requestedLocale);
-    const t = await getEmailTranslator(locale, 'invitation');
+    const branding = await getEmailBrandingQuery();
+    const t = await getEmailTranslator(
+      locale,
+      'invitation',
+      branding.productName,
+    );
 
     await getMailProvider().send({
       from: FROM_EMAIL,
@@ -319,6 +342,7 @@ export const sendInvitationEmail = async ({
         expiresAt,
         locale,
         t,
+        branding,
       }),
     });
 
@@ -359,7 +383,12 @@ export const sendMagicLinkInvitationEmail = async ({
     );
 
     const locale = await resolveEmailLocale(requestedLocale);
-    const t = await getEmailTranslator(locale, 'invitation');
+    const branding = await getEmailBrandingQuery();
+    const t = await getEmailTranslator(
+      locale,
+      'invitation',
+      branding.productName,
+    );
 
     await getMailProvider().send({
       from: FROM_EMAIL,
@@ -373,6 +402,7 @@ export const sendMagicLinkInvitationEmail = async ({
         magicLinkUrl,
         locale,
         t,
+        branding,
       }),
     });
 

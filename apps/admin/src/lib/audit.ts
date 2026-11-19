@@ -155,6 +155,13 @@ export const ADMIN_ACTIONS = {
   catalogueConnectionTested: 'admin.mcp_catalogue.connection_tested',
   catalogueCredentialsStored: 'admin.mcp_catalogue.credentials_stored',
   registrationToggled: 'admin.registration.toggled',
+  /**
+   * The install's product name, logo or palette (spec B2). Recorded whether
+   * apps/web accepted the save or refused it: a rebrand is visible to every
+   * user and in every email, so "who tried to change it" is worth as much as
+   * "who did".
+   */
+  instanceBrandingChanged: 'admin.instance_branding.changed',
 } as const;
 
 export type AdminAction = (typeof ADMIN_ACTIONS)[keyof typeof ADMIN_ACTIONS];

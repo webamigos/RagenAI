@@ -2,10 +2,13 @@ import Image from 'next/image';
 
 import { VerifyEmailForm } from '@/app/components/Forms/VerifyEmailForm/VerifyEmailForm';
 import { Logo } from '@/app/components/Logo';
+import { getInstanceBrandingQuery } from '@/features/branding/services/queries/get-instance-branding-query';
+import { rebrandText } from '@/features/branding/utils/rebrand-text';
 
 export async function generateMetadata() {
+  const { productName } = await getInstanceBrandingQuery();
   return {
-    title: 'Verify Email - Ragen AI',
+    title: rebrandText('Verify Email - Ragen AI', productName),
   };
 }
 

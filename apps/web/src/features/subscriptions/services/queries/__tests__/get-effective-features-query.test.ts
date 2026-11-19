@@ -27,6 +27,7 @@ vi.mock('@ragenai/prisma-client', () => ({
 import {
   getEffectiveFeaturesQuery,
   isFeatureEnabledQuery,
+  isInstanceFeatureEnabledQuery,
 } from '../get-effective-features-query';
 import { DEFAULT_FEATURES } from '../../../contracts/features.types';
 
@@ -245,5 +246,51 @@ describe('the platform-default layer', () => {
     expect(mockPlatformSettingsFindUnique).toHaveBeenCalledWith({
       where: { key: 'default_features' },
     });
+  });
+});
+
+describe('isInstanceFeatureEnabledQuery', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('is off with no platform defaults, the state of a fresh install', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue(null);
+
+    await expect(
+      isInstanceFeatureEnabledQuery('instanceBranding'),
+    ).resolves.toBe(false);
+  });
+
+  it('follows the platform default an operator set', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: JSON.stringify({ instanceBranding: true }),
+    });
+
+    await expect(
+      isInstanceFeatureEnabledQuery('instanceBranding'),
+    ).resolves.toBe(true);
+  });
+
+  it('never reads an organization or a plan, because there is none to ask', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue(null);
+
+    await isInstanceFeatureEnabledQuery('instanceBranding');
+
+    expect(mockSettingsFindUnique).not.toHaveBeenCalled();
+    expect(mockSubscriptionFindMany).not.toHaveBeenCalled();
+    expect(mockPlanFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the code default when the stored row will not parse', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{not json',
+    });
+
+    await expect(
+      isInstanceFeatureEnabledQuery('instanceBranding'),
+    ).resolves.toBe(false);
   });
 });

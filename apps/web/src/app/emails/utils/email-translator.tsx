@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { createTranslator } from 'next-intl';
 
 import type { Locale } from '@/app/config';
+import { rebrandMessages } from '@/features/branding/utils/rebrand-text';
 
 /**
  * The part of a next-intl translator the email templates use. Typed by hand
@@ -28,12 +29,20 @@ export type EmailTranslator = {
  * which needs a request to know where it is: mail is also sent from event
  * handlers and background work, and `createTranslator` needs only the locale and
  * the messages. The same files the panel uses, under the `emails` namespace.
+ *
+ * `productName` is the install's (spec B2): "Welcome to Ragen AI" in a subject
+ * becomes the install's name, as the page titles do. Omitted, or the default,
+ * the messages are used as they are.
  */
 export async function getEmailTranslator(
   locale: Locale,
   namespace: string,
+  productName?: string,
 ): Promise<EmailTranslator> {
-  const messages = (await import(`@/app/messages/${locale}.json`)).default;
+  const catalogue = (await import(`@/app/messages/${locale}.json`)).default;
+  const messages = productName
+    ? rebrandMessages(catalogue, productName)
+    : catalogue;
 
   return createTranslator({
     locale,

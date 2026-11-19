@@ -28,6 +28,7 @@ import {
   ListChecks,
   ExternalLink,
   Blocks,
+  Palette,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,7 @@ const navItems = [
   { href: '/connector-health', label: 'Connector Health', icon: PlugZap },
   { href: '/mcp-catalogue', label: 'MCP Catalogue', icon: Blocks },
   { href: '/rag-settings', label: 'RAG Settings', icon: Layers },
+  { href: '/branding', label: 'Branding', icon: Palette },
   {
     href: '/assistant-templates',
     label: 'Global Assistants',
