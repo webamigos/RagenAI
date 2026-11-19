@@ -104,6 +104,17 @@ export type Route = {
   readonly display?: string;
   /** What the model can do. Read only together with `display`. */
   readonly capabilities?: readonly RouteCapability[];
+  /**
+   * The size of the vectors an embedding route's model returns.
+   *
+   * Exists because an install can put any embedding model behind a route id
+   * (`local-embed` on the appliance), and then nothing outside the route
+   * table knows the size: the setup check that compares the model with
+   * `VECTOR_SIZE` knows only the cloud models by name. Declared beside
+   * `model:`, it is the one line an operator swapping the model also has to
+   * change — and the check reads it. Nothing in a model call uses it.
+   */
+  readonly dimensions?: number;
 };
 
 export type RouteTable = Readonly<Record<string, Route>>;
