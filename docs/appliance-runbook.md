@@ -9,7 +9,7 @@ this page says so and names the spec step that will build it.
 
 | Section | State |
 | --- | --- |
-| [Install](#1-install) | written; the manual path. The installer option is coming (C1) |
+| [Install](#1-install) | written: the installer, the script, and the manual path |
 | [Prove nothing leaves the machine](#2-prove-nothing-leaves-the-machine) | written |
 | [Back up](#3-back-up) and [restore](#4-restore) | written; a script and a nightly timer |
 | [Upgrade, online](#5-upgrade-online) | written |
@@ -46,11 +46,33 @@ this page says so and names the spec step that will build it.
 
 ## 1. Install
 
-`create-ragen-app` is getting an "appliance" option that asks local or hybrid
-and the tier, and writes the profile, the route file and the env (spec step
-C1, in progress). Until it lands, the install is the manual path below. It is
-the path [`infra/appliance/README.md`](../infra/appliance/README.md)
-describes, and that the Phase 0 demo and the A3 egress check run.
+There are three ways in, and they end in the same stack:
+
+- **The installer**, on a machine with Node and the internet:
+
+  ```bash
+  cd /opt
+  npx create-ragen-app ragen --appliance --yes          # CPU only
+  npx create-ragen-app ragen --appliance --gpu --yes    # NVIDIA GPU
+  ```
+
+  It clones the repository into `/opt/ragen`, asks for no API key,
+  generates the secrets, writes `.env.local` with the appliance's values,
+  names the compose files in `.env` (`COMPOSE_FILE`), and starts the stack.
+  It offers the local profile and the default tier only: hybrid waits for
+  its compose profile (A1b), and more tiers for their sizing (A5). It does
+  not turn PII masking on and it sets up no TLS; see 1.3 for both. What it
+  asks and writes, in full:
+  [`packages/create-ragen-app/README.md`](../packages/create-ragen-app/README.md#appliance).
+- **The script**, on an NVIDIA DGX Spark or any Linux host with an NVIDIA
+  GPU: `bash infra/appliance/install-spark.sh --host <address>`. It checks
+  the GPU, the disk and the image architectures before it starts anything
+  ([`infra/appliance/README.md`](../infra/appliance/README.md)).
+- **By hand**, the steps below. It is what the other two do, and what the
+  Phase 0 demo and the A3 egress check run.
+
+Whichever you used, go on from 1.5: the first account, the checks, and then
+section 2. The rest of this runbook assumes the checkout at `/opt/ragen`.
 
 ### 1.1 What the machine needs
 
@@ -841,7 +863,7 @@ Work through this in order, and escalate with what you found.
 
 Gaps this runbook works around or points at, in one place:
 
-- **The installer's appliance option (C1)** and **the offline bundle (C2)**.
+- **The installer's hybrid profile and further tiers (C1b, C1c)**, and **the offline bundle (C2)**.
 - **The support channel and roles (C3).**
 - **An alert when the nightly backup fails** (3).
 - **`embeddings-dimension-mismatch` on the appliance** cannot see a model

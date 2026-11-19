@@ -687,7 +687,6 @@ repeatable demo, and records the gaps as tests.
   - an alert when the nightly backup fails
   - the offline upgrade, once C2 exists
   - the first-line checklist as a role, once C3 exists (a draft is there)
-  - the install through `create-ragen-app`, once C1 lands
 
 ## Testing
 
