@@ -65,6 +65,13 @@ file. A producer that brings new content — an upload, a Drive import or
 sync — leaves the flag unset: there, parsing the stored file is the point,
 whatever the active version was.
 
+Two things keep that hand-over honest. It checks for a cancellation first,
+because the version re-index deletes the file's chunks before it writes new
+ones. And `reindexDocumentVersion` closes a `parsingStatus` it finds at
+`NOT_STARTED`: a bulk re-index resets both statuses before it knows which
+job will run, this job parses nothing, and a file left there reads as still
+being ingested and is skipped by the next re-index.
+
 ## RAG optimization (Suggest & Accept)
 
 `optimizeDocument` (a background job) generates candidate edits against the same rubric

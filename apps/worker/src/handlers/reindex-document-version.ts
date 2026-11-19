@@ -7,7 +7,7 @@ import {
 import type * as activities from '../activities/index.js';
 import { isStagedIntake, isWithdrawnFromRetrieval } from './parse-and-embed.js';
 import { type Document } from '../types/Document.js';
-import { EmbeddingStatus, FileType } from '../types/UserFile.js';
+import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile.js';
 import { withdrawVectorsIfIngestEnded } from './ingest-cancellation.js';
 import { CHUNK_SETTINGS } from '../utils/splitters.js';
 import {
@@ -37,6 +37,7 @@ export async function reindexDocumentVersion(
   const {
     detectDocumentLanguage,
     updateEmbeddingStatus,
+    updateParsingStatus,
     updateLanguage,
     computeFileAccessPrincipals,
     prepareMetadata,
@@ -93,6 +94,21 @@ export async function reindexDocumentVersion(
   // second write path into the vector store, and it indexed both, undoing a
   // person's decision as a side effect of editing the text.
   const file = await getFileRecord(fileId, orgId);
+
+  // Nothing is parsed here: the version's text is what the parser already
+  // produced. But a bulk re-index resets both statuses before it starts a
+  // job, and it cannot know which job will run. Left at NOT_STARTED, the file
+  // reads as still being ingested after its vectors are written, and the next
+  // re-index skips it. Only from NOT_STARTED, so a cancelled or failed parse
+  // keeps saying so.
+  if (file?.parsingStatus === ParsingStatus.NOT_STARTED) {
+    await updateParsingStatus({
+      fileId,
+      orgId,
+      status: ParsingStatus.COMPLETED,
+    });
+  }
+
   if (file && isStagedIntake(file.metadata)) {
     await deleteDocumentVectors({ orgId, fileId });
     await updateEmbeddingStatus({
