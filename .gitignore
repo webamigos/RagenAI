@@ -111,3 +111,7 @@ apps/*/data/
 # docs/; git would hold every PNG for ever (the 2026-09-21 passes alone are
 # 11 MB across two directories).
 docs/screenshots/
+
+# The offline bundle builder's output, and an install's rollback state
+/ragen-bundle-*/
+.ragen-bundle/

@@ -19,6 +19,12 @@
 #   --encrypt          encrypt thread messages with a generated local key
 #                      (RAGEN_ENCRYPT=1). Off by default: a test install
 #                      should not leave behind a key that must be kept
+#   --env-only         check the host and write the environment, then stop:
+#                      pull nothing and start nothing. What the offline
+#                      bundle's installer calls (bundle/install-offline.sh),
+#                      so the secrets are generated in one place. It sets
+#                      RAGEN_GPU_CHECK_IMAGE to an image the bundle loaded;
+#                      an image named that way is never pulled
 #
 # Safe to re-run: secrets already in .env.local are kept, models already on
 # the volume are not pulled again. What it does, and why each step exists:
@@ -33,6 +39,17 @@ RAGEN_VERSION="${RAGEN_VERSION:-latest}"
 WEB_PORT="${WEB_PORT:-3000}"
 USE_GPU=1
 ENCRYPT="${RAGEN_ENCRYPT:-0}"
+ENV_ONLY=0
+# The image the GPU check runs `nvidia-smi` in. Any image will do: the NVIDIA
+# Container Toolkit puts the binary into the container. Named from outside,
+# it must already be on the machine, because the caller has no network.
+GPU_CHECK_IMAGE="${RAGEN_GPU_CHECK_IMAGE:-}"
+gpu_check=(docker run --rm --gpus all --entrypoint nvidia-smi)
+if [ -n "$GPU_CHECK_IMAGE" ]; then
+  gpu_check+=(--pull never "$GPU_CHECK_IMAGE")
+else
+  gpu_check+=(ubuntu:24.04)
+fi
 REPO_URL="https://github.com/webamigos/RagenAI.git"
 # The small model the GPU check loads; it is in the appliance's default set.
 SMOKE_MODEL="${SMOKE_MODEL:-qwen2.5:7b-instruct}"
@@ -85,6 +102,7 @@ while [ $# -gt 0 ]; do
     --version) RAGEN_VERSION="${2:?--version needs a value}"; shift 2 ;;
     --cpu) USE_GPU=0; shift ;;
     --encrypt) ENCRYPT=1; shift ;;
+    --env-only) ENV_ONLY=1; shift ;;
     -h | --help) awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "${BASH_SOURCE[0]:-/dev/null}" 2>/dev/null; exit 0 ;;
     *) die "nieznana opcja: $1 (--help pokazuje listę)" ;;
   esac
@@ -99,7 +117,9 @@ if [ "$arch" != "aarch64" ]; then
   warn "architektura $arch, nie aarch64 — to nie wygląda na DGX Spark. Kontynuuję: skrypt działa na każdym Linuksie z GPU NVIDIA."
 fi
 
-for cmd in docker git openssl curl; do
+# git is needed only to clone, which step 2 checks when it gets there: a
+# machine installed from the offline bundle has no use for it.
+for cmd in docker openssl curl; do
   command -v "$cmd" >/dev/null 2>&1 || die "brak polecenia: $cmd"
 done
 
@@ -114,8 +134,8 @@ if [ "$(printf '%s\n2.24.0\n' "${compose_version#v}" | sort -V | head -n1)" != "
 fi
 
 if [ "$USE_GPU" = 1 ]; then
-  if docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L >/dev/null 2>&1; then
-    log "GPU widoczne w kontenerach: $(docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L | head -n1)"
+  if "${gpu_check[@]}" -L >/dev/null 2>&1; then
+    log "GPU widoczne w kontenerach: $("${gpu_check[@]}" -L | head -n1)"
   else
     die "kontener nie widzi GPU. Zainstaluj NVIDIA Container Toolkit (na DGX OS jest domyślnie) albo uruchom z --cpu."
   fi
@@ -135,6 +155,7 @@ elif [ -f "$RAGEN_DIR/docker-compose.appliance.yml" ]; then
   root="$RAGEN_DIR"
   log "Używam istniejącego klonu: $root"
 else
+  command -v git >/dev/null 2>&1 || die "brak polecenia: git"
   log "Klonuję $REPO_URL ($RAGEN_REF) do $RAGEN_DIR"
   git clone --depth 1 --branch "$RAGEN_REF" "$REPO_URL" "$RAGEN_DIR" 2>/dev/null ||
     { git clone "$REPO_URL" "$RAGEN_DIR" && git -C "$RAGEN_DIR" checkout "$RAGEN_REF"; }
@@ -258,6 +279,11 @@ if [ "$free_gb" -lt "$min_gb" ]; then
   die "tylko ${free_gb} GB wolnego w $docker_root; potrzeba co najmniej ${min_gb} GB."
 elif [ -z "$models_volume" ] && [ "$free_gb" -lt "$DISK_WARN_GB" ]; then
   warn "${free_gb} GB wolnego w $docker_root — wystarczy na start, ale zalecane ${DISK_WARN_GB} GB."
+fi
+
+if [ "$ENV_ONLY" = 1 ]; then
+  log "Środowisko gotowe (--env-only): niczego nie pobieram ani nie uruchamiam"
+  exit 0
 fi
 
 # --- 4. Images ----------------------------------------------------------------

@@ -105,6 +105,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [Moving enforcement into a dependency left the old query behind, and six months later it read as proof the app still enforced the limit](lessons/enforcement-moved-to-a-dependency-left-its-query-behind.md)
 
 - [A bare `KEY:` under a Compose `environment:` does not fall back to `env_file:` — it unsets the variable, so the only way to let `.env.local` decide is to leave the key out](lessons/a-bare-compose-environment-key-unsets-the-env-file-value.md)
+- [`docker compose config` folds a long value across lines in YAML, so a script that greps one key gets the first 80 columns of it — read the JSON form](lessons/compose-config-yaml-folds-a-long-value-across-lines.md)
 
 ### security
 

@@ -13,7 +13,7 @@ this page says so and names the spec step that will build it.
 | [Prove nothing leaves the machine](#2-prove-nothing-leaves-the-machine) | written |
 | [Back up](#3-back-up) and [restore](#4-restore) | written |
 | [Upgrade, online](#5-upgrade-online) | written |
-| [Upgrade, offline](#6-upgrade-offline) | placeholder until C2 |
+| [Install and upgrade, offline](#6-install-and-upgrade-offline) | written; the scripts are tested against a stand-in Docker and have not been run on a machine yet |
 | [Roll back](#7-roll-back) | written |
 | [Swap a model](#8-swap-a-model) (with re-index) | written |
 | [Troubleshooting](#9-troubleshooting) | written, one entry per failure mode in the spec |
@@ -62,9 +62,9 @@ describes, and that the Phase 0 demo and the A3 egress check run.
 - `git`. Node `^24.15.0` and `npm ci` are needed only for the npm scripts in
   this runbook (`appliance:egress-check`, `gateway:preflight`). The stack
   itself runs entirely in containers.
-- Internet **once**, for the image pull and the first model pull. An install
-  with no network at all needs the offline bundle (C2), which does not exist
-  yet.
+- Internet **once**, for the image pull and the first model pull. A machine
+  with no network at all is installed from the offline bundle instead
+  (section 6), and needs neither `git` nor a registry.
 
 Sizing per tier is not published. The tier table in the spec is a placeholder
 until A5 measures it on real hardware, and no tier is offered before then.
@@ -82,6 +82,10 @@ Releases are tagged `v<X.Y.Z>` in the repository, and each image is tagged
 images on the same release. The compose files, the route tables and the
 Ollama image tag come from the checkout, and the applications come from the
 images.
+
+With no network, there is nothing to clone: the offline bundle carries the
+checkout at the release's commit, and its installer does this step and the
+next two (section 6).
 
 ### 1.3 Write the environment
 
@@ -384,9 +388,11 @@ about a document.
 in-progress status and no job behind it, because the job was in Redis.
 Select them in Knowledge and choose **Reprocess**.
 
-On a new machine with no internet, the models must come with the set
-(the `ollama_models` volume) or with the offline bundle (C2). Otherwise
-`ollama-models` cannot finish, and the apps wait for it.
+On a new machine with no internet, install the same release from its
+offline bundle first (section 6): it brings the images, the checkout and
+the models. Then restore the set over it, from step 0's `cp` on. A bundle
+built with `--no-models` brings no models, and without them
+`ollama-models` cannot finish and the apps wait for it.
 
 ## 5. Upgrade, online
 
@@ -439,17 +445,207 @@ If the migrate job fails, the apps do not start, and the database is where
 the failed migration left it. Do not run `prisma migrate reset`. Keep the
 logs, and either roll back (section 7) or escalate.
 
-## 6. Upgrade, offline
+## 6. Install and upgrade, offline
 
-**Not built yet; spec step C2.** The offline bundle will carry the release's
-images as a tarball, a pre-seeded basal volume, the default tier's model
-weights and a checksum manifest. It will install and upgrade with no
-network, run migrations first (the `ragen-migrate` image), and carry the
-previous image tags so that going back means re-tagging and restarting. This
-section will hold its procedure once C2 lands.
+For a machine with no network. One release is built into a **bundle** on a
+connected machine, carried over, and installed by the script inside it. The
+same script upgrades an existing install and takes it back.
 
-Until then, an upgrade needs the internet for `docker compose pull` and for
-any new model.
+**How far this has been checked.** Both scripts are exercised by
+`tests/scripts/appliance-offline-bundle.test.ts` against a stand-in `docker`,
+which proves the order of the steps and every refusal below. Neither has
+been run against a real Docker daemon, a real registry or a GPU yet. The
+first real run should be on a machine that can be reinstalled, and what it
+finds belongs in this section.
+
+### 6.1 What a bundle is
+
+A directory, named `ragen-bundle-<version>-<arch>`:
+
+| File | What it is |
+| --- | --- |
+| `images.tar` | `docker save` of every image the appliance stack runs, for one architecture |
+| `ollama-models.tar` | the default tier's model weights, about 20 GB (absent with `--no-models`) |
+| `checkout.tar.gz` | the repository at the release's commit: compose files, route tables, these scripts |
+| `manifest.env`, `images.tsv`, `models.txt` | version, platform, commit; each image with its id; the models |
+| `checkout.sha256` | the sum of every checkout file, which is how the next upgrade finds a file edited on the machine |
+| `install-offline.sh`, `lib.sh` | the installer, as that release shipped it |
+| `basal-models.tar` | basal's weights, only with `--with-basal` |
+| `SHA256SUMS` | the sha256 of every file above |
+
+Nothing in it comes from a list kept by hand. The images are what
+`docker compose config --images` names for the release's own compose files,
+and the models are pulled by the release's own `ollama-models` job. A guard,
+`the-offline-bundle-is-derived-from-the-appliance-stack`, fails if either
+list is copied into the scripts, or if a service is added to the stack with
+no published image.
+
+Not in a bundle:
+
+- **Presidio.** The analyzer is built from source and has no published
+  image, so PII masking cannot be turned on from a bundle. An install that
+  already built it keeps it through an upgrade.
+- **The previous release's images.** They are already on the machine being
+  upgraded, and the installer keeps them there (6.5).
+- **Your data.** A bundle is a release, not a backup (section 3).
+
+### 6.2 Build it, on a connected machine
+
+Needs Docker, `git`, and a checkout that has the release's tag. The release
+must be one that contains `infra/appliance/bundle/`.
+
+```bash
+git fetch --tags
+bash infra/appliance/bundle/build-bundle.sh --version <X.Y.Z> --platform linux/arm64
+```
+
+- **`--platform` is the target's**, not the builder's: `linux/arm64` for a
+  DGX Spark, `linux/amd64` for an x86 server. The default is the builder's
+  own. The builder refuses an image the registry returned for another
+  architecture, because Docker would run it under emulation without a word.
+  One bundle is one architecture.
+- **`--version` is required and is never `latest`.** The checkout comes from
+  the tag `v<X.Y.Z>`; `--ref` names another commit, and is how a bundle is
+  built before the tag exists.
+- **`--no-models`** leaves the weights out. Use it for an upgrade bundle
+  when the release did not change the models: the bundle drops from over
+  20 GB to the size of the images. The installer refuses to start if the
+  machine then lacks a model (6.4).
+- The model pull runs the release's `ollama-models` job in a Compose project
+  of its own, `ragen-bundle-build`, with no port published. Its volume is
+  kept, so the next build pulls only what changed.
+- `APPLIANCE_MODELS` in the builder's environment changes what is pulled, as
+  it does for Compose. The target then needs the same value in its `.env`.
+
+The last thing it prints is **the sha256 of `SHA256SUMS`**. Send that by
+another road than the bundle: the sums inside a bundle catch a damaged
+copy, and only a value from outside it catches a replaced one. The bundle
+is not signed.
+
+### 6.3 Carry and verify
+
+Copy the directory whole. On the target, before anything else:
+
+```bash
+bash /media/usb/ragen-bundle-<X.Y.Z>-arm64/install-offline.sh \
+  --expect-sha256 <the value the builder printed> --verify-only
+```
+
+It checks that `SHA256SUMS` is the one announced, that it lists every file
+the installer reads, and every checksum. It needs no Docker. The installer
+runs the same check itself, first, and **changes nothing if it fails**.
+
+### 6.4 Install or upgrade
+
+The target needs Linux, Docker Engine with Compose 2.24 or newer, `openssl`,
+`curl`, `tar` and `sha256sum`; for a GPU, the NVIDIA driver and Container
+Toolkit. It does not need `git`, Node or a registry.
+
+```bash
+bash /media/usb/ragen-bundle-<X.Y.Z>-arm64/install-offline.sh \
+  --expect-sha256 <value> --dir /opt/ragen --host <address users open>
+```
+
+The same command installs on an empty machine and upgrades an existing
+install; it tells which from `/opt/ragen/.env`. **Back up first when it is
+an upgrade** (section 3).
+
+What it does, in order. It stops at the first step that fails, and it is
+safe to run again:
+
+1. **Verifies the bundle** (6.3), then that the bundle's architecture is the
+   machine's.
+2. **On an upgrade, refuses to overwrite a file edited on this machine**,
+   such as a route table after a model swap (section 8), until told which
+   version stays:
+   - `--local-changes keep` leaves your file and writes the release's next
+     to it as `<file>.release-<X.Y.Z>`. Compare them: a release can change
+     the same file.
+   - `--local-changes replace` installs the release's file and saves yours
+     under `.ragen-bundle/local-changes/`.
+3. **On an upgrade, keeps the way back** (6.5), before any image is loaded.
+4. **`docker load`**, then checks every image the manifest names is there,
+   for the right architecture.
+5. **Unpacks the checkout** into the install directory. `.env`, `.env.local`
+   and `apps/admin/.env.local` are not in it and are left alone.
+6. **Writes the environment**, by calling `install-spark.sh --env-only`:
+   the same secrets, admin file and addresses as the online installer, with
+   every secret already there kept. `--cpu` and `--encrypt` mean what they
+   mean there. An upgrade keeps the install's own `COMPOSE_FILE`, so a PII
+   overlay added by hand stays and a CPU install stays a CPU install.
+7. **Restores the models.** It starts Ollama and asks it for each model the
+   install's `ollama-models` job will want. If any is missing it unpacks
+   `ollama-models.tar` into the models volume and asks again. A model that
+   is still missing stops the install here, before the database is touched.
+8. **Runs the `migrate` job alone** and reads its exit code. On an upgrade
+   the previous release's apps keep serving while it runs.
+9. **Starts the apps, only if the job exited 0**, and waits for web to
+   answer.
+
+Nothing is pulled and nothing is built: every start carries
+`--pull never --no-build`, so an image that is not on the machine is an
+error at once, not a wait on a network that is not there.
+
+If step 8 fails, the apps are still the previous release's and the database
+is where the failed migration left it. Do not run `prisma migrate reset`.
+Keep `docker compose logs migrate`, then go back (6.5) or escalate.
+
+Afterwards: section 1.5 on a new install, section 1.7 on either. Set
+`POSTGRES_PASSWORD` in `/opt/ragen/.env` before a **first** install if the
+default is not acceptable (section 1.3): create the directory and an `.env`
+holding that one line before the first run. The installer adds its own
+lines and keeps yours.
+
+### 6.5 Go back
+
+Loading a bundle moves tags. `postgres:16` in the new bundle is a newer
+image than the one running, and after `docker load` the old one would have
+no name at all. So before it loads anything, an upgrade:
+
+- tags every image the install is running as
+  `ragen-rollback/<image>:<tag>--<old version>`, and writes the pairs to
+  `.ragen-bundle/rollback-images.tsv`;
+- saves the installed release's files to
+  `.ragen-bundle/checkout-<old version>.tar.gz`;
+- records the old version in `.ragen-bundle/state.env`.
+
+Going back is then a re-tag and a restart, with no bundle and no network:
+
+```bash
+bash /opt/ragen/infra/appliance/bundle/install-offline.sh --dir /opt/ragen --rollback
+```
+
+It checks that every kept image is still there before it moves a tag, puts
+the tags and the files back, sets `RAGEN_VERSION` to the old release, runs
+the old `migrate` job and starts the apps.
+
+- **Section 7's rule decides whether this works.** The older apps run on the
+  newer schema only if the release's migrations were additive. If they were
+  not, or the older `migrate` job fails on the migrations it does not know,
+  restore the backup taken before the upgrade (section 4).
+- **One step back is kept.** The next upgrade replaces it.
+- **`docker image prune -a` deletes the kept images**, because no container
+  uses them. The rollback then refuses, naming the missing image, and the
+  way back is the backup. Plain `docker image prune` is safe.
+- To go forward again, run the newer bundle's installer again.
+
+### 6.6 basal (optional, unverified)
+
+basal, the guardrail first pass, is not part of the appliance stack: it is
+behind a Compose profile, NVIDIA only, and has no published image.
+`build-bundle.sh --with-basal`, with `BASAL_MODEL_REVISION` set to the full
+commit of the weights, builds the image on the builder (which must be the
+target's architecture), downloads that revision into a volume and adds both
+to the bundle. The installer loads the image under the name Compose expects,
+unpacks the weights into the install's `basal_models` volume and writes
+`BASAL_MODEL` and `BASAL_MODEL_REVISION` to `.env`. It does not start basal;
+it prints the two steps that do.
+
+The entrypoint marks a finished download, and serves a marked folder without
+calling Hugging Face. That is tested. **Whether `basal-serve` itself starts
+with no network, and whether the image builds for arm64 at all, has not been
+tried.** Without basal the first pass is skipped, and it can only ever clear
+a turn, never block one.
 
 ## 7. Roll back
 
@@ -638,7 +834,8 @@ docker compose restart ollama
 
 **A model is missing.** `model-not-pulled` names it. Run
 `docker compose exec ollama ollama list`, then `docker compose up -d ollama-models`.
-That needs the internet; offline, restore the `ollama_models` volume.
+That needs the internet; offline, run the installer of a bundle that carries
+the model again (section 6.4, step 7).
 
 **Answers are slow.** Run `docker compose exec ollama ollama ps`. A model
 shown on CPU rather than GPU means the GPU overlay is missing from
@@ -680,12 +877,13 @@ docker compose restart web
 Password sign-in for the local admin account keeps working throughout.
 
 **An upgrade was applied over a running stack.** The `migrate` job runs
-before the apps in the online path (section 5). The offline bundle (C2) is
-not built.
+before the apps in the online path (section 5). The offline installer runs
+it alone and starts the apps only if it exits 0 (section 6.4).
 
 **The guardrail first pass (basal) has no weights.** basal is not part of
 the appliance overlay. Without it the first pass is skipped, and it can only
-ever clear a turn, never block one.
+ever clear a turn, never block one. An offline bundle can carry its weights
+(section 6.6).
 
 **api or the worker keeps restarting.** They refuse to boot without their
 secrets or without Redis, and the log names the variable:
@@ -748,7 +946,10 @@ Work through this in order, and escalate with what you found.
 
 Gaps this runbook works around or points at, in one place:
 
-- **The installer's appliance option (C1)** and **the offline bundle (C2)**.
+- **The installer's appliance option (C1).**
+- **A real run of the offline bundle (C2).** Section 6 is tested against a
+  stand-in Docker only. Also missing from a bundle: Presidio, a signature,
+  and more than one step of rollback.
 - **The support channel and roles (C3).**
 - **A backup script and a schedule** for section 3.
 - **An operator command for a full re-index** after an embedding change, and
