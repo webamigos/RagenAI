@@ -113,7 +113,13 @@ export async function getInstanceBrandingQuery(): Promise<InstanceBranding> {
     logger.warn({ err: error }, 'Could not read instance branding');
     const value = cache.entry?.value ?? DEFAULT_INSTANCE_BRANDING;
     if (cache.generation === generation) {
-      cache.entry = { value, expiresAt: now + BRANDING_FAILURE_TTL_MS };
+      // From the moment of the failure, not of the request: a read that
+      // hangs past the window before it rejects would otherwise be cached
+      // already expired, and every request would repeat it.
+      cache.entry = {
+        value,
+        expiresAt: Date.now() + BRANDING_FAILURE_TTL_MS,
+      };
     }
     return value;
   }
